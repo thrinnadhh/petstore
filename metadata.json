@@ -1,0 +1,6 @@
+{
+  "name": "PawsNearMe",
+  "description": "Hyperlocal Dog Pet Shop Discovery Platform.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
