@@ -6919,21 +6919,12 @@ fun UserProfileScreen(viewModel: PawsViewModel) {
                 ProfileOptionRow(icon = Icons.Default.DateRange, title = "Care Calendar & Reminders", subtitle = "Manage vaccine schedules and birthdays", onClick = { showCareCalendar = true })
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 ProfileOptionRow(icon = Icons.Default.LocationOn, title = "Change City Location", subtitle = "Current city Hyderabad", onClick = { viewModel.navigateTo(Screen.LocationSelect) })
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 
                 // Show Super Admin Controls if they have the role
                 if (currentUser?.role == "superadmin" || currentUser?.role == "admin") {
-                    ProfileOptionRow(icon = Icons.Default.Settings, title = "Super Admin Controls", subtitle = "Approve pet stores and push banners", onClick = { viewModel.navigateTo(Screen.SuperAdmin) })
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                    ProfileOptionRow(icon = Icons.Default.Settings, title = "Super Admin Controls", subtitle = "Approve pet stores and push banners", onClick = { viewModel.navigateTo(Screen.SuperAdmin) })
                 }
-                
-                ProfileOptionRow(icon = Icons.Default.Person, title = "Fictional Role: Merchant Toggle", subtitle = "Switch context to Suresh (Pet Shop Owner)", onClick = {
-                    viewModel.loginWithPhone("8765432109", onSuccess = {}, onError = {})
-                })
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-                ProfileOptionRow(icon = Icons.Default.Lock, title = "Fictional Role: Admin Toggle", subtitle = "Switch context to Super Admin Control Panel", onClick = {
-                    viewModel.loginWithPhone("9999999999", onSuccess = {}, onError = {})
-                })
             }
         }
 
