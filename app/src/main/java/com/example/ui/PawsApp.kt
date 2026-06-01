@@ -2029,149 +2029,45 @@ fun HomeScreen(viewModel: PawsViewModel) {
             )
         }
 
-        // WOW Factor 4: Favorite Reorders carousel with Spring micro-interaction
+        // ── QUICK ACCESS SHORTCUTS ROW ──────────────────────────────────────────────
         item {
-            Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        "Your Pet's Favourites 📦",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF333333)
-                    )
-                    Text(
-                        "Slide to Reorder",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFFC8019)
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                val favoriteProducts = remember {
-                    listOf(
-                        Pair("p_shampoo_itch", "Itch Relief Oatmeal Shampoo"),
-                        Pair("p_shampoo_dandruff", "Dandruff Control Shampoo"),
-                        Pair("p_blr_1", "Pedigree Adult Chicken & Vegetables")
-                    )
-                }
-                
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(favoriteProducts) { (prodId, fallbackName) ->
-                        val prod = allProducts.find { it.id == prodId }
-                        if (prod != null) {
-                            Card(
-                                modifier = Modifier
-                                    .width(185.dp)
-                                    .padding(vertical = 4.dp),
-                                shape = RoundedCornerShape(14.dp),
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                                border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.12f)),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                            ) {
-                                Column(modifier = Modifier.padding(12.dp)) {
-                                    Text(
-                                        text = prod.name,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 12.sp,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                    Text("₹${prod.price.toInt()}", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    
-                                    var swiped by remember { mutableStateOf(false) }
-                                    val offsetX = remember { androidx.compose.animation.core.Animatable(0f) }
-                                    val coroutineScope = rememberCoroutineScope()
-                                    
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(32.dp)
-                                            .background(
-                                                if (swiped) Color(0xFFE8F5E9) else Color(0xFFFC8019).copy(alpha = 0.08f),
-                                                RoundedCornerShape(8.dp)
-                                            )
-                                            .padding(2.dp),
-                                        contentAlignment = Alignment.CenterStart
-                                    ) {
-                                        if (swiped) {
-                                            Text(
-                                                text = "Added! 🛒",
-                                                fontSize = 9.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = Color(0xFF2E7D32),
-                                                modifier = Modifier.align(Alignment.Center)
-                                            )
-                                        } else {
-                                            Text(
-                                                text = "Slide to Quick Add ➔",
-                                                fontSize = 8.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = Color(0xFFFC8019),
-                                                modifier = Modifier.align(Alignment.Center)
-                                            )
-                                            
-                                            Box(
-                                                modifier = Modifier
-                                                    .offset(x = offsetX.value.dp)
-                                                    .size(28.dp)
-                                                    .background(Color(0xFFFC8019), RoundedCornerShape(6.dp))
-                                                    .pointerInput(Unit) {
-                                                        detectHorizontalDragGestures(
-                                                            onDragEnd = {
-                                                                coroutineScope.launch {
-                                                                    if (offsetX.value > 70f) {
-                                                                        swiped = true
-                                                                        offsetX.animateTo(
-                                                                            targetValue = 90f,
-                                                                            animationSpec = spring(
-                                                                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                                                                stiffness = Spring.StiffnessLow
-                                                                            )
-                                                                        )
-                                                                        val shop = shopsList.find { it.id == prod.shopId } ?: shopsList.firstOrNull() ?: ShopEntity(
-                                                                            id = "dummy",
-                                                                            ownerId = "dummy",
-                                                                            cityId = "dummy",
-                                                                            name = "Paws Shop",
-                                                                            description = "",
-                                                                            address = "",
-                                                                            locality = "",
-                                                                            phone = "",
-                                                                            email = ""
-                                                                        )
-                                                                        viewModel.addToCart(prod, shop)
-                                                                        delay(1500)
-                                                                        swiped = false
-                                                                        offsetX.animateTo(0f)
-                                                                    } else {
-                                                                        offsetX.animateTo(0f)
-                                                                    }
-                                                                }
-                                                            },
-                                                            onHorizontalDrag = { change, dragAmount ->
-                                                                change.consume()
-                                                                coroutineScope.launch {
-                                                                    offsetX.snapTo((offsetX.value + dragAmount).coerceIn(0f, 90f))
-                                                                }
-                                                            }
-                                                        )
-                                                    },
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Text("🐾", fontSize = 12.sp)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+            val shortcuts = listOf(
+                Triple("🛍️", "Favourites", { viewModel.navigateTo(Screen.SavedShops) }),
+                Triple("📋", "My Orders", { viewModel.navigateTo(Screen.Cart) }),
+                Triple("💊", "Remedies", { /* scrolled in-screen */ }),
+                Triple("👥", "Group Buy", { /* scrolled in-screen */ })
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                shortcuts.forEach { (emoji, label, action) ->
+                    Card(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { action() },
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .padding(vertical = 12.dp, horizontal = 4.dp)
+                                .fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(emoji, fontSize = 22.sp)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                label,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
+                                textAlign = TextAlign.Center
+                            )
                         }
                     }
                 }
@@ -2202,231 +2098,287 @@ fun HomeScreen(viewModel: PawsViewModel) {
             }
         }
 
-        // ── TARGETED PET REMEDIES: COMMON CONCERNS & REMEDIES ──────────────────────
+        // ── TARGETED PET REMEDIES: COLLAPSIBLE SECTION ─────────────────────────────
         item {
-            Column(modifier = Modifier.padding(vertical = 12.dp)) {
-                Text(
-                    "Targeted Pet Remedies & Concerns 🩺",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFFFC8019),
-                    modifier = Modifier.padding(start = 20.dp, bottom = 4.dp, top = 8.dp)
-                )
-                Text(
-                    "Select a pet health concern to see vet-recommended solutions and direct products",
-                    fontSize = 11.sp,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(start = 20.dp, bottom = 12.dp)
-                )
-                
-                if (petProblems.isNotEmpty()) {
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 20.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        items(petProblems) { problem ->
-                            val isSelected = selectedProblemId == problem.id
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(30.dp))
-                                    .background(
-                                        if (isSelected) Color(0xFFFC8019)
-                                        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                                    )
-                                    .border(
-                                        width = 1.dp,
-                                        color = if (isSelected) Color(0xFFFC8019) else Color.Gray.copy(alpha = 0.2f),
-                                        shape = RoundedCornerShape(30.dp)
-                                    )
-                                    .clickable {
-                                        selectedProblemId = if (isSelected) null else problem.id
-                                    }
-                                    .padding(horizontal = 14.dp, vertical = 8.dp)
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(text = problem.emoji.ifEmpty { "🩺" }, fontSize = 14.sp)
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = problem.title,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
-                                    )
-                                }
-                            }
+            var remediesExpanded by remember { mutableStateOf(false) }
+            Column(modifier = Modifier.fillMaxWidth()) {
+                // Section Header Row — tap to expand/collapse
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { remediesExpanded = !remediesExpanded }
+                        .background(
+                            color = if (remediesExpanded) Color(0xFFFC8019).copy(alpha = 0.08f)
+                            else MaterialTheme.colorScheme.surface
+                        )
+                        .padding(horizontal = 20.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("🩺", fontSize = 20.sp)
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                "Targeted Pet Remedies",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                if (petProblems.isNotEmpty()) "${petProblems.size} concerns listed"
+                                else "Common pet health concerns",
+                                fontSize = 10.sp,
+                                color = Color(0xFFFC8019),
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
                     }
-                    
-                    val selectedProblem = petProblems.find { it.id == selectedProblemId }
-                    if (selectedProblem != null) {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFFFC8019).copy(alpha = 0.05f)
-                            ),
-                            border = BorderStroke(1.dp, Color(0xFFFC8019).copy(alpha = 0.15f))
-                        ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = selectedProblem.title,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 15.sp,
-                                        color = Color(0xFFFC8019)
-                                    )
-                                    IconButton(
-                                        onClick = { selectedProblemId = null },
-                                        modifier = Modifier.size(24.dp)
+                    Icon(
+                        imageVector = if (remediesExpanded) Icons.Default.KeyboardArrowUp
+                                      else Icons.Default.KeyboardArrowDown,
+                        contentDescription = if (remediesExpanded) "Collapse" else "Expand",
+                        tint = Color(0xFFFC8019),
+                        modifier = Modifier.size(26.dp)
+                    )
+                }
+
+                // Collapsible content
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = remediesExpanded,
+                    enter = androidx.compose.animation.expandVertically(
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessLow
+                        )
+                    ) + androidx.compose.animation.fadeIn(),
+                    exit = androidx.compose.animation.shrinkVertically(
+                        animationSpec = spring(stiffness = Spring.StiffnessLow)
+                    ) + androidx.compose.animation.fadeOut()
+                ) {
+                    Column(modifier = Modifier.padding(vertical = 12.dp)) {
+                        Text(
+                            "Targeted Pet Remedies & Concerns 🩺",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFFC8019),
+                            modifier = Modifier.padding(start = 20.dp, bottom = 4.dp, top = 4.dp)
+                        )
+                        Text(
+                            "Select a pet health concern to see vet-recommended solutions and direct products",
+                            fontSize = 11.sp,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(start = 20.dp, bottom = 12.dp)
+                        )
+
+                        if (petProblems.isNotEmpty()) {
+                            LazyRow(
+                                contentPadding = PaddingValues(horizontal = 20.dp),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                items(petProblems) { problem ->
+                                    val isSelected = selectedProblemId == problem.id
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(30.dp))
+                                            .background(
+                                                if (isSelected) Color(0xFFFC8019)
+                                                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                            )
+                                            .border(
+                                                width = 1.dp,
+                                                color = if (isSelected) Color(0xFFFC8019) else Color.Gray.copy(alpha = 0.2f),
+                                                shape = RoundedCornerShape(30.dp)
+                                            )
+                                            .clickable {
+                                                selectedProblemId = if (isSelected) null else problem.id
+                                            }
+                                            .padding(horizontal = 14.dp, vertical = 8.dp)
                                     ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Close,
-                                            contentDescription = "Close",
-                                            tint = Color.Gray,
-                                            modifier = Modifier.size(16.dp)
-                                        )
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(text = problem.emoji.ifEmpty { "🩺" }, fontSize = 14.sp)
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text(
+                                                text = problem.title,
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
+                                            )
+                                        }
                                     }
                                 }
-                                Spacer(modifier = Modifier.height(6.dp))
-                                Text(
-                                    text = selectedProblem.description,
-                                    fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                                    lineHeight = 16.sp
-                                )
-                                
+                            }
+
+                            val selectedProblem = petProblems.find { it.id == selectedProblemId }
+                            if (selectedProblem != null) {
                                 Spacer(modifier = Modifier.height(12.dp))
-                                Text(
-                                    text = "CARE SOLUTION / TREATMENT 🧼",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = Color(0xFFFC8019),
-                                    letterSpacing = 1.sp
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = selectedProblem.solution.ifEmpty { "Follow expert care guidelines regularly." },
-                                    fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                                    lineHeight = 16.sp
-                                )
-                                
-                                Spacer(modifier = Modifier.height(12.dp))
-                                Text(
-                                    text = "WAY TO USE PRODUCTS 🧴",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = Color(0xFFFC8019),
-                                    letterSpacing = 1.sp
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = selectedProblem.howToUse.ifEmpty { "Apply as indicated on the product catalog instructions." },
-                                    fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                                    lineHeight = 16.sp
-                                )
-                                
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Text(
-                                    text = "RECOMMENDED PRODUCTS 📦",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = Color(0xFFFC8019),
-                                    letterSpacing = 1.sp
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                
-                                val recommendedProductIds = selectedProblem.productIds
-                                val recommendedProducts = allProducts.filter { it.id in recommendedProductIds }
-                                
-                                if (recommendedProducts.isEmpty()) {
-                                    Text(
-                                        text = "No recommended products matching in this city.",
-                                        fontSize = 11.sp,
-                                        color = Color.Gray
-                                    )
-                                } else {
-                                    recommendedProducts.forEach { product ->
-                                        val qty = cartItems[product.id] ?: 0
-                                        val shop = shopsList.find { it.id == product.shopId }
-                                        if (shop != null) {
-                                            Row(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(vertical = 6.dp)
-                                                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
-                                                    .border(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f), RoundedCornerShape(8.dp))
-                                                    .padding(8.dp),
-                                                verticalAlignment = Alignment.CenterVertically
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 20.dp),
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = Color(0xFFFC8019).copy(alpha = 0.05f)
+                                    ),
+                                    border = BorderStroke(1.dp, Color(0xFFFC8019).copy(alpha = 0.15f))
+                                ) {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = selectedProblem.title,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 15.sp,
+                                                color = Color(0xFFFC8019)
+                                            )
+                                            IconButton(
+                                                onClick = { selectedProblemId = null },
+                                                modifier = Modifier.size(24.dp)
                                             ) {
-                                                Column(modifier = Modifier.weight(1f)) {
-                                                    Text(
-                                                        text = product.name,
-                                                        fontWeight = FontWeight.SemiBold,
-                                                        fontSize = 12.sp,
-                                                        color = MaterialTheme.colorScheme.onSurface
-                                                    )
-                                                    Text(
-                                                        text = "₹${product.price}",
-                                                        fontSize = 11.sp,
-                                                        fontWeight = FontWeight.Bold,
-                                                        color = Color(0xFFFC8019)
-                                                    )
-                                                }
-                                                Spacer(modifier = Modifier.width(4.dp))
-                                                
-                                                // Quantity buttons
-                                                if (qty > 0) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Close,
+                                                    contentDescription = "Close",
+                                                    tint = Color.Gray,
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                            }
+                                        }
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        Text(
+                                            text = selectedProblem.description,
+                                            fontSize = 12.sp,
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                                            lineHeight = 16.sp
+                                        )
+
+                                        Spacer(modifier = Modifier.height(12.dp))
+                                        Text(
+                                            text = "CARE SOLUTION / TREATMENT 🧼",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Black,
+                                            color = Color(0xFFFC8019),
+                                            letterSpacing = 1.sp
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = selectedProblem.solution.ifEmpty { "Follow expert care guidelines regularly." },
+                                            fontSize = 12.sp,
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                                            lineHeight = 16.sp
+                                        )
+
+                                        Spacer(modifier = Modifier.height(12.dp))
+                                        Text(
+                                            text = "WAY TO USE PRODUCTS 🧴",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Black,
+                                            color = Color(0xFFFC8019),
+                                            letterSpacing = 1.sp
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = selectedProblem.howToUse.ifEmpty { "Apply as indicated on the product catalog instructions." },
+                                            fontSize = 12.sp,
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                                            lineHeight = 16.sp
+                                        )
+
+                                        Spacer(modifier = Modifier.height(16.dp))
+                                        Text(
+                                            text = "RECOMMENDED PRODUCTS 📦",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Black,
+                                            color = Color(0xFFFC8019),
+                                            letterSpacing = 1.sp
+                                        )
+                                        Spacer(modifier = Modifier.height(8.dp))
+
+                                        val recommendedProductIds = selectedProblem.productIds
+                                        val recommendedProducts = allProducts.filter { it.id in recommendedProductIds }
+
+                                        if (recommendedProducts.isEmpty()) {
+                                            Text(
+                                                text = "No recommended products matching in this city.",
+                                                fontSize = 11.sp,
+                                                color = Color.Gray
+                                            )
+                                        } else {
+                                            recommendedProducts.forEach { product ->
+                                                val qty = cartItems[product.id] ?: 0
+                                                val shop = shopsList.find { it.id == product.shopId }
+                                                if (shop != null) {
                                                     Row(
-                                                        verticalAlignment = Alignment.CenterVertically,
                                                         modifier = Modifier
-                                                            .background(Color(0xFFFC8019), RoundedCornerShape(4.dp))
-                                                            .padding(horizontal = 4.dp, vertical = 2.dp)
+                                                            .fillMaxWidth()
+                                                            .padding(vertical = 6.dp)
+                                                            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
+                                                            .border(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f), RoundedCornerShape(8.dp))
+                                                            .padding(8.dp),
+                                                        verticalAlignment = Alignment.CenterVertically
                                                     ) {
-                                                        Text(
-                                                            text = "-",
-                                                            color = Color.White,
-                                                            fontSize = 14.sp,
-                                                            fontWeight = FontWeight.Bold,
-                                                            modifier = Modifier
-                                                                .clickable { viewModel.removeFromCart(product.id) }
-                                                                .padding(horizontal = 6.dp)
-                                                        )
-                                                        Text(
-                                                            text = qty.toString(),
-                                                            color = Color.White,
-                                                            fontSize = 12.sp,
-                                                            fontWeight = FontWeight.Bold,
-                                                            modifier = Modifier.padding(horizontal = 4.dp)
-                                                        )
-                                                        Text(
-                                                            text = "+",
-                                                            color = Color.White,
-                                                            fontSize = 14.sp,
-                                                            fontWeight = FontWeight.Bold,
-                                                            modifier = Modifier
-                                                                .clickable { viewModel.addToCart(product, shop) }
-                                                                .padding(horizontal = 6.dp)
-                                                        )
-                                                    }
-                                                } else {
-                                                    Button(
-                                                        onClick = { viewModel.addToCart(product, shop) },
-                                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFC8019)),
-                                                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
-                                                        modifier = Modifier.height(26.dp),
-                                                        shape = RoundedCornerShape(4.dp)
-                                                    ) {
-                                                        Text("ADD", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                                        Column(modifier = Modifier.weight(1f)) {
+                                                            Text(
+                                                                text = product.name,
+                                                                fontWeight = FontWeight.SemiBold,
+                                                                fontSize = 12.sp,
+                                                                color = MaterialTheme.colorScheme.onSurface
+                                                            )
+                                                            Text(
+                                                                text = "₹${product.price}",
+                                                                fontSize = 11.sp,
+                                                                fontWeight = FontWeight.Bold,
+                                                                color = Color(0xFFFC8019)
+                                                            )
+                                                        }
+                                                        Spacer(modifier = Modifier.width(4.dp))
+                                                        if (qty > 0) {
+                                                            Row(
+                                                                verticalAlignment = Alignment.CenterVertically,
+                                                                modifier = Modifier
+                                                                    .background(Color(0xFFFC8019), RoundedCornerShape(4.dp))
+                                                                    .padding(horizontal = 4.dp, vertical = 2.dp)
+                                                            ) {
+                                                                Text(
+                                                                    text = "-",
+                                                                    color = Color.White,
+                                                                    fontSize = 14.sp,
+                                                                    fontWeight = FontWeight.Bold,
+                                                                    modifier = Modifier
+                                                                        .clickable { viewModel.removeFromCart(product.id) }
+                                                                        .padding(horizontal = 6.dp)
+                                                                )
+                                                                Text(
+                                                                    text = qty.toString(),
+                                                                    color = Color.White,
+                                                                    fontSize = 12.sp,
+                                                                    fontWeight = FontWeight.Bold,
+                                                                    modifier = Modifier.padding(horizontal = 4.dp)
+                                                                )
+                                                                Text(
+                                                                    text = "+",
+                                                                    color = Color.White,
+                                                                    fontSize = 14.sp,
+                                                                    fontWeight = FontWeight.Bold,
+                                                                    modifier = Modifier
+                                                                        .clickable { viewModel.addToCart(product, shop) }
+                                                                        .padding(horizontal = 6.dp)
+                                                                )
+                                                            }
+                                                        } else {
+                                                            Button(
+                                                                onClick = { viewModel.addToCart(product, shop) },
+                                                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFC8019)),
+                                                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                                                                modifier = Modifier.height(26.dp),
+                                                                shape = RoundedCornerShape(4.dp)
+                                                            ) {
+                                                                Text("ADD", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             }
@@ -2434,42 +2386,99 @@ fun HomeScreen(viewModel: PawsViewModel) {
                                     }
                                 }
                             }
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 20.dp)
+                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                                    .padding(16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "No targeted care remedies seeded at this time.",
+                                    fontSize = 13.sp,
+                                    color = Color.Gray
+                                )
+                            }
+                        }
+                    } // end AnimatedVisibility content Column
+                } // end AnimatedVisibility
+            } // end outer Column
+        } // end item
+        // ── COLLABORATIVE GROUP AUCTION WIDGET: COLLAPSIBLE ────────────────────────
+        item {
+            var auctionExpanded by remember { mutableStateOf(false) }
+            val currentRfqSessionIdForHeader by viewModel.currentRfqSessionId.collectAsState()
+            Column(modifier = Modifier.fillMaxWidth()) {
+                // Section Header
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { auctionExpanded = !auctionExpanded }
+                        .background(
+                            color = if (auctionExpanded) Color(0xFFFC8019).copy(alpha = 0.08f)
+                            else MaterialTheme.colorScheme.surface
+                        )
+                        .padding(horizontal = 20.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("👥", fontSize = 20.sp)
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                "Group Supply Auction",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                if (currentRfqSessionIdForHeader != null) "Active session! 🔴"
+                                else "Combine orders for bulk discounts",
+                                fontSize = 10.sp,
+                                color = if (currentRfqSessionIdForHeader != null) Color.Red else Color(0xFFFC8019),
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
                     }
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
-                            .padding(16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "No targeted care remedies seeded at this time.",
-                            fontSize = 13.sp,
-                            color = Color.Gray
-                        )
-                    }
+                    Icon(
+                        imageVector = if (auctionExpanded) Icons.Default.KeyboardArrowUp
+                                      else Icons.Default.KeyboardArrowDown,
+                        contentDescription = if (auctionExpanded) "Collapse" else "Expand",
+                        tint = Color(0xFFFC8019),
+                        modifier = Modifier.size(26.dp)
+                    )
                 }
-            }
-        }
 
-        // ── COLLABORATIVE GROUP AUCTION WIDGET ─────────────────────────────────────
-        item {
-            val currentRfqSessionId by viewModel.currentRfqSessionId.collectAsState()
-            val activeSession by viewModel.activeRfqSession.collectAsState()
-            val memberItems by viewModel.activeRfqMemberItems.collectAsState()
-            val quotations by viewModel.activeRfqQuotations.collectAsState()
-            
-            var showJoinDialog by remember { mutableStateOf(false) }
-            var rfqInputId by remember { mutableStateOf("") }
-            
-            if (currentRfqSessionId == null) {
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = auctionExpanded,
+                    enter = androidx.compose.animation.expandVertically(
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessLow
+                        )
+                    ) + androidx.compose.animation.fadeIn(),
+                    exit = androidx.compose.animation.shrinkVertically(
+                        animationSpec = spring(stiffness = Spring.StiffnessLow)
+                    ) + androidx.compose.animation.fadeOut()
+                ) {
+                    // Group Auction content
+                    val currentRfqSessionId by viewModel.currentRfqSessionId.collectAsState()
+                    val activeSession by viewModel.activeRfqSession.collectAsState()
+                    val memberItems by viewModel.activeRfqMemberItems.collectAsState()
+                    val quotations by viewModel.activeRfqQuotations.collectAsState()
+
+                    var showJoinDialog by remember { mutableStateOf(false) }
+                    var rfqInputId by remember { mutableStateOf("") }
+
+                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    if (currentRfqSessionId == null) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 8.dp),
+                        .padding(vertical = 8.dp),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFFC8019).copy(alpha = 0.08f)),
                     border = BorderStroke(1.dp, Color(0xFFFC8019).copy(alpha = 0.2f))
@@ -3034,8 +3043,6 @@ fun HomeScreen(viewModel: PawsViewModel) {
                                     }
                                 }
                             }
-                            
-                            Spacer(modifier = Modifier.height(10.dp))
                             TextButton(
                                 onClick = { viewModel.leaveGroupRfqSession() },
                                 modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -3045,8 +3052,11 @@ fun HomeScreen(viewModel: PawsViewModel) {
                         }
                     }
                 }
-            }
-        }
+            } // end if currentRfqSessionId == null / else (inside Column)
+                } // end AnimatedVisibility content Column
+                } // end AnimatedVisibility
+            } // end outer auction Column
+        } // end outer auction item
 
         // Horizontal Categories List
         item {
@@ -3081,68 +3091,166 @@ fun HomeScreen(viewModel: PawsViewModel) {
             }
         }
 
-        // ── SWIGGY PAWS MERCHANT RECRUITMENT PROGRAM ──────────────────────────────
+        // ── COLLAPSIBLE FILTER & SORT PANEL (☰ icon) ───────────────────────────────
         item {
-            Card(
+            var filterPanelExpanded by remember { mutableStateOf(false) }
+            val activeFilterCount = listOf(filterOpenNow, filterDelivery, filterRating).count { it }
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 8.dp)
-                    .clickable { viewModel.navigateTo(Screen.MerchantShopSetup) },
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
-                ),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
             ) {
+                // Collapsed bar: ☰ icon + active filter chips
                 Row(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                        .clickable { filterPanelExpanded = !filterPanelExpanded }
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("Partner with Swiggy Paws 🐾", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.primary)
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Box(
-                                modifier = Modifier
-                                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
-                                    .padding(horizontal = 4.dp, vertical = 2.dp)
-                            ) {
-                                Text("RECRUITING", fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        // Hamburger 3-line icon
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            repeat(3) {
+                                Box(
+                                    modifier = Modifier
+                                        .width(18.dp)
+                                        .height(2.dp)
+                                        .background(
+                                            if (filterPanelExpanded || activeFilterCount > 0) Color(0xFFFC8019)
+                                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                            RoundedCornerShape(1.dp)
+                                        )
+                                )
                             }
                         }
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            "Own a pet shop? Onboard your clinic, grooming salon, or boutique store today and deliver city-wide!",
-                            fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            "Filters & Sort",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (filterPanelExpanded || activeFilterCount > 0) Color(0xFFFC8019)
+                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        )
+                        if (activeFilterCount > 0) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Box(
+                                modifier = Modifier
+                                    .background(Color(0xFFFC8019), CircleShape)
+                                    .size(18.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("$activeFilterCount", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            }
+                        }
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        // Show active filter labels in collapsed state
+                        if (!filterPanelExpanded) {
+                            if (filterOpenNow) Box(
+                                modifier = Modifier.background(Color(0xFFFC8019).copy(alpha = 0.12f), RoundedCornerShape(6.dp)).padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) { Text("Open", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFC8019)) }
+                            if (filterDelivery) Box(
+                                modifier = Modifier.background(Color(0xFFFC8019).copy(alpha = 0.12f), RoundedCornerShape(6.dp)).padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) { Text("Delivery", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFC8019)) }
+                            if (filterRating) Box(
+                                modifier = Modifier.background(Color(0xFFFC8019).copy(alpha = 0.12f), RoundedCornerShape(6.dp)).padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) { Text("4.5★+", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFC8019)) }
+                        }
+                        Icon(
+                            imageVector = if (filterPanelExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                            contentDescription = null,
+                            tint = Color(0xFFFC8019),
+                            modifier = Modifier.size(20.dp)
                         )
                     }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Box(
-                        modifier = Modifier
-                            .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(30.dp))
-                            .padding(horizontal = 14.dp, vertical = 8.dp)
+                }
+
+                // Expanded filter panel
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = filterPanelExpanded,
+                    enter = androidx.compose.animation.expandVertically(
+                        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium)
+                    ) + androidx.compose.animation.fadeIn(),
+                    exit = androidx.compose.animation.shrinkVertically(
+                        animationSpec = spring(stiffness = Spring.StiffnessMedium)
+                    ) + androidx.compose.animation.fadeOut()
+                ) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
+                        shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                     ) {
-                        Text("Register ➔", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            // SORT BY row
+                            Text("SORT BY", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Color.Gray, letterSpacing = 1.sp)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                listOf("Popular 🏆", "Top Rated", "New", "A-Z").forEach { option ->
+                                    val isActive = sortType == option
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(20.dp))
+                                            .background(
+                                                if (isActive) Color(0xFFFC8019) else MaterialTheme.colorScheme.surfaceVariant
+                                            )
+                                            .clickable { viewModel.setSortType(option) }
+                                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                                    ) {
+                                        Text(
+                                            option,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (isActive) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(14.dp))
+                            HorizontalDivider()
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            // FILTERS row
+                            Text("FILTERS", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Color.Gray, letterSpacing = 1.sp)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                listOf(
+                                    Triple("Open Now", filterOpenNow, { viewModel.toggleFilterOpenNow() }),
+                                    Triple("Delivery", filterDelivery, { viewModel.toggleFilterDelivery() }),
+                                    Triple("⭐ 4.5+", filterRating, { viewModel.toggleFilterRating() })
+                                ).forEach { (label, isOn, toggle) ->
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(20.dp))
+                                            .background(
+                                                if (isOn) Color(0xFFFC8019) else MaterialTheme.colorScheme.surfaceVariant
+                                            )
+                                            .clickable { toggle() }
+                                            .padding(horizontal = 14.dp, vertical = 7.dp)
+                                    ) {
+                                        Text(
+                                            label,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (isOn) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
 
-        // Horizontal Quick Selection Filters
-        item {
-            FilterSortStrip(
-                activeSort = sortType,
-                filterOpenNow = filterOpenNow,
-                filterDelivery = filterDelivery,
-                filterRating = filterRating,
-                onSelectSort = { viewModel.setSortType(it) },
-                onToggleOpen = { viewModel.toggleFilterOpenNow() },
-                onToggleDelivery = { viewModel.toggleFilterDelivery() },
-                onToggleRating = { viewModel.toggleFilterRating() }
-            )
-        }
 
         // Horizontally Scrolling Pet Care Guides Section
         item {
@@ -3242,11 +3350,11 @@ fun HomeScreen(viewModel: PawsViewModel) {
         } else {
             item {
                 Text(
-                    "Showing ${processedShops.size} Pet Shops in $selectedCityName",
-                    fontSize = 14.sp,
+                    "${processedShops.size} Pet Shops near you in $selectedCityName",
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-                    modifier = Modifier.padding(start = 20.dp, top = 8.dp, bottom = 8.dp)
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.45f),
+                    modifier = Modifier.padding(start = 20.dp, top = 12.dp, bottom = 4.dp)
                 )
             }
             items(processedShops) { shop ->
@@ -3260,6 +3368,61 @@ fun HomeScreen(viewModel: PawsViewModel) {
                     totalDeliveredProducts = totalDeliveredProducts,
                     onClick = { viewModel.navigateTo(Screen.ShopDetail(shop.id)) }
                 )
+            }
+        }
+
+        // ── PARTNER RECRUITMENT BANNER (below shop list) ────────────────────────────
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 16.dp)
+                    .clickable { viewModel.navigateTo(Screen.MerchantShopSetup) },
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.75f)
+                ),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(18.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                "Partner with Swiggy Paws 🐾",
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Box(
+                                modifier = Modifier
+                                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 5.dp, vertical = 2.dp)
+                            ) {
+                                Text("HIRING", fontSize = 8.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(5.dp))
+                        Text(
+                            "Own a clinic, grooming salon, or boutique? List your store and reach thousands of pet owners city-wide!",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            lineHeight = 15.sp
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(14.dp))
+                    Box(
+                        modifier = Modifier
+                            .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(30.dp))
+                            .padding(horizontal = 14.dp, vertical = 10.dp)
+                    ) {
+                        Text("Register ➔", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    }
+                }
             }
         }
     }
@@ -4409,7 +4572,7 @@ fun FilterBadge(label: String, isActive: Boolean, onClick: () -> Unit) {
     )
 }
 
-// Shop Card representation
+// Shop Card representation — Premium redesign (Phase 9)
 @Composable
 fun ShopItemCard(
     shop: ShopEntity,
@@ -4420,18 +4583,20 @@ fun ShopItemCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column {
+            // ── Hero Image with overlaid badges ──────────────────────────────
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(130.dp)
+                    .height(165.dp)
             ) {
+                // Shop cover photo
                 Image(
                     painter = rememberAsyncImagePainter(
                         model = ImageRequest.Builder(LocalContext.current)
@@ -4439,31 +4604,79 @@ fun ShopItemCard(
                             .crossfade(true)
                             .build()
                     ),
-                    contentDescription = null,
+                    contentDescription = shop.name,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
-                // Open status tag overlay
+
+                // Dark gradient scrim at the bottom (for text legibility)
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f)),
+                                startY = 60f
+                            )
+                        )
+                )
+
+                // ── Top-right: Open/Closed pill ─────────────────────────────
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(12.dp)
                         .background(
-                            if (shop.isOpen) Color(0xFF4CAF50) else Color(0xFFF44336),
-                            RoundedCornerShape(6.dp)
+                            color = if (shop.isOpen) Color(0xFF2E7D32) else Color(0xFFC62828),
+                            shape = RoundedCornerShape(8.dp)
                         )
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .padding(horizontal = 9.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        if (shop.isOpen) "OPEN NOW" else "CLOSED",
+                        text = if (shop.isOpen) "● OPEN" else "✕ CLOSED",
                         color = Color.White,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 0.5.sp
                     )
+                }
+
+                // ── Bottom-left: Star rating pill overlaid on image ─────────
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(start = 12.dp, bottom = 10.dp)
+                        .background(Color.Black.copy(alpha = 0.55f), RoundedCornerShape(8.dp))
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("⭐", fontSize = 10.sp)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = shop.rating.toString(),
+                        color = Color(0xFFFFD54F),
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 12.sp
+                    )
+                }
+
+                // ── Bottom-right: Free delivery chip (if applicable) ─────────
+                if (shop.deliveryAvailable) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(end = 12.dp, bottom = 10.dp)
+                            .background(Color(0xFF00BCD4).copy(alpha = 0.85f), RoundedCornerShape(8.dp))
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text("FREE DELIVERY", color = Color.White, fontSize = 8.sp, fontWeight = FontWeight.ExtraBold)
+                    }
                 }
             }
 
-            Column(modifier = Modifier.padding(16.dp)) {
+            // ── Info section ─────────────────────────────────────────────────
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                // Shop name + orders badge
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -4471,111 +4684,66 @@ fun ShopItemCard(
                 ) {
                     Text(
                         text = shop.name,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)
                     )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .background(Color(0xFFFFB300).copy(alpha = 0.15f), RoundedCornerShape(6.dp))
-                            .padding(horizontal = 6.dp, vertical = 3.dp)
-                    ) {
-                        Icon(Icons.Default.Star, null, tint = Color(0xFFFFB300), modifier = Modifier.size(14.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            shop.rating.toString(),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp,
-                            color = Color(0xFFB17E00)
-                        )
+                    // Orders pill
+                    if (totalOrders > 0) {
+                        Box(
+                            modifier = Modifier
+                                .background(Color(0xFFFC8019).copy(alpha = 0.10f), RoundedCornerShape(6.dp))
+                                .padding(horizontal = 7.dp, vertical = 3.dp)
+                        ) {
+                            Text(
+                                "$totalOrders orders",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFFC8019)
+                            )
+                        }
                     }
                 }
 
+                // Description
                 Text(
-                    shop.description,
+                    text = shop.description,
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = 4.dp, bottom = 8.dp)
+                    modifier = Modifier.padding(top = 3.dp, bottom = 10.dp)
                 )
 
-                // Dynamic performance metrics badge row
+                // Footer: Locality + delivery count
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("📋", fontSize = 11.sp)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "Orders Taken: ",
-                            fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                        )
-                        Text(
-                            text = totalOrders.toString(),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("📦", fontSize = 11.sp)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "Delivered: ",
-                            fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                        )
-                        Text(
-                            text = totalDeliveredProducts.toString(),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-
-                HorizontalDivider()
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             Icons.Default.LocationOn,
-                            null,
-                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                            modifier = Modifier.size(14.dp)
+                            contentDescription = null,
+                            tint = Color(0xFFFC8019).copy(alpha = 0.7f),
+                            modifier = Modifier.size(13.dp)
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(shop.locality, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                        Spacer(modifier = Modifier.width(3.dp))
+                        Text(
+                            text = shop.locality,
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f)
+                        )
                     }
-
-                    if (shop.deliveryAvailable) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Default.CheckCircle,
-                                null,
-                                tint = Color(0xFF4DDFD2),
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Delivery Free", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2EC4B6))
-                        }
+                    if (totalDeliveredProducts > 0) {
+                        Text(
+                            text = "📦 $totalDeliveredProducts items delivered",
+                            fontSize = 10.sp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
+                        )
                     }
                 }
             }
