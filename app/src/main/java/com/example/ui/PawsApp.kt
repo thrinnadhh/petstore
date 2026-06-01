@@ -1905,6 +1905,11 @@ fun HomeScreen(viewModel: PawsViewModel) {
     var selectedProblemId by remember { mutableStateOf<String?>(null) }
     var activeRemedyProductDetail by remember { mutableStateOf<ProductEntity?>(null) }
     var selectedGuide by remember { mutableStateOf<PetCareGuide?>(null) }
+    // remediesExpanded hoisted
+    var remediesExpanded by remember { mutableStateOf(false) }
+    var auctionExpanded by remember { mutableStateOf(false) }
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
 
     val petCareGuides = remember {
         listOf(
@@ -2002,6 +2007,7 @@ fun HomeScreen(viewModel: PawsViewModel) {
 
         // ── MAIN FEED CONTENT ──────────────────────────────────────────
         LazyColumn(
+            state = listState,
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = 90.dp)
         ) {
@@ -2034,8 +2040,20 @@ fun HomeScreen(viewModel: PawsViewModel) {
             val shortcuts = listOf(
                 Triple("🛍️", "Favourites", { viewModel.navigateTo(Screen.SavedShops) }),
                 Triple("📋", "My Orders", { viewModel.navigateTo(Screen.Cart) }),
-                Triple("💊", "Remedies", { /* scrolled in-screen */ }),
-                Triple("👥", "Group Buy", { /* scrolled in-screen */ })
+                Triple("💊", "Remedies", {
+                    remediesExpanded = true
+                    coroutineScope.launch {
+                        val index = if (processedShops.isEmpty()) 7 else (7 + processedShops.size)
+                        listState.animateScrollToItem(index)
+                    }
+                }),
+                Triple("👥", "Group Buy", {
+                    auctionExpanded = true
+                    coroutineScope.launch {
+                        val index = if (processedShops.isEmpty()) 8 else (8 + processedShops.size)
+                        listState.animateScrollToItem(index)
+                    }
+                })
             )
             Row(
                 modifier = Modifier
@@ -2098,9 +2116,128 @@ fun HomeScreen(viewModel: PawsViewModel) {
             }
         }
 
+        // Horizontally Scrolling Pet Care Guides Section
+        item {
+            Column(modifier = Modifier.padding(vertical = 12.dp)) {
+                Text(
+                    "Pet Care & Nutrition Guides 📚",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 20.dp, bottom = 4.dp, top = 8.dp)
+                )
+                Text(
+                    "Expert tips and curated product recommendations",
+                    fontSize = 11.sp,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(start = 20.dp, bottom = 12.dp)
+                )
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 20.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(petCareGuides) { guide ->
+                        Card(
+                            modifier = Modifier
+                                .width(280.dp)
+                                .height(130.dp)
+                                .clickable { selectedGuide = guide },
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        Brush.linearGradient(guide.gradientColors)
+                                    )
+                                    .padding(14.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier.fillMaxSize(),
+                                    verticalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            guide.emoji,
+                                            fontSize = 24.sp
+                                        )
+                                        Box(
+                                            modifier = Modifier
+                                                .background(Color.White.copy(alpha = 0.15f), RoundedCornerShape(6.dp))
+                                                .padding(horizontal = 8.dp, vertical = 2.dp)
+                                        ) {
+                                            Text(
+                                                "READ GUIDE ➔",
+                                                fontSize = 8.sp,
+                                                color = Color.White,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
+                                    Column {
+                                        Text(
+                                            guide.title,
+                                            fontSize = 15.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White
+                                        )
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            guide.summary,
+                                            fontSize = 10.sp,
+                                            color = Color.White.copy(alpha = 0.8f),
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Ellipsis,
+                                            lineHeight = 13.sp
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Swiggy One pass removed per user request
+
+        // Feed list
+        if (processedShops.isEmpty()) {
+            item {
+                EmptyShopsState()
+            }
+        } else {
+            item {
+                Text(
+                    "${processedShops.size} Pet Shops near you in $selectedCityName",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.45f),
+                    modifier = Modifier.padding(start = 20.dp, top = 12.dp, bottom = 4.dp)
+                )
+            }
+            items(processedShops) { shop ->
+                val totalOrders = allOrders.count { it.shopId == shop.id }
+                val deliveredOrderIds = allOrders.filter { it.shopId == shop.id && it.status == "delivered" }.map { it.id }.toSet()
+                val totalDeliveredProducts = allOrderItems.filter { it.orderId in deliveredOrderIds }.sumOf { it.quantity }
+
+                ShopItemCard(
+                    shop = shop,
+                    totalOrders = totalOrders,
+                    totalDeliveredProducts = totalDeliveredProducts,
+                    onClick = { viewModel.navigateTo(Screen.ShopDetail(shop.id)) }
+                )
+            }
+        }
+
         // ── TARGETED PET REMEDIES: COLLAPSIBLE SECTION ─────────────────────────────
         item {
-            var remediesExpanded by remember { mutableStateOf(false) }
+            // remediesExpanded hoisted
             Column(modifier = Modifier.fillMaxWidth()) {
                 // Section Header Row — tap to expand/collapse
                 Row(
@@ -2408,7 +2545,7 @@ fun HomeScreen(viewModel: PawsViewModel) {
         } // end item
         // ── COLLABORATIVE GROUP AUCTION WIDGET: COLLAPSIBLE ────────────────────────
         item {
-            var auctionExpanded by remember { mutableStateOf(false) }
+            // auctionExpanded hoisted
             val currentRfqSessionIdForHeader by viewModel.currentRfqSessionId.collectAsState()
             Column(modifier = Modifier.fillMaxWidth()) {
                 // Section Header
@@ -3251,125 +3388,6 @@ fun HomeScreen(viewModel: PawsViewModel) {
             }
         }
 
-
-        // Horizontally Scrolling Pet Care Guides Section
-        item {
-            Column(modifier = Modifier.padding(vertical = 12.dp)) {
-                Text(
-                    "Pet Care & Nutrition Guides 📚",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = 20.dp, bottom = 4.dp, top = 8.dp)
-                )
-                Text(
-                    "Expert tips and curated product recommendations",
-                    fontSize = 11.sp,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(start = 20.dp, bottom = 12.dp)
-                )
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    items(petCareGuides) { guide ->
-                        Card(
-                            modifier = Modifier
-                                .width(280.dp)
-                                .height(130.dp)
-                                .clickable { selectedGuide = guide },
-                            shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.Transparent)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(
-                                        Brush.linearGradient(guide.gradientColors)
-                                    )
-                                    .padding(14.dp)
-                            ) {
-                                Column(
-                                    modifier = Modifier.fillMaxSize(),
-                                    verticalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(
-                                            guide.emoji,
-                                            fontSize = 24.sp
-                                        )
-                                        Box(
-                                            modifier = Modifier
-                                                .background(Color.White.copy(alpha = 0.15f), RoundedCornerShape(6.dp))
-                                                .padding(horizontal = 8.dp, vertical = 2.dp)
-                                        ) {
-                                            Text(
-                                                "READ GUIDE ➔",
-                                                fontSize = 8.sp,
-                                                color = Color.White,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                        }
-                                    }
-                                    Column {
-                                        Text(
-                                            guide.title,
-                                            fontSize = 15.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color.White
-                                        )
-                                        Spacer(modifier = Modifier.height(2.dp))
-                                        Text(
-                                            guide.summary,
-                                            fontSize = 10.sp,
-                                            color = Color.White.copy(alpha = 0.8f),
-                                            maxLines = 2,
-                                            overflow = TextOverflow.Ellipsis,
-                                            lineHeight = 13.sp
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Swiggy One pass removed per user request
-
-        // Feed list
-        if (processedShops.isEmpty()) {
-            item {
-                EmptyShopsState()
-            }
-        } else {
-            item {
-                Text(
-                    "${processedShops.size} Pet Shops near you in $selectedCityName",
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.45f),
-                    modifier = Modifier.padding(start = 20.dp, top = 12.dp, bottom = 4.dp)
-                )
-            }
-            items(processedShops) { shop ->
-                val totalOrders = allOrders.count { it.shopId == shop.id }
-                val deliveredOrderIds = allOrders.filter { it.shopId == shop.id && it.status == "delivered" }.map { it.id }.toSet()
-                val totalDeliveredProducts = allOrderItems.filter { it.orderId in deliveredOrderIds }.sumOf { it.quantity }
-
-                ShopItemCard(
-                    shop = shop,
-                    totalOrders = totalOrders,
-                    totalDeliveredProducts = totalDeliveredProducts,
-                    onClick = { viewModel.navigateTo(Screen.ShopDetail(shop.id)) }
-                )
-            }
-        }
 
         // ── PARTNER RECRUITMENT BANNER (below shop list) ────────────────────────────
         item {
