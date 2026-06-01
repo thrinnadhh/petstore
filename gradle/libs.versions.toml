@@ -38,6 +38,13 @@ robolectric = "4.16.1"
 roborazzi = "1.59.0"
 firebaseBom = "34.12.0"
 secretsGradlePlugin = "2.0.1"
+supabase = "3.0.3"
+ktor = "3.0.1"
+kotlinxSerialization = "1.7.3"
+posthog = "3.1.5"
+googleServicesPlugin = "4.4.2"
+firebaseCrashlyticsPlugin = "3.0.2"
+
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -87,6 +94,14 @@ roborazzi-compose = { group = "io.github.takahirom.roborazzi", name = "roborazzi
 roborazzi-junit-rule = { group = "io.github.takahirom.roborazzi", name = "roborazzi-junit-rule", version.ref = "roborazzi" }
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-ai = { group = "com.google.firebase", name = "firebase-ai" }
+supabase-postgrest = { group = "io.github.jan-tennert.supabase", name = "postgrest-kt", version.ref = "supabase" }
+supabase-auth = { group = "io.github.jan-tennert.supabase", name = "auth-kt", version.ref = "supabase" }
+supabase-realtime = { group = "io.github.jan-tennert.supabase", name = "realtime-kt", version.ref = "supabase" }
+supabase-storage = { group = "io.github.jan-tennert.supabase", name = "storage-kt", version.ref = "supabase" }
+ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+posthog-android = { group = "com.posthog", name = "posthog-android", version.ref = "posthog" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -94,3 +109,5 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "googleDevtoolsKsp" }
 roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
 secrets = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "secretsGradlePlugin" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServicesPlugin" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Network Security Configuration
+  - Enforces HTTPS-only traffic to all production domains
+  - Explicitly disallows cleartext (HTTP) traffic
+  - Debug builds allow user-added CAs for Charles Proxy / mitmproxy testing
+  See: https://developer.android.com/training/articles/security-config
+-->
+<network-security-config>
+
+    <!-- Global: block all cleartext traffic by default -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </base-config>
+
+    <!-- Supabase backend -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">supabase.co</domain>
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </domain-config>
+
+    <!-- Firebase / Google services -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">firebase.google.com</domain>
+        <domain includeSubdomains="true">firebaseapp.com</domain>
+        <domain includeSubdomains="true">googleapis.com</domain>
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </domain-config>
+
+    <!-- PostHog analytics -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">posthog.com</domain>
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </domain-config>
+
+    <!-- Unsplash CDN for images -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">unsplash.com</domain>
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </domain-config>
+
+    <!-- Debug override: allow user-installed CAs for proxy tools (Charles, mitmproxy) -->
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="user"/>
+            <certificates src="system"/>
+        </trust-anchors>
+    </debug-overrides>
+
+</network-security-config>

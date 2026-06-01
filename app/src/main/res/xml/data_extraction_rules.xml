@@ -1,19 +1,24 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-   Sample data extraction rules file; uncomment and customize as necessary.
-   See https://developer.android.com/about/versions/12/backup-restore#xml-changes
-   for details.
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Data Extraction Rules (API 31+)
+  Controls both cloud backup (Google Drive) and device-to-device transfers.
+  The Room database contains sensitive PII and must be excluded from both.
+  See: https://developer.android.com/about/versions/12/backup-restore
 -->
 <data-extraction-rules>
     <cloud-backup>
-        <!-- TODO: Use <include> and <exclude> to control what is backed up.
-        <include .../>
-        <exclude .../>
-        -->
+        <!-- Exclude Room database files — contains Aadhaar, PAN, bank details, orders -->
+        <exclude domain="database" path="paws_database"/>
+        <exclude domain="database" path="paws_database-shm"/>
+        <exclude domain="database" path="paws_database-wal"/>
+        <!-- Exclude shared preferences — may contain auth tokens / session data -->
+        <exclude domain="sharedpref" path="."/>
     </cloud-backup>
-    <!--
     <device-transfer>
-        <include .../>
-        <exclude .../>
+        <!-- Also exclude from device-to-device transfers (e.g. phone setup wizard) -->
+        <exclude domain="database" path="paws_database"/>
+        <exclude domain="database" path="paws_database-shm"/>
+        <exclude domain="database" path="paws_database-wal"/>
+        <exclude domain="sharedpref" path="."/>
     </device-transfer>
-    -->
 </data-extraction-rules>

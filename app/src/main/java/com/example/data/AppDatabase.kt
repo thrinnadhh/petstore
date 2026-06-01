@@ -16,9 +16,22 @@ import androidx.room.TypeConverters
         OrderEntity::class,
         OrderItemEntity::class,
         ReviewEntity::class,
-        WishlistEntity::class
+        WishlistEntity::class,
+        BannerEntity::class,
+        ChatMessageEntity::class,
+        WishlistProductEntity::class,
+        ServiceEntity::class,
+        AppointmentEntity::class,
+        ReminderEntity::class,
+        ProductSpecEntity::class,
+        PetEntity::class,
+        CaptainEntity::class,
+        ProblemEntity::class,
+        GroupRfqSessionEntity::class,
+        GroupRfqMemberItemEntity::class,
+        MerchantQuotationEntity::class
     ],
-    version = 1,
+    version = 17,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

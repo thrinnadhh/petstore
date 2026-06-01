@@ -11,7 +11,10 @@ data class ProfileEntity(
     val cityId: String,
     val avatarUrl: String,
     val role: String, // "consumer", "merchant", "admin"
-    val createdAt: Long = System.currentTimeMillis()
+    val petName: String = "",
+    val createdAt: Long = System.currentTimeMillis(),
+    val email: String? = null,
+    val password: String? = null
 )
 
 @Entity(tableName = "cities")
@@ -47,6 +50,9 @@ data class ShopEntity(
     val isVerified: Boolean = true,
     val isActive: Boolean = true,
     val isFeatured: Boolean = false,
+    val status: String = "active",
+    val groomingEnabled: Boolean = true,
+    val vetClinicEnabled: Boolean = true,
     val createdAt: Long = System.currentTimeMillis()
 )
 
@@ -70,6 +76,9 @@ data class ProductEntity(
     val inStock: Boolean = true,
     val isActive: Boolean = true,
     val tags: List<String> = emptyList(),
+    val brand: String = "Generic",
+    val lifeStage: String = "Adult",
+    val stockCount: Int = 10,
     val createdAt: Long = System.currentTimeMillis()
 )
 
@@ -115,3 +124,178 @@ data class WishlistEntity(
     val shopId: String,
     val createdAt: Long = System.currentTimeMillis()
 )
+
+@Entity(tableName = "banners")
+data class BannerEntity(
+    @PrimaryKey val id: String,
+    val imageUrl: String,
+    val title: String,
+    val description: String,
+    val targetCityIds: List<String>, // "all" or specific city IDs
+    val targetShopIds: List<String>, // "all" or specific shop IDs
+    val isActive: Boolean = true,
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "chat_messages")
+data class ChatMessageEntity(
+    @PrimaryKey val id: String,
+    val senderId: String,
+    val recipientId: String,
+    val shopId: String,
+    val message: String,
+    val senderName: String,
+    val timestamp: Long = System.currentTimeMillis(),
+    val isRead: Boolean = false
+)
+
+@Entity(tableName = "wishlist_products")
+data class WishlistProductEntity(
+    @PrimaryKey val id: String,
+    val consumerId: String,
+    val productId: String,
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "services")
+data class ServiceEntity(
+    @PrimaryKey val id: String,
+    val shopId: String,
+    val name: String,
+    val price: Double,
+    val category: String = "Grooming", // "Grooming" | "Vet Care" | "Food" | "Other"
+    val isCustom: Boolean = false,
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "appointments")
+data class AppointmentEntity(
+    @PrimaryKey val id: String,
+    val consumerId: String,
+    val shopId: String,
+    val serviceId: String,
+    val serviceName: String,
+    val price: Double,
+    val appointmentDate: String,
+    val appointmentTime: String,
+    val petName: String = "Buddy",
+    val status: String = "pending", // "pending", "confirmed", "completed", "cancelled"
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "reminders")
+data class ReminderEntity(
+    @PrimaryKey val id: String,
+    val consumerId: String,
+    val title: String, // "Doctor Appointment", "Pet Birthday", "Vaccination", "Grooming Date", or "Custom Alert"
+    val petName: String,
+    val dateString: String,
+    val notes: String = "",
+    val isCompleted: Boolean = false,
+    val type: String = "general", // "doctor", "birthday", "vaccination", "grooming"
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "product_specs")
+data class ProductSpecEntity(
+    @PrimaryKey val id: String,
+    val productId: String, // Associated main product ID (e.g. for Pedigree)
+    val weightText: String, // Weight tag (e.g. "3 kg", "10 kg")
+    val petCategory: String = "dog", // "cat", "dog", "cattle", "kitten", "puppy", "hamster", "rabbits", "birds"
+    val imageUrls: List<String> = emptyList(), // Store up to 4 package images
+    val description1: String = "",
+    val description2: String = "",
+    val description3: String = "",
+    val description4: String = "",
+    val isActive: Boolean = true,
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "pets")
+data class PetEntity(
+    @PrimaryKey val id: String,
+    val ownerId: String,
+    val name: String,
+    val breed: String,
+    val ageText: String, // e.g. "2 years"
+    val weight: String = "", // e.g. "24 kg"
+    val avatarUrl: String = "",
+    val allergies: String = "",
+    val vaccineRecord: String = "", // e.g. "Dewormed, Rabies vaccine"
+    val dewormingDate: String = "", // e.g. "2026-05-15"
+    val vaccineDueDate: String = "", // e.g. "2026-08-20"
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "captains")
+data class CaptainEntity(
+    @PrimaryKey val id: String,
+    val userId: String, // Associated profile ID
+    val fullName: String,
+    val phone: String,
+    val vehicleNumber: String,
+    val panCard: String,
+    val bankDetails: String,
+    val aadharNumber: String,
+    val panCardUrl: String = "",
+    val aadharCardUrl: String = "",
+    val licenseUrl: String = "",
+    val selfieUrl: String = "",
+    val status: String = "pending", // "pending", "approved", "rejected"
+    val isActive: Boolean = false,
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "pet_problems")
+data class ProblemEntity(
+    @PrimaryKey val id: String,
+    val title: String,
+    val description: String,
+    val solution: String = "",
+    val howToUse: String = "",
+    val emoji: String,
+    val productIds: List<String> = emptyList(),
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "group_rfq_sessions")
+data class GroupRfqSessionEntity(
+    @PrimaryKey val id: String,
+    val hostId: String,
+    val cityId: String,
+    val status: String = "open", // "open" (adding items) | "bidding" (merchants quoting) | "accepted" (quote chosen) | "completed"
+    val chosenQuotationId: String? = null,
+    val biddingExpiresAt: Long,
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "group_rfq_member_items")
+data class GroupRfqMemberItemEntity(
+    @PrimaryKey val id: String,
+    val sessionId: String,
+    val memberId: String,
+    val memberName: String,
+    val productId: String,
+    val quantity: Int,
+    val deliveryAddress: String,
+    val lat: Double,
+    val lng: Double,
+    val hasPaid: Boolean = false,
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "merchant_quotations")
+data class MerchantQuotationEntity(
+    @PrimaryKey val id: String,
+    val sessionId: String,
+    val shopId: String,
+    val shopName: String,
+    val discountPercentage: Double,
+    val quotedPrice: Double,
+    val isAccepted: Boolean = false,
+    val submittedAt: Long = System.currentTimeMillis()
+)
+
+
+
+
