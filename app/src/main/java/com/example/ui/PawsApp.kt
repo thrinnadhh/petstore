@@ -1953,6 +1953,7 @@ fun HomeScreen(viewModel: PawsViewModel) {
 
     val allOrders by viewModel.allOrders.collectAsState()
     val allOrderItems by viewModel.allOrderItems.collectAsState()
+    val cartItems by viewModel.cartItems.collectAsState()
 
     var showCityPickerSheet by remember { mutableStateOf(false) }
 
@@ -1999,277 +2000,9 @@ fun HomeScreen(viewModel: PawsViewModel) {
         }
     }
 
-    Row(modifier = Modifier.fillMaxSize()) {
-        // ── LEFT SIDEBAR: PET REMEDIES FOR COMMON PROBLEMS ─────────────────────────
-        Column(
-            modifier = Modifier
-                .width(360.dp)
-                .fillMaxHeight()
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(top = 16.dp)
-        ) {
-            Text(
-                text = "Pet Remedies for Common Problems 🩺",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFFFC8019),
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-            )
-            Text(
-                text = "Select a concern to see recommended treatments and products",
-                fontSize = 12.sp,
-                color = Color.Gray,
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
-            )
-            
-            if (petProblems.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "No targeted care remedies seeded at this time.",
-                        fontSize = 13.sp,
-                        color = Color.Gray
-                    )
-                }
-            } else {
-                val selectedProblem = petProblems.find { it.id == selectedProblemId } ?: petProblems.firstOrNull()
-                if (selectedProblemId == null && selectedProblem != null) {
-                    selectedProblemId = selectedProblem.id
-                }
-                
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(bottom = 100.dp)
-                ) {
-                    item {
-                        Text(
-                            text = "COMMON CONCERNS",
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Gray,
-                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
-                        )
-                    }
-                    
-                    items(petProblems) { problem ->
-                        val isSelected = selectedProblemId == problem.id
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 6.dp)
-                                .clickable { selectedProblemId = problem.id },
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (isSelected) Color(0xFFFC8019).copy(alpha = 0.1f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                            ),
-                            border = BorderStroke(
-                                width = 1.dp,
-                                color = if (isSelected) Color(0xFFFC8019) else Color.Transparent
-                            )
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = problem.emoji.ifEmpty { "🩺" },
-                                    fontSize = 20.sp
-                                )
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Text(
-                                    text = problem.title,
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 14.sp,
-                                    color = if (isSelected) Color(0xFFFC8019) else MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                        }
-                    }
-                    
-                    if (selectedProblem != null) {
-                        item {
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = Color(0xFFFC8019).copy(alpha = 0.05f)
-                                ),
-                                border = BorderStroke(1.dp, Color(0xFFFC8019).copy(alpha = 0.15f))
-                            ) {
-                                Column(modifier = Modifier.padding(16.dp)) {
-                                    Text(
-                                        text = selectedProblem.title,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 15.sp,
-                                        color = Color(0xFFFC8019)
-                                    )
-                                    Spacer(modifier = Modifier.height(6.dp))
-                                    Text(
-                                        text = selectedProblem.description,
-                                        fontSize = 12.sp,
-                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                                        lineHeight = 16.sp
-                                    )
-                                    
-                                    Spacer(modifier = Modifier.height(12.dp))
-                                    Text(
-                                        text = "CARE SOLUTION / TREATMENT 🧼",
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Black,
-                                        color = Color(0xFFFC8019),
-                                        letterSpacing = 1.sp
-                                    )
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(
-                                        text = selectedProblem.solution.ifEmpty { "Follow expert care guidelines regularly." },
-                                        fontSize = 12.sp,
-                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                                        lineHeight = 16.sp
-                                    )
-                                    
-                                    Spacer(modifier = Modifier.height(12.dp))
-                                    Text(
-                                        text = "WAY TO USE PRODUCTS 🧴",
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Black,
-                                        color = Color(0xFFFC8019),
-                                        letterSpacing = 1.sp
-                                    )
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(
-                                        text = selectedProblem.howToUse.ifEmpty { "Apply as indicated on the product catalog instructions." },
-                                        fontSize = 12.sp,
-                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                                        lineHeight = 16.sp
-                                    )
-                                    
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                    Text(
-                                        text = "RECOMMENDED PRODUCTS 📦",
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Black,
-                                        color = Color(0xFFFC8019),
-                                        letterSpacing = 1.sp
-                                    )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    
-                                    val recommendedProductIds = selectedProblem.productIds
-                                    val recommendedProducts = allProducts.filter { it.id in recommendedProductIds }
-                                    
-                                    if (recommendedProducts.isEmpty()) {
-                                        Text(
-                                            text = "No recommended products matching in this city.",
-                                            fontSize = 11.sp,
-                                            color = Color.Gray
-                                        )
-                                    } else {
-                                        val cartItems by viewModel.cartItems.collectAsState()
-                                        recommendedProducts.forEach { product ->
-                                            val qty = cartItems[product.id] ?: 0
-                                            val shop = shopsList.find { it.id == product.shopId }
-                                            if (shop != null) {
-                                                Row(
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .padding(vertical = 6.dp)
-                                                        .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
-                                                        .border(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f), RoundedCornerShape(8.dp))
-                                                        .padding(8.dp),
-                                                    verticalAlignment = Alignment.CenterVertically
-                                                ) {
-                                                    Column(modifier = Modifier.weight(1f)) {
-                                                        Text(
-                                                            text = product.name,
-                                                            fontWeight = FontWeight.SemiBold,
-                                                            fontSize = 12.sp,
-                                                            color = MaterialTheme.colorScheme.onSurface
-                                                        )
-                                                        Text(
-                                                            text = "₹${product.price}",
-                                                            fontSize = 11.sp,
-                                                            fontWeight = FontWeight.Bold,
-                                                            color = Color(0xFFFC8019)
-                                                        )
-                                                    }
-                                                    Spacer(modifier = Modifier.width(4.dp))
-                                                    
-                                                    // Quantity buttons
-                                                    if (qty > 0) {
-                                                        Row(
-                                                            verticalAlignment = Alignment.CenterVertically,
-                                                            modifier = Modifier
-                                                                .background(Color(0xFFFC8019), RoundedCornerShape(4.dp))
-                                                                .padding(horizontal = 4.dp, vertical = 2.dp)
-                                                        ) {
-                                                            Text(
-                                                                text = "-",
-                                                                color = Color.White,
-                                                                fontSize = 14.sp,
-                                                                fontWeight = FontWeight.Bold,
-                                                                modifier = Modifier
-                                                                    .clickable { viewModel.removeFromCart(product.id) }
-                                                                    .padding(horizontal = 6.dp)
-                                                            )
-                                                            Text(
-                                                                text = qty.toString(),
-                                                                color = Color.White,
-                                                                fontSize = 12.sp,
-                                                                fontWeight = FontWeight.Bold,
-                                                                modifier = Modifier.padding(horizontal = 4.dp)
-                                                            )
-                                                            Text(
-                                                                text = "+",
-                                                                color = Color.White,
-                                                                fontSize = 14.sp,
-                                                                fontWeight = FontWeight.Bold,
-                                                                modifier = Modifier
-                                                                    .clickable { viewModel.addToCart(product, shop) }
-                                                                    .padding(horizontal = 6.dp)
-                                                            )
-                                                        }
-                                                    } else {
-                                                        Button(
-                                                            onClick = { viewModel.addToCart(product, shop) },
-                                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFC8019)),
-                                                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
-                                                            modifier = Modifier.height(26.dp),
-                                                            shape = RoundedCornerShape(4.dp)
-                                                        ) {
-                                                            Text("ADD", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        VerticalDivider(
-            modifier = Modifier.fillMaxHeight(),
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.08f),
-            thickness = 1.dp
-        )
-
-        // ── RIGHT SIDE: MAIN FEED CONTENT ──────────────────────────────────────────
+        // ── MAIN FEED CONTENT ──────────────────────────────────────────
         LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight(),
+            modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = 90.dp)
         ) {
         // App Header Row
@@ -2466,6 +2199,259 @@ fun HomeScreen(viewModel: PawsViewModel) {
                 FeaturedBannerCarousel(shops = shopsList.filter { it.isFeatured }, onShopClick = {
                     viewModel.navigateTo(Screen.ShopDetail(it.id))
                 })
+            }
+        }
+
+        // ── TARGETED PET REMEDIES: COMMON CONCERNS & REMEDIES ──────────────────────
+        item {
+            Column(modifier = Modifier.padding(vertical = 12.dp)) {
+                Text(
+                    "Targeted Pet Remedies & Concerns 🩺",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFFC8019),
+                    modifier = Modifier.padding(start = 20.dp, bottom = 4.dp, top = 8.dp)
+                )
+                Text(
+                    "Select a pet health concern to see vet-recommended solutions and direct products",
+                    fontSize = 11.sp,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(start = 20.dp, bottom = 12.dp)
+                )
+                
+                if (petProblems.isNotEmpty()) {
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 20.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items(petProblems) { problem ->
+                            val isSelected = selectedProblemId == problem.id
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(30.dp))
+                                    .background(
+                                        if (isSelected) Color(0xFFFC8019)
+                                        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                    )
+                                    .border(
+                                        width = 1.dp,
+                                        color = if (isSelected) Color(0xFFFC8019) else Color.Gray.copy(alpha = 0.2f),
+                                        shape = RoundedCornerShape(30.dp)
+                                    )
+                                    .clickable {
+                                        selectedProblemId = if (isSelected) null else problem.id
+                                    }
+                                    .padding(horizontal = 14.dp, vertical = 8.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(text = problem.emoji.ifEmpty { "🩺" }, fontSize = 14.sp)
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = problem.title,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    
+                    val selectedProblem = petProblems.find { it.id == selectedProblemId }
+                    if (selectedProblem != null) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0xFFFC8019).copy(alpha = 0.05f)
+                            ),
+                            border = BorderStroke(1.dp, Color(0xFFFC8019).copy(alpha = 0.15f))
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = selectedProblem.title,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 15.sp,
+                                        color = Color(0xFFFC8019)
+                                    )
+                                    IconButton(
+                                        onClick = { selectedProblemId = null },
+                                        modifier = Modifier.size(24.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = "Close",
+                                            tint = Color.Gray,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = selectedProblem.description,
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                                    lineHeight = 16.sp
+                                )
+                                
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text(
+                                    text = "CARE SOLUTION / TREATMENT 🧼",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color(0xFFFC8019),
+                                    letterSpacing = 1.sp
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = selectedProblem.solution.ifEmpty { "Follow expert care guidelines regularly." },
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                                    lineHeight = 16.sp
+                                )
+                                
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text(
+                                    text = "WAY TO USE PRODUCTS 🧴",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color(0xFFFC8019),
+                                    letterSpacing = 1.sp
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = selectedProblem.howToUse.ifEmpty { "Apply as indicated on the product catalog instructions." },
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                                    lineHeight = 16.sp
+                                )
+                                
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = "RECOMMENDED PRODUCTS 📦",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color(0xFFFC8019),
+                                    letterSpacing = 1.sp
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                
+                                val recommendedProductIds = selectedProblem.productIds
+                                val recommendedProducts = allProducts.filter { it.id in recommendedProductIds }
+                                
+                                if (recommendedProducts.isEmpty()) {
+                                    Text(
+                                        text = "No recommended products matching in this city.",
+                                        fontSize = 11.sp,
+                                        color = Color.Gray
+                                    )
+                                } else {
+                                    recommendedProducts.forEach { product ->
+                                        val qty = cartItems[product.id] ?: 0
+                                        val shop = shopsList.find { it.id == product.shopId }
+                                        if (shop != null) {
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(vertical = 6.dp)
+                                                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
+                                                    .border(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f), RoundedCornerShape(8.dp))
+                                                    .padding(8.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Column(modifier = Modifier.weight(1f)) {
+                                                    Text(
+                                                        text = product.name,
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        fontSize = 12.sp,
+                                                        color = MaterialTheme.colorScheme.onSurface
+                                                    )
+                                                    Text(
+                                                        text = "₹${product.price}",
+                                                        fontSize = 11.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = Color(0xFFFC8019)
+                                                    )
+                                                }
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                
+                                                // Quantity buttons
+                                                if (qty > 0) {
+                                                    Row(
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                        modifier = Modifier
+                                                            .background(Color(0xFFFC8019), RoundedCornerShape(4.dp))
+                                                            .padding(horizontal = 4.dp, vertical = 2.dp)
+                                                    ) {
+                                                        Text(
+                                                            text = "-",
+                                                            color = Color.White,
+                                                            fontSize = 14.sp,
+                                                            fontWeight = FontWeight.Bold,
+                                                            modifier = Modifier
+                                                                .clickable { viewModel.removeFromCart(product.id) }
+                                                                .padding(horizontal = 6.dp)
+                                                        )
+                                                        Text(
+                                                            text = qty.toString(),
+                                                            color = Color.White,
+                                                            fontSize = 12.sp,
+                                                            fontWeight = FontWeight.Bold,
+                                                            modifier = Modifier.padding(horizontal = 4.dp)
+                                                        )
+                                                        Text(
+                                                            text = "+",
+                                                            color = Color.White,
+                                                            fontSize = 14.sp,
+                                                            fontWeight = FontWeight.Bold,
+                                                            modifier = Modifier
+                                                                .clickable { viewModel.addToCart(product, shop) }
+                                                                .padding(horizontal = 6.dp)
+                                                        )
+                                                    }
+                                                } else {
+                                                    Button(
+                                                        onClick = { viewModel.addToCart(product, shop) },
+                                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFC8019)),
+                                                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                                                        modifier = Modifier.height(26.dp),
+                                                        shape = RoundedCornerShape(4.dp)
+                                                    ) {
+                                                        Text("ADD", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No targeted care remedies seeded at this time.",
+                            fontSize = 13.sp,
+                            color = Color.Gray
+                        )
+                    }
+                }
             }
         }
 
@@ -3640,7 +3626,6 @@ fun HomeScreen(viewModel: PawsViewModel) {
                 }
             }
         }
-    }
     }
 }
 
