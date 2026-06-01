@@ -43,6 +43,10 @@ import com.example.R
 import com.example.data.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.draw.scale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -2274,6 +2278,7 @@ fun HomeScreen(viewModel: PawsViewModel) {
                 cityName = selectedCityName,
                 userName = currentUser?.fullName ?: "Pet Owner",
                 avatarUrl = currentUser?.avatarUrl ?: "",
+                petName = currentUser?.petName ?: "Buddy",
                 onCityClick = { showCityPickerSheet = true },
                 onProfileClick = { viewModel.navigateTo(Screen.UserProfile) },
                 onChatClick = { viewModel.navigateTo(Screen.ChatList) },
@@ -2289,6 +2294,155 @@ fun HomeScreen(viewModel: PawsViewModel) {
                 onQueryChange = { viewModel.updateSearchQuery(it) },
                 onTapSearch = { viewModel.navigateTo(Screen.Search) }
             )
+        }
+
+        // WOW Factor 4: Favorite Reorders carousel with Spring micro-interaction
+        item {
+            Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "Your Pet's Favourites 📦",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF333333)
+                    )
+                    Text(
+                        "Slide to Reorder",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFFC8019)
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                val favoriteProducts = remember {
+                    listOf(
+                        Pair("p_shampoo_itch", "Itch Relief Oatmeal Shampoo"),
+                        Pair("p_shampoo_dandruff", "Dandruff Control Shampoo"),
+                        Pair("p_blr_1", "Pedigree Adult Chicken & Vegetables")
+                    )
+                }
+                
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(favoriteProducts) { (prodId, fallbackName) ->
+                        val prod = allProducts.find { it.id == prodId }
+                        if (prod != null) {
+                            Card(
+                                modifier = Modifier
+                                    .width(185.dp)
+                                    .padding(vertical = 4.dp),
+                                shape = RoundedCornerShape(14.dp),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.12f)),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = prod.name,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 12.sp,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    Text("₹${prod.price.toInt()}", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    
+                                    var swiped by remember { mutableStateOf(false) }
+                                    val offsetX = remember { androidx.compose.animation.core.Animatable(0f) }
+                                    val coroutineScope = rememberCoroutineScope()
+                                    
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(32.dp)
+                                            .background(
+                                                if (swiped) Color(0xFFE8F5E9) else Color(0xFFFC8019).copy(alpha = 0.08f),
+                                                RoundedCornerShape(8.dp)
+                                            )
+                                            .padding(2.dp),
+                                        contentAlignment = Alignment.CenterStart
+                                    ) {
+                                        if (swiped) {
+                                            Text(
+                                                text = "Added! 🛒",
+                                                fontSize = 9.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF2E7D32),
+                                                modifier = Modifier.align(Alignment.Center)
+                                            )
+                                        } else {
+                                            Text(
+                                                text = "Slide to Quick Add ➔",
+                                                fontSize = 8.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFFFC8019),
+                                                modifier = Modifier.align(Alignment.Center)
+                                            )
+                                            
+                                            Box(
+                                                modifier = Modifier
+                                                    .offset(x = offsetX.value.dp)
+                                                    .size(28.dp)
+                                                    .background(Color(0xFFFC8019), RoundedCornerShape(6.dp))
+                                                    .pointerInput(Unit) {
+                                                        detectHorizontalDragGestures(
+                                                            onDragEnd = {
+                                                                coroutineScope.launch {
+                                                                    if (offsetX.value > 70f) {
+                                                                        swiped = true
+                                                                        offsetX.animateTo(
+                                                                            targetValue = 90f,
+                                                                            animationSpec = spring(
+                                                                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                                                stiffness = Spring.StiffnessLow
+                                                                            )
+                                                                        )
+                                                                        val shop = shopsList.find { it.id == prod.shopId } ?: shopsList.firstOrNull() ?: ShopEntity(
+                                                                            id = "dummy",
+                                                                            ownerId = "dummy",
+                                                                            cityId = "dummy",
+                                                                            name = "Paws Shop",
+                                                                            description = "",
+                                                                            address = "",
+                                                                            locality = "",
+                                                                            phone = "",
+                                                                            email = ""
+                                                                        )
+                                                                        viewModel.addToCart(prod, shop)
+                                                                        delay(1500)
+                                                                        swiped = false
+                                                                        offsetX.animateTo(0f)
+                                                                    } else {
+                                                                        offsetX.animateTo(0f)
+                                                                    }
+                                                                }
+                                                            },
+                                                            onHorizontalDrag = { change, dragAmount ->
+                                                                change.consume()
+                                                                coroutineScope.launch {
+                                                                    offsetX.snapTo((offsetX.value + dragAmount).coerceIn(0f, 90f))
+                                                                }
+                                                            }
+                                                        )
+                                                    },
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text("🐾", fontSize = 12.sp)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         // Horizontally Scrolling Dynamic Promotional Banners Carousel
@@ -2479,6 +2633,11 @@ fun HomeScreen(viewModel: PawsViewModel) {
                             }
                             
                             Spacer(modifier = Modifier.height(12.dp))
+                            if (session.status == "bidding") {
+                                val uniqueMerchants = quotations.map { it.shopName }.distinct()
+                                BiddingRadarWidget(nearbyShopNames = uniqueMerchants)
+                                Spacer(modifier = Modifier.height(12.dp))
+                            }
                             HorizontalDivider()
                             Spacer(modifier = Modifier.height(12.dp))
                             
@@ -3491,142 +3650,338 @@ fun HomeHeader(
     cityName: String,
     userName: String,
     avatarUrl: String,
+    petName: String = "Buddy",
     onCityClick: () -> Unit,
     onProfileClick: () -> Unit,
     onChatClick: () -> Unit,
     syncState: PowerSyncManager.SyncState,
     onSyncClick: () -> Unit
 ) {
-    Row(
+    val infiniteTransition = rememberInfiniteTransition()
+    
+    // Rotation animation for the premium profile ring
+    val rotationAngle by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(8000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "profileRingRotation"
+    )
+
+    // Pulse animation for the pet status greeting bubble
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 0.96f,
+        targetValue = 1.04f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1400, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "petBubblePulse"
+    )
+
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(20.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.clickable { onCityClick() }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.LocationOn,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = cityName,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Black,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                Icon(
-                    imageVector = Icons.Default.ArrowDropDown,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
-            Text(
-                "Welcome back, $userName!",
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-                modifier = Modifier.padding(top = 2.dp)
-            )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .padding(top = 4.dp)
-                    .clickable { onSyncClick() }
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .background(
-                            color = when (syncState) {
-                                is PowerSyncManager.SyncState.Connected -> Color(0xFF4CAF50)
-                                is PowerSyncManager.SyncState.Syncing -> Color(0xFFFFC107)
-                                is PowerSyncManager.SyncState.Paused -> Color(0xFF9E9E9E)
-                                is PowerSyncManager.SyncState.Offline -> Color(0xFFF44336)
-                            },
-                            shape = CircleShape
-                        )
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = when (syncState) {
-                        is PowerSyncManager.SyncState.Connected -> "Sync: Connected"
-                        is PowerSyncManager.SyncState.Syncing -> "Sync: Syncing..."
-                        is PowerSyncManager.SyncState.Paused -> "Sync: Paused"
-                        is PowerSyncManager.SyncState.Offline -> "Sync: Offline"
-                    },
-                    fontSize = 10.sp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        }
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Chat envelope icon
-            IconButton(
-                onClick = onChatClick,
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(
-                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
-                        CircleShape
-                    )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Email,
-                    contentDescription = "Chats",
-                    modifier = Modifier.size(20.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            // Notification Mock
-            IconButton(
-                onClick = {},
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(
-                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
-                        CircleShape
-                    )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Notifications,
-                    contentDescription = "Notifications",
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-
-            // Profile Avatar
-            Image(
-                painter = rememberAsyncImagePainter(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(avatarUrl)
-                        .crossfade(true)
-                        .error(R.drawable.paws_logo_1779795154399)
-                        .build()
+            .background(
+                brush = Brush.linearGradient(
+                    colors = listOf(Color(0xFFFC8019), Color(0xFFFF9E80))
                 ),
-                contentDescription = "Profile",
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .border(1.5.dp, MaterialTheme.colorScheme.primary, CircleShape)
-                    .clickable { onProfileClick() },
-                contentScale = ContentScale.Crop
+                shape = RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp)
             )
+            .padding(bottom = 20.dp)
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.92f)),
+            border = BorderStroke(1.2.dp, Color.White.copy(alpha = 0.6f)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                // Top line: Location & Controls
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.clickable { onCityClick() }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.LocationOn,
+                                contentDescription = null,
+                                tint = Color(0xFFFC8019),
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = cityName,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color(0xFF333333)
+                            )
+                            Icon(
+                                imageVector = Icons.Default.ArrowDropDown,
+                                contentDescription = null,
+                                tint = Color(0xFF333333)
+                            )
+                        }
+                        
+                        Text(
+                            text = "Welcome back, $userName!",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.DarkGray,
+                            modifier = Modifier.padding(top = 2.dp)
+                        )
+                        
+                        // Sync state
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .padding(top = 4.dp)
+                                .clickable { onSyncClick() }
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(6.dp)
+                                    .background(
+                                        color = when (syncState) {
+                                            is PowerSyncManager.SyncState.Connected -> Color(0xFF4CAF50)
+                                            is PowerSyncManager.SyncState.Syncing -> Color(0xFFFFC107)
+                                            is PowerSyncManager.SyncState.Paused -> Color(0xFF9E9E9E)
+                                            is PowerSyncManager.SyncState.Offline -> Color(0xFFF44336)
+                                        },
+                                        shape = CircleShape
+                                    )
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = when (syncState) {
+                                    is PowerSyncManager.SyncState.Connected -> "Sync: Connected"
+                                    is PowerSyncManager.SyncState.Syncing -> "Syncing..."
+                                    is PowerSyncManager.SyncState.Paused -> "Paused"
+                                    is PowerSyncManager.SyncState.Offline -> "Offline"
+                                },
+                                fontSize = 9.sp,
+                                color = Color.Gray,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Chat envelope icon
+                        IconButton(
+                            onClick = onChatClick,
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(
+                                    Color(0xFFFC8019).copy(alpha = 0.08f),
+                                    CircleShape
+                                )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Email,
+                                contentDescription = "Chats",
+                                modifier = Modifier.size(16.dp),
+                                tint = Color(0xFFFC8019)
+                            )
+                        }
+
+                        // Notification Mock
+                        IconButton(
+                            onClick = {},
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(
+                                    Color.Gray.copy(alpha = 0.08f),
+                                    CircleShape
+                                )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Notifications,
+                                contentDescription = "Notifications",
+                                modifier = Modifier.size(16.dp),
+                                tint = Color.DarkGray
+                            )
+                        }
+
+                        // Profile Avatar with rotating border
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.size(44.dp)
+                        ) {
+                            Canvas(modifier = Modifier.fillMaxSize()) {
+                                drawArc(
+                                    color = Color(0xFFFC8019),
+                                    startAngle = rotationAngle,
+                                    sweepAngle = 280f,
+                                    useCenter = false,
+                                    style = Stroke(width = 2.dp.toPx())
+                                )
+                            }
+                            Image(
+                                painter = rememberAsyncImagePainter(
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data(avatarUrl)
+                                        .crossfade(true)
+                                        .error(R.drawable.paws_logo_1779795154399)
+                                        .build()
+                                ),
+                                contentDescription = "Profile",
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .clickable { onProfileClick() },
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // WOW Factor 3: Animated Pet Welcomer Bubble
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .scale(pulseScale)
+                        .background(Color(0xFFFC8019).copy(alpha = 0.08f), RoundedCornerShape(12.dp))
+                        .border(1.dp, Color(0xFFFC8019).copy(alpha = 0.15f), RoundedCornerShape(12.dp))
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                        .fillMaxWidth()
+                ) {
+                    Text("🐾", fontSize = 14.sp)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "$petName is dreaming of premium treats! 🦴",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFD35400)
+                    )
+                }
+            }
         }
     }
 }
+
+@Composable
+fun BiddingRadarWidget(nearbyShopNames: List<String>) {
+    val infiniteTransition = rememberInfiniteTransition(label = "radarTransition")
+    
+    // Wave 1 Scale and Alpha
+    val wave1Scale by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "wave1Scale"
+    )
+    val wave1Alpha by infiniteTransition.animateFloat(
+        initialValue = 0.8f,
+        targetValue = 0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "wave1Alpha"
+    )
+
+    // Wave 2 Scale and Alpha (Delayed by 1000ms equivalent)
+    val wave2Scale by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "wave2Scale"
+    )
+    val wave2Alpha by infiniteTransition.animateFloat(
+        initialValue = 0.8f,
+        targetValue = 0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "wave2Alpha"
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(140.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(modifier = Modifier.size(120.dp)) {
+            // Draw concentric background circles
+            drawCircle(color = Color(0xFFFC8019).copy(alpha = 0.08f), radius = size.minDimension / 2)
+            drawCircle(color = Color(0xFFFC8019).copy(alpha = 0.15f), radius = size.minDimension / 3)
+            drawCircle(color = Color(0xFFFC8019).copy(alpha = 0.25f), radius = size.minDimension / 4)
+            
+            // Draw Wave 1
+            drawCircle(
+                color = Color(0xFFFC8019).copy(alpha = wave1Alpha),
+                radius = (size.minDimension / 2) * wave1Scale,
+                style = Stroke(width = 2.dp.toPx())
+            )
+            
+            // Draw Wave 2
+            drawCircle(
+                color = Color(0xFFFC8019).copy(alpha = wave2Alpha * 0.7f),
+                radius = (size.minDimension / 2) * wave2Scale * 0.7f,
+                style = Stroke(width = 2.dp.toPx())
+            )
+        }
+        
+        // Central Pulse Pin
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .background(Color(0xFFFC8019), CircleShape)
+                .border(2.dp, Color.White, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("🎯", fontSize = 20.sp)
+        }
+        
+        // Orbiting Shop Names
+        val shopsToDisplay = if (nearbyShopNames.isEmpty()) listOf("Paws Store", "Pet Nutrition Hub", "Dog Care Center") else nearbyShopNames
+        shopsToDisplay.take(3).forEachIndexed { index, name ->
+            val angle = (index * 120 + 30) * (Math.PI / 180f)
+            val radius = 55.dp
+            val xOffset = (Math.cos(angle) * radius.value).dp
+            val yOffset = (Math.sin(angle) * radius.value).dp
+            
+            Box(
+                modifier = Modifier
+                    .offset(x = xOffset, y = yOffset)
+                    .background(Color(0xFF2E7D32), RoundedCornerShape(8.dp))
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    text = "🏬 $name",
+                    fontSize = 8.sp,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
 
 // Search bar placeholder
 @Composable
