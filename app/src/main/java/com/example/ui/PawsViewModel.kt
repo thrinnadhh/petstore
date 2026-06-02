@@ -120,7 +120,7 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    private val _searchTab = MutableStateFlow("Shops") // "Shops" | "Products"
+    private val _searchTab = MutableStateFlow("All") // "All" | "Shops" | "Products"
     val searchTab: StateFlow<String> = _searchTab.asStateFlow()
 
     private val _selectedCategoryIds = MutableStateFlow<Set<String>>(emptySet())
@@ -1541,50 +1541,52 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             repository.updateGroupRfqSessionStatus(sessionId, "bidding")
             
-            // For verification & demo purposes, wait 1.5 seconds and then auto-seed competitive bids
-            // from nearby merchants so the user immediately sees quotes populating without a second device!
-            delay(1500)
-            val session = repository.getGroupRfqSessionById(sessionId) ?: return@launch
-            val memberItems = repository.getRfqMemberItemsForSessionSync(sessionId)
-            if (memberItems.isEmpty()) return@launch
-            
-            var totalSubtotal = 0.0
-            for (item in memberItems) {
-                val prod = repository.getProductById(item.productId)
-                if (prod != null) {
-                    totalSubtotal += prod.price * item.quantity
+            if (ProductionConfig.IS_DEMO_MODE) {
+                // For verification & demo purposes, wait 1.5 seconds and then auto-seed competitive bids
+                // from nearby merchants so the user immediately sees quotes populating without a second device!
+                delay(1500)
+                val session = repository.getGroupRfqSessionById(sessionId) ?: return@launch
+                val memberItems = repository.getRfqMemberItemsForSessionSync(sessionId)
+                if (memberItems.isEmpty()) return@launch
+                
+                var totalSubtotal = 0.0
+                for (item in memberItems) {
+                    val prod = repository.getProductById(item.productId)
+                    if (prod != null) {
+                        totalSubtotal += prod.price * item.quantity
+                    }
                 }
+                
+                val cityShops = repository.getShopsForCitySync(session.cityId)
+                val shop1 = cityShops.firstOrNull() ?: ShopEntity("shop_bid_1", "admin_super", session.cityId, "Super Paws Megastore", "Discount pet food distributor", "123 Central Mall", "Downtown", phone = "9999999999", email = "superpaws@paws.com", rating = 4.8)
+                val shop2 = cityShops.getOrNull(1) ?: ShopEntity("shop_bid_2", "admin_super", session.cityId, "Happy Tails Boutique", "Premium organic dog supplies", "456 Park Avenue", "Greenwood", phone = "8888888888", email = "happytails@paws.com", rating = 4.7)
+                
+                // Insert 12% discount quotation
+                val discount1 = 12.0
+                val quote1 = MerchantQuotationEntity(
+                    id = "quote_" + UUID.randomUUID().toString().substring(0, 8),
+                    sessionId = sessionId,
+                    shopId = shop1.id,
+                    shopName = shop1.name,
+                    discountPercentage = discount1,
+                    quotedPrice = totalSubtotal * (1 - discount1 / 100.0)
+                )
+                repository.insertMerchantQuotation(quote1)
+                
+                delay(1500) // Stagger quotation submission for interactive premium effect
+                
+                // Insert winning 20% discount quotation!
+                val discount2 = 20.0
+                val quote2 = MerchantQuotationEntity(
+                    id = "quote_" + UUID.randomUUID().toString().substring(0, 8),
+                    sessionId = sessionId,
+                    shopId = shop2.id,
+                    shopName = shop2.name,
+                    discountPercentage = discount2,
+                    quotedPrice = totalSubtotal * (1 - discount2 / 100.0)
+                )
+                repository.insertMerchantQuotation(quote2)
             }
-            
-            val cityShops = repository.getShopsForCitySync(session.cityId)
-            val shop1 = cityShops.firstOrNull() ?: ShopEntity("shop_bid_1", "admin_super", session.cityId, "Super Paws Megastore", "Discount pet food distributor", "123 Central Mall", "Downtown", phone = "9999999999", email = "superpaws@paws.com", rating = 4.8)
-            val shop2 = cityShops.getOrNull(1) ?: ShopEntity("shop_bid_2", "admin_super", session.cityId, "Happy Tails Boutique", "Premium organic dog supplies", "456 Park Avenue", "Greenwood", phone = "8888888888", email = "happytails@paws.com", rating = 4.7)
-            
-            // Insert 12% discount quotation
-            val discount1 = 12.0
-            val quote1 = MerchantQuotationEntity(
-                id = "quote_" + UUID.randomUUID().toString().substring(0, 8),
-                sessionId = sessionId,
-                shopId = shop1.id,
-                shopName = shop1.name,
-                discountPercentage = discount1,
-                quotedPrice = totalSubtotal * (1 - discount1 / 100.0)
-            )
-            repository.insertMerchantQuotation(quote1)
-            
-            delay(1500) // Stagger quotation submission for interactive premium effect
-            
-            // Insert winning 20% discount quotation!
-            val discount2 = 20.0
-            val quote2 = MerchantQuotationEntity(
-                id = "quote_" + UUID.randomUUID().toString().substring(0, 8),
-                sessionId = sessionId,
-                shopId = shop2.id,
-                shopName = shop2.name,
-                discountPercentage = discount2,
-                quotedPrice = totalSubtotal * (1 - discount2 / 100.0)
-            )
-            repository.insertMerchantQuotation(quote2)
         }
     }
 

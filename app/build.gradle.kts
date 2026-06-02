@@ -57,6 +57,12 @@ android {
       isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
       signingConfig = signingConfigs.getByName("release")
+
+      // Disable Firebase Crashlytics mapping upload for local release builds to avoid build failures
+      // without active Google services credentials. Re-enable once the actual Play Console is linked.
+      configure<com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension> {
+        mappingFileUploadEnabled = false
+      }
     }
     debug {
       // Debug builds: keep readable for development only
@@ -122,6 +128,9 @@ dependencies {
   implementation(libs.ktor.client.android)
   implementation(libs.kotlinx.serialization.json)
   implementation(libs.posthog.android)
+  
+  // Real Razorpay SDK Checkout for Production payments
+  implementation("com.razorpay:checkout:1.6.38")
   
   testImplementation(libs.androidx.compose.ui.test.junit4)
   testImplementation(libs.androidx.core)

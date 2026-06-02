@@ -51,14 +51,59 @@ class PawsRepository(private val pawsDao: PawsDao) {
     fun getOrdersForShop(shopId: String): Flow<List<OrderEntity>> = pawsDao.getOrdersForShop(shopId)
     suspend fun getOrderById(id: String): OrderEntity? = pawsDao.getOrderById(id)
     fun getOrderByIdFlow(id: String): Flow<OrderEntity?> = pawsDao.getOrderByIdFlow(id)
-    suspend fun insertOrder(order: OrderEntity) = pawsDao.insertOrder(order)
-    suspend fun updateOrderStatus(id: String, status: String) = pawsDao.updateOrderStatus(id, status)
+    suspend fun insertOrder(order: OrderEntity) {
+        pawsDao.insertOrder(order)
+        if (!ProductionConfig.IS_DEMO_MODE) {
+            SupabaseManager.insertOrderToCloud(
+                orderId = order.id,
+                consumerId = order.consumerId,
+                shopId = order.shopId,
+                type = order.type,
+                status = order.status,
+                totalAmount = order.totalAmount,
+                deliveryAddress = order.deliveryAddress,
+                notes = order.notes
+            )
+        }
+    }
+    suspend fun updateOrderStatus(id: String, status: String) {
+        pawsDao.updateOrderStatus(id, status)
+        if (!ProductionConfig.IS_DEMO_MODE) {
+            SupabaseManager.updateOrderStatusInCloud(id, status)
+        }
+    }
 
     // Order Items
     suspend fun getOrderItemsForOrder(orderId: String): List<OrderItemEntity> = pawsDao.getOrderItemsForOrder(orderId)
     fun getOrderItemsForOrderFlow(orderId: String): Flow<List<OrderItemEntity>> = pawsDao.getOrderItemsForOrderFlow(orderId)
-    suspend fun insertOrderItem(item: OrderItemEntity) = pawsDao.insertOrderItem(item)
-    suspend fun insertOrderItems(items: List<OrderItemEntity>) = pawsDao.insertOrderItems(items)
+    suspend fun insertOrderItem(item: OrderItemEntity) {
+        pawsDao.insertOrderItem(item)
+        if (!ProductionConfig.IS_DEMO_MODE) {
+            SupabaseManager.insertOrderItemToCloud(
+                itemId = item.id,
+                orderId = item.orderId,
+                productId = item.productId,
+                quantity = item.quantity,
+                unitPrice = item.unitPrice,
+                subtotal = item.subtotal
+            )
+        }
+    }
+    suspend fun insertOrderItems(items: List<OrderItemEntity>) {
+        pawsDao.insertOrderItems(items)
+        if (!ProductionConfig.IS_DEMO_MODE) {
+            items.forEach { item ->
+                SupabaseManager.insertOrderItemToCloud(
+                    itemId = item.id,
+                    orderId = item.orderId,
+                    productId = item.productId,
+                    quantity = item.quantity,
+                    unitPrice = item.unitPrice,
+                    subtotal = item.subtotal
+                )
+            }
+        }
+    }
 
     // Reviews
     fun getReviewsForShop(shopId: String): Flow<List<ReviewEntity>> = pawsDao.getReviewsForShop(shopId)

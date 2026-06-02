@@ -5,6 +5,7 @@ import android.util.Log
 import com.example.BuildConfig
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.realtime.Realtime
@@ -84,6 +85,86 @@ object SupabaseManager {
                 Log.d("ZapierWebhook", "Merchant onboarding: shop='$shopName', owner='$ownerName', phone='$maskedPhone', city='$city'")
             }
             true
+        }
+    }
+
+    // Sync order details to Supabase Postgres public.orders table
+    suspend fun insertOrderToCloud(
+        orderId: String,
+        consumerId: String,
+        shopId: String,
+        type: String,
+        status: String,
+        totalAmount: Double,
+        deliveryAddress: String,
+        notes: String
+    ): Boolean = withContext(Dispatchers.IO) {
+        if (!isInitialized) return@withContext false
+        try {
+            client.postgrest["orders"].insert(mapOf(
+                "id" to orderId,
+                "consumerId" to consumerId,
+                "shopId" to shopId,
+                "type" to type,
+                "status" to status,
+                "totalAmount" to totalAmount,
+                "deliveryAddress" to deliveryAddress,
+                "notes" to notes,
+                "placedAt" to System.currentTimeMillis(),
+                "updatedAt" to System.currentTimeMillis()
+            ))
+            Log.i("SupabaseSync", "Order $orderId inserted securely to cloud.")
+            true
+        } catch (e: Exception) {
+            Log.e("SupabaseSync", "Failed to sync order: ${e.message}")
+            false
+        }
+    }
+
+    // Sync individual order items to Supabase Postgres public.order_items table
+    suspend fun insertOrderItemToCloud(
+        itemId: String,
+        orderId: String,
+        productId: String,
+        quantity: Int,
+        unitPrice: Double,
+        subtotal: Double
+    ): Boolean = withContext(Dispatchers.IO) {
+        if (!isInitialized) return@withContext false
+        try {
+            client.postgrest["order_items"].insert(mapOf(
+                "id" to itemId,
+                "orderId" to orderId,
+                "productId" to productId,
+                "quantity" to quantity,
+                "unitPrice" to unitPrice,
+                "subtotal" to subtotal
+            ))
+            Log.i("SupabaseSync", "Order item $itemId synced securely to cloud.")
+            true
+        } catch (e: Exception) {
+            Log.e("SupabaseSync", "Failed to sync order item: ${e.message}")
+            false
+        }
+    }
+
+    // Update order status in Supabase Postgres public.orders table
+    suspend fun updateOrderStatusInCloud(orderId: String, status: String): Boolean = withContext(Dispatchers.IO) {
+        if (!isInitialized) return@withContext false
+        try {
+            client.postgrest["orders"].update(mapOf(
+                "status" to status,
+                "updatedAt" to System.currentTimeMillis()
+            )) {
+                filter {
+                    eq("id", orderId)
+                }
+            }
+            Log.i("SupabaseSync", "Order $orderId status updated to $status in cloud.")
+            true
+        } catch (e: Exception) {
+            Log.e("SupabaseSync", "Failed to update cloud order status: ${e.message}")
+            false
         }
     }
 }

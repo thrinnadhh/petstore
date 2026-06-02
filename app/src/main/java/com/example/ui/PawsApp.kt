@@ -1572,6 +1572,7 @@ data class PetCareGuide(
 fun CaptainDashboardScreen(viewModel: PawsViewModel) {
     val currentUser by viewModel.currentUser.collectAsState()
     val currentCaptain by viewModel.currentCaptain.collectAsState()
+    val allOrders by viewModel.allOrders.collectAsState()
     val context = LocalContext.current
     var isShiftOnline by remember { mutableStateOf(false) }
 
@@ -1804,7 +1805,8 @@ fun CaptainDashboardScreen(viewModel: PawsViewModel) {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
                         Column(
                             modifier = Modifier
@@ -1813,22 +1815,99 @@ fun CaptainDashboardScreen(viewModel: PawsViewModel) {
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             if (isShiftOnline) {
-                                Text(
-                                    text = "Searching for Delivery Jobs...",
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFFC8019)
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = "Ready to deliver pet food orders & accessories in Hyderabad!",
-                                    fontSize = 12.sp,
-                                    color = Color.Gray,
-                                    textAlign = TextAlign.Center
-                                )
-                                Spacer(modifier = Modifier.height(24.dp))
-                                // A pulsing effect represented by a progress bar / indicator
-                                CircularProgressIndicator(color = Color(0xFFFC8019))
+                                val activeJob = allOrders.firstOrNull { it.status == "preparing" || it.status == "out_for_delivery" }
+                                val availableJob = allOrders.firstOrNull { it.status == "accepted" }
+
+                                if (activeJob != null) {
+                                    Text(
+                                        text = "📦 Active Delivery In Progress",
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFFC8019)
+                                    )
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Card(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF7F9FC))
+                                    ) {
+                                        Column(modifier = Modifier.padding(16.dp)) {
+                                            Text("Order Ref: #${activeJob.id.take(8).uppercase()}", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                            Spacer(modifier = Modifier.height(6.dp))
+                                            Text("📍 Pickup: Local Pet Shop", fontSize = 12.sp, color = Color.Gray)
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Text("🏁 Deliver to: ${activeJob.deliveryAddress}", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                            Spacer(modifier = Modifier.height(6.dp))
+                                            Text("💵 Delivery Earning: ₹45.00", fontSize = 13.sp, color = Color(0xFF2DB37A), fontWeight = FontWeight.Bold)
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Button(
+                                        onClick = { 
+                                            viewModel.updateMerchantOrderStatus(activeJob.id, "delivered")
+                                            Toast.makeText(context, "Order delivered successfully!", Toast.LENGTH_SHORT).show()
+                                        },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2DB37A))
+                                    ) {
+                                        Text("MARK AS DELIVERED ✓", color = Color.White, fontWeight = FontWeight.Bold)
+                                    }
+                                } else if (availableJob != null) {
+                                    Text(
+                                        text = "🚨 Active Delivery Request Found!",
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFFC8019)
+                                    )
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Card(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF4EB)),
+                                        border = BorderStroke(1.dp, Color(0xFFFC8019).copy(alpha = 0.5f))
+                                    ) {
+                                        Column(modifier = Modifier.padding(16.dp)) {
+                                            Text("Order Ref: #${availableJob.id.take(8).uppercase()}", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                            Spacer(modifier = Modifier.height(6.dp))
+                                            Text("📍 Store: Local Pet Supplies", fontSize = 12.sp, color = Color.Gray)
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Text("🏁 Delivery Address: ${availableJob.deliveryAddress}", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween
+                                            ) {
+                                                Text("Est. Time: 25 mins", fontSize = 12.sp, color = Color.Gray)
+                                                Text("Payout: ₹45.00", fontSize = 13.sp, color = Color(0xFF2DB37A), fontWeight = FontWeight.Bold)
+                                            }
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Button(
+                                        onClick = { 
+                                            viewModel.updateMerchantOrderStatus(availableJob.id, "preparing")
+                                            Toast.makeText(context, "Delivery job accepted! Navigate to store.", Toast.LENGTH_LONG).show()
+                                        },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFC8019))
+                                    ) {
+                                        Text("ACCEPT DELIVERY JOB 🛵", color = Color.White, fontWeight = FontWeight.Bold)
+                                    }
+                                } else {
+                                    Text(
+                                        text = "Searching for Delivery Jobs...",
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFFC8019)
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = "Ready to deliver pet food orders & accessories in Hyderabad!",
+                                        fontSize = 12.sp,
+                                        color = Color.Gray,
+                                        textAlign = TextAlign.Center
+                                    )
+                                    Spacer(modifier = Modifier.height(24.dp))
+                                    CircularProgressIndicator(color = Color(0xFFFC8019))
+                                }
                             } else {
                                 Text(
                                     text = "Shift is Offline",
@@ -1943,6 +2022,7 @@ fun HomeScreen(viewModel: PawsViewModel) {
         )
     }
     val selectedCityName by viewModel.selectedCityName.collectAsState()
+    val selectedCityId by viewModel.selectedCityId.collectAsState()
     val dynamicBanners by viewModel.targetedBanners.collectAsState()
     val context = LocalContext.current
     val syncState by viewModel.powerSyncState.collectAsState()
@@ -2005,6 +2085,126 @@ fun HomeScreen(viewModel: PawsViewModel) {
         }
     }
 
+    val mockShops = remember {
+        listOf(
+            ShopEntity(
+                id = "mock_hyd_1",
+                ownerId = "system",
+                cityId = "hyd",
+                name = "Banjara Hills Premium Pet Care 🐾",
+                description = "Sleek pet spa, gourmet boutique organic supplies & direct vet diagnostics.",
+                address = "Road No 2, Banjara Hills, Hyderabad",
+                locality = "Banjara Hills",
+                phone = "9876543210",
+                email = "banjara@paws.com",
+                photos = listOf("https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=600"),
+                isOpen = true,
+                opensAt = "08:00",
+                closesAt = "22:00",
+                rating = 4.8,
+                totalReviews = 42,
+                deliveryAvailable = true,
+                isVerified = true,
+                isActive = true,
+                isFeatured = true,
+                groomingEnabled = true,
+                vetClinicEnabled = true
+            ),
+            ShopEntity(
+                id = "mock_hyd_2",
+                ownerId = "system",
+                cityId = "hyd",
+                name = "Hitech City Paws & Claws Resort 🛁",
+                description = "Elite luxury styling, modern diagnostic lab and interactive grooming suites.",
+                address = "Phase 2, Hitech City, Hyderabad",
+                locality = "Hitech City",
+                phone = "9876543211",
+                email = "hitech@paws.com",
+                photos = listOf("https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=600"),
+                isOpen = true,
+                opensAt = "09:00",
+                closesAt = "21:00",
+                rating = 4.9,
+                totalReviews = 88,
+                deliveryAvailable = true,
+                isVerified = true,
+                isActive = true,
+                isFeatured = true,
+                groomingEnabled = true,
+                vetClinicEnabled = false
+            ),
+            ShopEntity(
+                id = "mock_hyd_3",
+                ownerId = "system",
+                cityId = "hyd",
+                name = "Madhapur Vet & Grooming Hub 🩺",
+                description = "Rapid local medicines delivery, standard vaccinations and holistic flea/tick dips.",
+                address = "Metro Station Road, Madhapur, Hyderabad",
+                locality = "Madhapur",
+                phone = "9876543212",
+                email = "madhapur@paws.com",
+                photos = listOf("https://images.unsplash.com/photo-1597633425046-08f5110420b5?auto=format&fit=crop&q=80&w=600"),
+                isOpen = true,
+                opensAt = "07:00",
+                closesAt = "23:00",
+                rating = 4.6,
+                totalReviews = 19,
+                deliveryAvailable = true,
+                isVerified = true,
+                isActive = true,
+                isFeatured = false,
+                groomingEnabled = false,
+                vetClinicEnabled = true
+            )
+        )
+    }
+
+    val displayShops = remember(processedShops, selectedCityId, mockShops, searchQuery, selectedCategoryIds, filterOpenNow, filterDelivery, filterRating) {
+        if (selectedCityId == "hyd" && processedShops.size < 4) {
+            val matchedMocks = mockShops.filter { shop ->
+                val matchesQuery = searchQuery.isEmpty() ||
+                                   shop.name.contains(searchQuery, ignoreCase = true) || 
+                                   shop.locality.contains(searchQuery, ignoreCase = true) ||
+                                   shop.description.contains(searchQuery, ignoreCase = true)
+                val matchesCategory = if (selectedCategoryIds.isEmpty()) {
+                    true
+                } else {
+                    selectedCategoryIds.any { catId ->
+                        if (catId == "cat_groom") {
+                            shop.groomingEnabled
+                        } else if (catId == "cat_vet") {
+                            shop.vetClinicEnabled
+                        } else {
+                            true
+                        }
+                    }
+                }
+                val matchesOpen = !filterOpenNow || shop.isOpen
+                val matchesDelivery = !filterDelivery || shop.deliveryAvailable
+                val matchesRating = !filterRating || shop.rating >= 4.5
+                
+                matchesQuery && matchesCategory && matchesOpen && matchesDelivery && matchesRating
+            }
+            
+            val existingIds = processedShops.map { it.id }.toSet()
+            val uniqueMocks = matchedMocks.filter { it.id !in existingIds }
+            processedShops + uniqueMocks
+        } else {
+            processedShops
+        }
+    }
+
+    val baseIndexForShops = 8
+    val remediesIndex = baseIndexForShops + if (displayShops.isEmpty()) 1 else displayShops.size
+    val auctionIndex = remediesIndex + 1
+
+    val popularShops = remember(displayShops) {
+        displayShops.filter { it.isFeatured || it.rating >= 4.5 }
+    }
+    val groomingShops = remember(displayShops) {
+        displayShops.filter { it.groomingEnabled }
+    }
+
         // ── MAIN FEED CONTENT ──────────────────────────────────────────
         LazyColumn(
             state = listState,
@@ -2043,15 +2243,13 @@ fun HomeScreen(viewModel: PawsViewModel) {
                 Triple("💊", "Remedies", {
                     remediesExpanded = true
                     coroutineScope.launch {
-                        val index = if (processedShops.isEmpty()) 7 else (7 + processedShops.size)
-                        listState.animateScrollToItem(index)
+                        listState.animateScrollToItem(remediesIndex)
                     }
                 }),
                 Triple("👥", "Group Buy", {
                     auctionExpanded = true
                     coroutineScope.launch {
-                        val index = if (processedShops.isEmpty()) 8 else (8 + processedShops.size)
-                        listState.animateScrollToItem(index)
+                        listState.animateScrollToItem(auctionIndex)
                     }
                 })
             )
@@ -2207,21 +2405,97 @@ fun HomeScreen(viewModel: PawsViewModel) {
         // Swiggy One pass removed per user request
 
         // Feed list
-        if (processedShops.isEmpty()) {
+        if (displayShops.isEmpty()) {
             item {
                 EmptyShopsState()
             }
         } else {
+            // Row 1: Popular & Top Rated Stores
+            if (popularShops.isNotEmpty()) {
+                item {
+                    Column(modifier = Modifier.padding(vertical = 12.dp)) {
+                        Text(
+                            "Popular & Top Rated Stores 🏆",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(start = 20.dp, bottom = 4.dp, top = 8.dp)
+                        )
+                        Text(
+                            "Handpicked elite stores with exceptional ratings near you",
+                            fontSize = 11.sp,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(start = 20.dp, bottom = 12.dp)
+                        )
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = 20.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            items(popularShops) { shop ->
+                                val totalOrders = allOrders.count { it.shopId == shop.id }
+                                val deliveredOrderIds = allOrders.filter { it.shopId == shop.id && it.status == "delivered" }.map { it.id }.toSet()
+                                val totalDeliveredProducts = allOrderItems.filter { it.orderId in deliveredOrderIds }.sumOf { it.quantity }
+                                
+                                HorizontalShopCard(
+                                    shop = shop,
+                                    totalOrders = totalOrders,
+                                    totalDeliveredProducts = totalDeliveredProducts,
+                                    onClick = { viewModel.navigateTo(Screen.ShopDetail(shop.id)) }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Row 2: Grooming & Spa Specialists
+            if (groomingShops.isNotEmpty()) {
+                item {
+                    Column(modifier = Modifier.padding(vertical = 12.dp)) {
+                        Text(
+                            "Grooming & Spa Specialists 🛁",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(start = 20.dp, bottom = 4.dp, top = 8.dp)
+                        )
+                        Text(
+                            "Premium styling and pampering centers for your pets",
+                            fontSize = 11.sp,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(start = 20.dp, bottom = 12.dp)
+                        )
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = 20.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            items(groomingShops) { shop ->
+                                val totalOrders = allOrders.count { it.shopId == shop.id }
+                                val deliveredOrderIds = allOrders.filter { it.shopId == shop.id && it.status == "delivered" }.map { it.id }.toSet()
+                                val totalDeliveredProducts = allOrderItems.filter { it.orderId in deliveredOrderIds }.sumOf { it.quantity }
+                                
+                                HorizontalShopCard(
+                                    shop = shop,
+                                    totalOrders = totalOrders,
+                                    totalDeliveredProducts = totalDeliveredProducts,
+                                    onClick = { viewModel.navigateTo(Screen.ShopDetail(shop.id)) }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Row 3: All Local Pet Shops
             item {
                 Text(
-                    "${processedShops.size} Pet Shops near you in $selectedCityName",
-                    fontSize = 13.sp,
+                    "All Local Pet Shops near you 🏬",
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.45f),
-                    modifier = Modifier.padding(start = 20.dp, top = 12.dp, bottom = 4.dp)
+                    modifier = Modifier.padding(start = 20.dp, top = 16.dp, bottom = 12.dp)
                 )
             }
-            items(processedShops) { shop ->
+            items(displayShops) { shop ->
                 val totalOrders = allOrders.count { it.shopId == shop.id }
                 val deliveredOrderIds = allOrders.filter { it.shopId == shop.id && it.status == "delivered" }.map { it.id }.toSet()
                 val totalDeliveredProducts = allOrderItems.filter { it.orderId in deliveredOrderIds }.sumOf { it.quantity }
@@ -4770,6 +5044,132 @@ fun ShopItemCard(
 }
 
 @Composable
+fun HorizontalShopCard(
+    shop: ShopEntity,
+    totalOrders: Int = 0,
+    totalDeliveredProducts: Int = 0,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .width(280.dp)
+            .padding(end = 12.dp, top = 4.dp, bottom = 12.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column {
+            // COVER IMAGE
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(130.dp)
+            ) {
+                Image(
+                    painter = rememberAsyncImagePainter(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(shop.photos.firstOrNull())
+                            .crossfade(true)
+                            .build()
+                    ),
+                    contentDescription = shop.name,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+                // scrim
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.5f)),
+                                startY = 40f
+                            )
+                        )
+                )
+                // Open status
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                        .background(
+                            color = if (shop.isOpen) Color(0xFF2E7D32) else Color(0xFFC62828),
+                            shape = RoundedCornerShape(6.dp)
+                        )
+                        .padding(horizontal = 7.dp, vertical = 3.dp)
+                ) {
+                    Text(
+                        text = if (shop.isOpen) "● OPEN" else "✕ CLOSED",
+                        color = Color.White,
+                        fontSize = 8.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
+                // Rating
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(start = 8.dp, bottom = 8.dp)
+                        .background(Color.Black.copy(alpha = 0.55f), RoundedCornerShape(6.dp))
+                        .padding(horizontal = 6.dp, vertical = 3.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("⭐", fontSize = 9.sp)
+                    Spacer(modifier = Modifier.width(3.dp))
+                    Text(
+                        text = shop.rating.toString(),
+                        color = Color(0xFFFFD54F),
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 11.sp
+                    )
+                }
+            }
+
+            // INFO
+            Column(modifier = Modifier.padding(12.dp)) {
+                Text(
+                    text = shop.name,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = shop.description,
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(top = 2.dp, bottom = 6.dp)
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "📍 " + shop.locality,
+                        fontSize = 10.sp,
+                        color = Color(0xFFFC8019),
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    if (totalOrders > 0) {
+                        Text(
+                            text = "$totalOrders orders",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFFC8019)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun EmptyShopsState() {
     Column(
         modifier = Modifier
@@ -6351,8 +6751,9 @@ fun SearchScreen(viewModel: PawsViewModel) {
     val shopsList by viewModel.shops.collectAsState()
     val allProducts by viewModel.allProducts.collectAsState()
     val categoryList by viewModel.categories.collectAsState()
-    val activeTab by viewModel.searchTab.collectAsState() // "Shops" | "Products"
+    val activeTab by viewModel.searchTab.collectAsState() // "All" | "Shops" | "Products"
     val context = LocalContext.current
+    val selectedCityId by viewModel.selectedCityId.collectAsState()
 
     var searchInput by remember { mutableStateOf(searchQuery) }
 
@@ -6371,9 +6772,93 @@ fun SearchScreen(viewModel: PawsViewModel) {
         viewModel.updateSearchQuery(searchInput)
     }
 
+    val mockShops = remember {
+        listOf(
+            ShopEntity(
+                id = "mock_hyd_1",
+                ownerId = "system",
+                cityId = "hyd",
+                name = "Banjara Hills Premium Pet Care 🐾",
+                description = "Sleek pet spa, gourmet boutique organic supplies & direct vet diagnostics.",
+                address = "Road No 2, Banjara Hills, Hyderabad",
+                locality = "Banjara Hills",
+                phone = "9876543210",
+                email = "banjara@paws.com",
+                photos = listOf("https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=600"),
+                isOpen = true,
+                opensAt = "08:00",
+                closesAt = "22:00",
+                rating = 4.8,
+                totalReviews = 42,
+                deliveryAvailable = true,
+                isVerified = true,
+                isActive = true,
+                isFeatured = true,
+                groomingEnabled = true,
+                vetClinicEnabled = true
+            ),
+            ShopEntity(
+                id = "mock_hyd_2",
+                ownerId = "system",
+                cityId = "hyd",
+                name = "Hitech City Paws & Claws Resort 🛁",
+                description = "Elite luxury styling, modern diagnostic lab and interactive grooming suites.",
+                address = "Phase 2, Hitech City, Hyderabad",
+                locality = "Hitech City",
+                phone = "9876543211",
+                email = "hitech@paws.com",
+                photos = listOf("https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=600"),
+                isOpen = true,
+                opensAt = "09:00",
+                closesAt = "21:00",
+                rating = 4.9,
+                totalReviews = 88,
+                deliveryAvailable = true,
+                isVerified = true,
+                isActive = true,
+                isFeatured = true,
+                groomingEnabled = true,
+                vetClinicEnabled = false
+            ),
+            ShopEntity(
+                id = "mock_hyd_3",
+                ownerId = "system",
+                cityId = "hyd",
+                name = "Madhapur Vet & Grooming Hub 🩺",
+                description = "Rapid local medicines delivery, standard vaccinations and holistic flea/tick dips.",
+                address = "Metro Station Road, Madhapur, Hyderabad",
+                locality = "Madhapur",
+                phone = "9876543212",
+                email = "madhapur@paws.com",
+                photos = listOf("https://images.unsplash.com/photo-1597633425046-08f5110420b5?auto=format&fit=crop&q=80&w=600"),
+                isOpen = true,
+                opensAt = "07:00",
+                closesAt = "23:00",
+                rating = 4.6,
+                totalReviews = 19,
+                deliveryAvailable = true,
+                isVerified = true,
+                isActive = true,
+                isFeatured = false,
+                groomingEnabled = false,
+                vetClinicEnabled = true
+            )
+        )
+    }
+
+    val displayShopsForSearch = remember(shopsList, selectedCityId, mockShops) {
+        if (selectedCityId == "hyd") {
+            val existingIds = shopsList.map { it.id }.toSet()
+            val uniqueMocks = mockShops.filter { it.id !in existingIds }
+            shopsList + uniqueMocks
+        } else {
+            shopsList
+        }
+    }
+
     // Filtered matched shops
-    val matchedShops = remember(searchQuery, shopsList) {
-        shopsList.filter { 
+    val matchedShops = remember(searchQuery, displayShopsForSearch) {
+        displayShopsForSearch.filter { 
             it.name.contains(searchQuery, ignoreCase = true) || 
             it.locality.contains(searchQuery, ignoreCase = true) ||
             it.description.contains(searchQuery, ignoreCase = true)
@@ -6458,7 +6943,7 @@ fun SearchScreen(viewModel: PawsViewModel) {
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
         ) {
-            listOf("Shops", "Products").forEach { tab ->
+            listOf("All", "Shops", "Products").forEach { tab ->
                 val isSelected = activeTab == tab
                 Box(
                     modifier = Modifier
@@ -6499,7 +6984,9 @@ fun SearchScreen(viewModel: PawsViewModel) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = if (activeTab == "Shops") "Matched Stores (${matchedShops.size})" else "Matched Products (${matchedProducts.size})",
+                text = if (activeTab == "All") "Matched Results (${matchedShops.size + matchedProducts.size})"
+                       else if (activeTab == "Shops") "Matched Stores (${matchedShops.size})"
+                       else "Matched Products (${matchedProducts.size})",
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Gray
@@ -6727,14 +7214,59 @@ fun SearchScreen(viewModel: PawsViewModel) {
             }
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 90.dp)) {
-                if (activeTab == "Shops") {
+                if (activeTab == "All") {
+                    if (matchedShops.isEmpty() && matchedProducts.isEmpty()) {
+                        item {
+                            Text("No matching pet stores or products found.", modifier = Modifier.padding(20.dp), color = Color.Gray, fontSize = 13.sp)
+                        }
+                    } else {
+                        if (matchedShops.isNotEmpty()) {
+                            item {
+                                Text(
+                                    "MATCHED STORES 🏪",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(start = 20.dp, top = 16.dp, bottom = 8.dp)
+                                )
+                            }
+                            items(matchedShops) { shop ->
+                                SearchShopRow(shop = shop, viewModel = viewModel)
+                            }
+                        }
+                        if (matchedProducts.isNotEmpty()) {
+                            item {
+                                Text(
+                                    "MATCHED PRODUCTS 📦",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(start = 20.dp, top = 16.dp, bottom = 8.dp)
+                                )
+                            }
+                            items(matchedProducts) { product ->
+                                val productShop = displayShopsForSearch.find { it.id == product.shopId }
+                                val shopName = productShop?.name ?: "Local Shop"
+                                SearchProductRow(
+                                    product = product,
+                                    viewModel = viewModel,
+                                    shopName = shopName,
+                                    onAdd = { 
+                                        viewModel.addToCart(product, productShop ?: displayShopsForSearch.firstOrNull() ?: return@SearchProductRow)
+                                        Toast.makeText(context, "Added ${product.name} to Cart!", Toast.LENGTH_SHORT).show()
+                                    }
+                                )
+                            }
+                        }
+                    }
+                } else if (activeTab == "Shops") {
                     if (matchedShops.isEmpty()) {
                         item {
                             Text("No matching pet stores found.", modifier = Modifier.padding(20.dp), color = Color.Gray, fontSize = 13.sp)
                         }
                     } else {
                         items(matchedShops) { shop ->
-                            ShopItemCard(shop = shop, onClick = { viewModel.navigateTo(Screen.ShopDetail(shop.id)) })
+                            SearchShopRow(shop = shop, viewModel = viewModel)
                         }
                     }
                 } else {
@@ -6744,14 +7276,14 @@ fun SearchScreen(viewModel: PawsViewModel) {
                         }
                     } else {
                         items(matchedProducts) { product ->
-                            val productShop = shopsList.find { it.id == product.shopId }
+                            val productShop = displayShopsForSearch.find { it.id == product.shopId }
                             val shopName = productShop?.name ?: "Local Shop"
                             SearchProductRow(
                                 product = product,
                                 viewModel = viewModel,
                                 shopName = shopName,
                                 onAdd = { 
-                                    viewModel.addToCart(product, productShop ?: shopsList.firstOrNull() ?: return@SearchProductRow)
+                                    viewModel.addToCart(product, productShop ?: displayShopsForSearch.firstOrNull() ?: return@SearchProductRow)
                                     Toast.makeText(context, "Added ${product.name} to Cart!", Toast.LENGTH_SHORT).show()
                                 }
                             )
@@ -6785,6 +7317,100 @@ fun FilterChipHelper(
             fontWeight = FontWeight.Bold,
             color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
         )
+    }
+}
+
+@Composable
+fun SearchShopRow(
+    shop: ShopEntity,
+    viewModel: PawsViewModel
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 6.dp)
+            .clickable { viewModel.navigateTo(Screen.ShopDetail(shop.id)) },
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = rememberAsyncImagePainter(shop.photos.firstOrNull()),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(68.dp)
+                    .clip(RoundedCornerShape(12.dp)),
+                contentScale = ContentScale.Crop
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = shop.name,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .background(Color(0xFFFC8019).copy(alpha = 0.1f), RoundedCornerShape(4.dp))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = "SHOP",
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color(0xFFFC8019)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(shop.locality, fontSize = 11.sp, color = Color.Gray)
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "⭐ ${shop.rating}",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFFFB300)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                color = if (shop.isOpen) Color(0xFF2E7D32).copy(alpha = 0.1f) else Color(0xFFC62828).copy(alpha = 0.1f),
+                                shape = RoundedCornerShape(4.dp)
+                            )
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = if (shop.isOpen) "OPEN" else "CLOSED",
+                            color = if (shop.isOpen) Color(0xFF2E7D32) else Color(0xFFC62828),
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Icon(
+                imageVector = Icons.Default.ArrowForward,
+                contentDescription = null,
+                tint = Color.Gray.copy(alpha = 0.7f),
+                modifier = Modifier.size(18.dp)
+            )
+        }
     }
 }
 
