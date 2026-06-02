@@ -373,7 +373,7 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
             // These hardcoded phone numbers grant role-based access with ZERO authentication.
             // Replace with real Firebase Phone Auth OTP or Supabase OTP verification.
             // In production: roles must be assigned server-side and never trusted from local DB.
-            if (phone == "9876543210" || phone == "8765432109" || phone == "9999999999" || phone == "7777777777") {
+            if (ProductionConfig.IS_DEMO_MODE && (phone == "9876543210" || phone == "8765432109" || phone == "9999999999" || phone == "7777777777")) {
                 val isMerchant = (phone == "8765432109")
                 val isAdmin = (phone == "9999999999")
                 val isCaptain = (phone == "7777777777")

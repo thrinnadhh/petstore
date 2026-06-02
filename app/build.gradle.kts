@@ -105,6 +105,8 @@ dependencies {
   // implementation(libs.androidx.navigation.compose)
   implementation(libs.androidx.room.ktx)
   implementation(libs.androidx.room.runtime)
+  // Secure SQLite Data-at-Rest Encryption (SQLCipher)
+  implementation("net.zetetic:sqlcipher-android:4.5.4")
   implementation(libs.coil.compose)
   implementation(libs.converter.moshi)
   // implementation(libs.firebase.ai)
