@@ -66,8 +66,8 @@ class PawsRepository(private val pawsDao: PawsDao) {
             )
         }
     }
-    suspend fun updateOrderStatus(id: String, status: String) {
-        pawsDao.updateOrderStatus(id, status)
+    suspend fun updateOrderStatus(id: String, status: String, captainId: String? = null) {
+        pawsDao.updateOrderStatus(id, status, captainId)
         if (!ProductionConfig.IS_DEMO_MODE) {
             SupabaseManager.updateOrderStatusInCloud(id, status)
         }

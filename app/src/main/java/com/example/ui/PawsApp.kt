@@ -1573,8 +1573,8 @@ fun CaptainDashboardScreen(viewModel: PawsViewModel) {
     val currentUser by viewModel.currentUser.collectAsState()
     val currentCaptain by viewModel.currentCaptain.collectAsState()
     val allOrders by viewModel.allOrders.collectAsState()
+    val shopsList by viewModel.shops.collectAsState()
     val context = LocalContext.current
-    var isShiftOnline by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -1715,6 +1715,8 @@ fun CaptainDashboardScreen(viewModel: PawsViewModel) {
                 }
                 "approved" -> {
                     // Active Captain Delivery Portal
+                    val isShiftOnline = captain.isActive
+
                     // Shift Switch Status
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -1746,7 +1748,9 @@ fun CaptainDashboardScreen(viewModel: PawsViewModel) {
                             }
                             Switch(
                                 checked = isShiftOnline,
-                                onCheckedChange = { isShiftOnline = it },
+                                onCheckedChange = { isOnline ->
+                                    viewModel.toggleCaptainOnlineStatus(captain.id, isOnline)
+                                },
                                 colors = SwitchDefaults.colors(
                                     checkedThumbColor = Color.White,
                                     checkedTrackColor = Color(0xFF2DB37A)
@@ -1756,6 +1760,11 @@ fun CaptainDashboardScreen(viewModel: PawsViewModel) {
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
+
+                    // Compute dynamic metrics
+                    val completedOrders = allOrders.filter { it.captainId == captain.id && it.status == "delivered" }
+                    val tripsCount = completedOrders.size
+                    val todayEarnings = tripsCount * 45.0 // ₹45 per delivery payout
 
                     // Delivery stats dashboard grid
                     Row(
@@ -1770,7 +1779,7 @@ fun CaptainDashboardScreen(viewModel: PawsViewModel) {
                             Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text("Today's Earnings", fontSize = 11.sp, color = Color.Gray)
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Text("₹0.00", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF333333))
+                                Text("₹${String.format("%.2f", todayEarnings)}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF333333))
                             }
                         }
 
@@ -1782,7 +1791,7 @@ fun CaptainDashboardScreen(viewModel: PawsViewModel) {
                             Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text("Trips Completed", fontSize = 11.sp, color = Color.Gray)
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Text("0", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF333333))
+                                Text("$tripsCount", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF333333))
                             }
                         }
 
@@ -1815,10 +1824,13 @@ fun CaptainDashboardScreen(viewModel: PawsViewModel) {
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             if (isShiftOnline) {
-                                val activeJob = allOrders.firstOrNull { it.status == "preparing" || it.status == "out_for_delivery" }
-                                val availableJob = allOrders.firstOrNull { it.status == "accepted" }
+                                val activeJob = allOrders.firstOrNull { it.captainId == captain.id && (it.status == "preparing" || it.status == "out_for_delivery") }
+                                val availableJob = allOrders.firstOrNull { it.status == "accepted" && it.captainId.isNullOrEmpty() }
 
                                 if (activeJob != null) {
+                                    val activeShop = shopsList.find { it.id == activeJob.shopId }
+                                    val activeShopName = activeShop?.name ?: "Local Pet Shop"
+
                                     Text(
                                         text = "📦 Active Delivery In Progress",
                                         fontSize = 16.sp,
@@ -1833,7 +1845,7 @@ fun CaptainDashboardScreen(viewModel: PawsViewModel) {
                                         Column(modifier = Modifier.padding(16.dp)) {
                                             Text("Order Ref: #${activeJob.id.take(8).uppercase()}", fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                             Spacer(modifier = Modifier.height(6.dp))
-                                            Text("📍 Pickup: Local Pet Shop", fontSize = 12.sp, color = Color.Gray)
+                                            Text("📍 Pickup: $activeShopName", fontSize = 12.sp, color = Color.Gray)
                                             Spacer(modifier = Modifier.height(4.dp))
                                             Text("🏁 Deliver to: ${activeJob.deliveryAddress}", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                             Spacer(modifier = Modifier.height(6.dp))
@@ -1843,7 +1855,7 @@ fun CaptainDashboardScreen(viewModel: PawsViewModel) {
                                     Spacer(modifier = Modifier.height(16.dp))
                                     Button(
                                         onClick = { 
-                                            viewModel.updateMerchantOrderStatus(activeJob.id, "delivered")
+                                            viewModel.completeDeliveryJob(activeJob.id)
                                             Toast.makeText(context, "Order delivered successfully!", Toast.LENGTH_SHORT).show()
                                         },
                                         modifier = Modifier.fillMaxWidth(),
@@ -1852,6 +1864,9 @@ fun CaptainDashboardScreen(viewModel: PawsViewModel) {
                                         Text("MARK AS DELIVERED ✓", color = Color.White, fontWeight = FontWeight.Bold)
                                     }
                                 } else if (availableJob != null) {
+                                    val availableShop = shopsList.find { it.id == availableJob.shopId }
+                                    val availableShopName = availableShop?.name ?: "Local Pet Supplies"
+
                                     Text(
                                         text = "🚨 Active Delivery Request Found!",
                                         fontSize = 16.sp,
@@ -1867,7 +1882,7 @@ fun CaptainDashboardScreen(viewModel: PawsViewModel) {
                                         Column(modifier = Modifier.padding(16.dp)) {
                                             Text("Order Ref: #${availableJob.id.take(8).uppercase()}", fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                             Spacer(modifier = Modifier.height(6.dp))
-                                            Text("📍 Store: Local Pet Supplies", fontSize = 12.sp, color = Color.Gray)
+                                            Text("📍 Store: $availableShopName", fontSize = 12.sp, color = Color.Gray)
                                             Spacer(modifier = Modifier.height(4.dp))
                                             Text("🏁 Delivery Address: ${availableJob.deliveryAddress}", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                             Spacer(modifier = Modifier.height(8.dp))
@@ -1883,7 +1898,7 @@ fun CaptainDashboardScreen(viewModel: PawsViewModel) {
                                     Spacer(modifier = Modifier.height(16.dp))
                                     Button(
                                         onClick = { 
-                                            viewModel.updateMerchantOrderStatus(availableJob.id, "preparing")
+                                            viewModel.acceptDeliveryJob(availableJob.id, captain.id)
                                             Toast.makeText(context, "Delivery job accepted! Navigate to store.", Toast.LENGTH_LONG).show()
                                         },
                                         modifier = Modifier.fillMaxWidth(),
@@ -6452,6 +6467,7 @@ fun OrderTrackingScreen(viewModel: PawsViewModel, orderId: String) {
     val activeOrder by viewModel.activeOrder.collectAsState()
     val activeOrderItems by viewModel.activeOrderItems.collectAsState()
     val shopsList by viewModel.shops.collectAsState()
+    val activeOrderCaptain by viewModel.activeOrderCaptain.collectAsState()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -6523,7 +6539,11 @@ fun OrderTrackingScreen(viewModel: PawsViewModel, orderId: String) {
                 Text("Swiggy Delivery Partner", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 Spacer(modifier = Modifier.height(12.dp))
                 
-                if (order.status == "out_for_delivery" || order.status == "delivered") {
+                if (!order.captainId.isNullOrEmpty()) {
+                    val captainName = activeOrderCaptain?.fullName ?: "Ramesh Kumar"
+                    val captainPhone = activeOrderCaptain?.phone ?: "+91 9876543210"
+                    val vehicleNo = activeOrderCaptain?.vehicleNumber ?: "TS-09-EA-9999"
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
@@ -6541,17 +6561,17 @@ fun OrderTrackingScreen(viewModel: PawsViewModel, orderId: String) {
                             }
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
-                                Text("Ramesh Kumar", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Text(captainName, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text("⭐ 4.9 ", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFFDB7C00))
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Text("• Vaccinated Partner ✓", fontSize = 11.sp, color = Color(0xFF3F8F27), fontWeight = FontWeight.Bold)
+                                    Text("• $vehicleNo", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Normal)
                                 }
                             }
                         }
                         
                         IconButton(
-                            onClick = { Toast.makeText(context, "Calling Ramesh Kumar (+91 9876543210)...", Toast.LENGTH_SHORT).show() },
+                            onClick = { Toast.makeText(context, "Calling $captainName ($captainPhone)...", Toast.LENGTH_SHORT).show() },
                             modifier = Modifier
                                 .background(MaterialTheme.colorScheme.primaryContainer, CircleShape)
                                 .size(36.dp)

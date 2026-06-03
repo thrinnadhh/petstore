@@ -31,7 +31,7 @@ import androidx.room.TypeConverters
         GroupRfqMemberItemEntity::class,
         MerchantQuotationEntity::class
     ],
-    version = 17,
+    version = 18,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

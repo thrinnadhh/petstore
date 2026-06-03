@@ -116,8 +116,8 @@ interface PawsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrder(order: OrderEntity)
 
-    @Query("UPDATE orders SET status = :status, updatedAt = :updatedAt WHERE id = :id")
-    suspend fun updateOrderStatus(id: String, status: String, updatedAt: Long = System.currentTimeMillis())
+    @Query("UPDATE orders SET status = :status, captainId = :captainId, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun updateOrderStatus(id: String, status: String, captainId: String?, updatedAt: Long = System.currentTimeMillis())
 
     // Order Items
     @Query("SELECT * FROM order_items WHERE orderId = :orderId")

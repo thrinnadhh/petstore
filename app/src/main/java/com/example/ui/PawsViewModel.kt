@@ -79,6 +79,7 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
         else flowOf(null)
     }.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
+
     // Group RFQ Bidding State Flows
     private val _currentRfqSessionId = MutableStateFlow<String?>(null)
     val currentRfqSessionId: StateFlow<String?> = _currentRfqSessionId.asStateFlow()
@@ -278,6 +279,16 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
     private val _activeOrder = MutableStateFlow<OrderEntity?>(null)
     val activeOrder: StateFlow<OrderEntity?> = _activeOrder.asStateFlow()
 
+    val activeOrderCaptain = _activeOrder.flatMapLatest { order ->
+        if (order != null && !order.captainId.isNullOrEmpty()) {
+            flow<CaptainEntity?> {
+                emit(repository.getCaptainById(order.captainId))
+            }
+        } else {
+            flowOf<CaptainEntity?>(null)
+        }
+    }.stateIn(viewModelScope, SharingStarted.Lazily, null)
+
     private val _activeOrderItems = MutableStateFlow<List<OrderItemEntity>>(emptyList())
     val activeOrderItems: StateFlow<List<OrderItemEntity>> = _activeOrderItems.asStateFlow()
 
@@ -411,8 +422,8 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
                             aadharCardUrl = "https://images.unsplash.com/photo-1589758438368-0ad531db3366?w=400",
                             licenseUrl = "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=400",
                             selfieUrl = "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200",
-                            status = "pending",
-                            isActive = false
+                            status = "approved",
+                            isActive = true
                         )
                         repository.insertCaptain(defaultCaptain)
                     }
@@ -1056,6 +1067,31 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
     fun declineCaptain(captainId: String) {
         viewModelScope.launch {
             repository.updateCaptainStatus(captainId, "rejected", false)
+        }
+    }
+
+    fun toggleCaptainOnlineStatus(captainId: String, isOnline: Boolean) {
+        viewModelScope.launch {
+            val captain = repository.getCaptainById(captainId) ?: return@launch
+            repository.updateCaptainStatus(captainId, captain.status, isOnline)
+        }
+    }
+
+    fun acceptDeliveryJob(orderId: String, captainId: String) {
+        viewModelScope.launch {
+            repository.updateOrderStatus(orderId, "preparing", captainId)
+            if (_activeOrder.value?.id == orderId) {
+                _activeOrder.value = repository.getOrderById(orderId)
+            }
+        }
+    }
+
+    fun completeDeliveryJob(orderId: String) {
+        viewModelScope.launch {
+            repository.updateOrderStatus(orderId, "delivered")
+            if (_activeOrder.value?.id == orderId) {
+                _activeOrder.value = repository.getOrderById(orderId)
+            }
         }
     }
 

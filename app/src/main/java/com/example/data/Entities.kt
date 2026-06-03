@@ -92,6 +92,7 @@ data class OrderEntity(
     val totalAmount: Double,
     val deliveryAddress: String, // JSON or formatted text
     val notes: String = "",
+    val captainId: String? = null,
     val placedAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )
