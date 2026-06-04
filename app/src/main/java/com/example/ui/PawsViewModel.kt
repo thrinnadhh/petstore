@@ -1,6 +1,7 @@
 package com.example.ui
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.*
@@ -8,6 +9,20 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.UUID
+import android.annotation.SuppressLint
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
+import android.location.Geocoder
+import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
+sealed interface LocationResult {
+    data class Serviceable(val city: CityEntity, val distanceKm: Float) : LocationResult
+    data class NotServiceable(val city: CityEntity, val distanceKm: Float) : LocationResult
+    data class Error(val message: String) : LocationResult
+}
 
 sealed class Screen {
     object Splash : Screen()
@@ -28,6 +43,12 @@ sealed class Screen {
     object MerchantMenu : Screen()
     object MerchantShopSetup : Screen()
     object SuperAdmin : Screen()
+    object Appointments : Screen()
+    object TabletsIssued : Screen()
+    object Vaccinations : Screen()
+    object Favourites : Screen()
+    object ReportsDashboard : Screen()
+    object Orders : Screen()
 }
 
 class PawsViewModel(application: Application) : AndroidViewModel(application) {
@@ -47,8 +68,19 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
     private val _selectedCityId = MutableStateFlow<String>("hyd")
     val selectedCityId: StateFlow<String> = _selectedCityId.asStateFlow()
 
-    private val _selectedCityName = MutableStateFlow<String>("Hyderabad")
+    private val _selectedCityName = MutableStateFlow<String>("Hyderabad, Telangana")
     val selectedCityName: StateFlow<String> = _selectedCityName.asStateFlow()
+
+    // Localization State
+    private val _appLanguage = MutableStateFlow("en")
+    val appLanguage: StateFlow<String> = _appLanguage.asStateFlow()
+
+    fun setAppLanguage(lang: String) {
+        _appLanguage.value = lang
+        L10n.currentLanguage = lang
+        val prefs = getApplication<Application>().getSharedPreferences("paws_settings", Context.MODE_PRIVATE)
+        prefs.edit().putString("app_language", lang).apply()
+    }
 
     // General Feed States
     val cities = repository.activeCitiesFlow.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
@@ -308,6 +340,12 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
     val allProductSpecs = repository.getAllProductSpecsFlow().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     init {
+        // Initialize global language settings
+        val prefs = application.getSharedPreferences("paws_settings", Context.MODE_PRIVATE)
+        val loadedLanguage = prefs.getString("app_language", "en") ?: "en"
+        _appLanguage.value = loadedLanguage
+        L10n.currentLanguage = loadedLanguage
+
         // Initialize global cloud services and analytics
         SupabaseManager.init(application)
         AnalyticsManager.init(application)
@@ -319,7 +357,18 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
             repository.seedDatabaseIfEmpty()
             // Simulating a Splash Screen delay of 2 seconds
             delay(2000)
-            _currentScreen.value = Screen.SuperAdmin
+            // Auto-login as the demo consumer profile so the customer page is shown directly.
+            // The Super Admin Portal is still accessible via Profile -> Super Admin Controls.
+            val profile = repository.getProfile("consumer_arjun")
+            if (profile != null) {
+                _currentUser.value = profile
+                _selectedCityId.value = profile.cityId
+                val cityObj = repository.getAllCitiesSync().firstOrNull { it.id == profile.cityId }
+                _selectedCityName.value = if (cityObj != null) "${cityObj.name}, ${cityObj.state}" else "Hyderabad, Telangana"
+                _currentScreen.value = Screen.Home
+            } else {
+                _currentScreen.value = Screen.Auth
+            }
         }
     }
 
@@ -441,7 +490,8 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
             MonitoringManager.logAuthEvent(formattedPhone, "login_success")
             _currentUser.value = profile
             _selectedCityId.value = profile.cityId
-            _selectedCityName.value = if (profile.cityId == "hyd") "Hyderabad" else if (profile.cityId == "blr") "Bengaluru" else "Chennai"
+            val cityObj = repository.getAllCitiesSync().firstOrNull { it.id == profile.cityId }
+            _selectedCityName.value = if (cityObj != null) "${cityObj.name}, ${cityObj.state}" else "Hyderabad, Telangana"
             
             // PostHog analytics integration
             AnalyticsManager.identifyUser(profile.id, mapOf("name" to profile.fullName, "role" to profile.role, "phone" to profile.phone))
@@ -533,7 +583,7 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
             MonitoringManager.logAuthEvent(formattedPhone, "register_success")
             _currentUser.value = profile
             _selectedCityId.value = profile.cityId
-            _selectedCityName.value = "Hyderabad"
+            _selectedCityName.value = "Hyderabad, Telangana"
             
             // PostHog registration analytics integration
             AnalyticsManager.identifyUser(profile.id, mapOf("name" to profile.fullName, "role" to profile.role, "phone" to profile.phone))
@@ -586,7 +636,7 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
                 
                 _currentUser.value = superAdmin
                 _selectedCityId.value = "hyd"
-                _selectedCityName.value = "Hyderabad"
+                _selectedCityName.value = "Hyderabad, Telangana"
                 _currentScreen.value = Screen.SuperAdmin
                 onSuccess()
                 return@launch
@@ -612,7 +662,8 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
             // Login success
             _currentUser.value = profile
             _selectedCityId.value = profile.cityId
-            _selectedCityName.value = if (profile.cityId == "hyd") "Hyderabad" else if (profile.cityId == "blr") "Bengaluru" else "Chennai"
+            val cityObj = repository.getAllCitiesSync().firstOrNull { it.id == profile.cityId }
+            _selectedCityName.value = if (cityObj != null) "${cityObj.name}, ${cityObj.state}" else "Hyderabad, Telangana"
 
             AnalyticsManager.identifyUser(profile.id, mapOf("name" to profile.fullName, "role" to profile.role, "phone" to profile.phone))
             AnalyticsManager.trackEvent("user_login", mapOf("user_id" to profile.id, "role" to profile.role))
@@ -645,6 +696,128 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
             navigateTo(Screen.Home)
         }
     }
+
+    // GPS Location Auto-Detection with Rollout Check
+    suspend fun detectLocationAndCheckService(lat: Double, lng: Double): LocationResult {
+        val allCities = repository.getAllCitiesSync()
+        if (allCities.isEmpty()) {
+            return LocationResult.Error("No cities configured in the database.")
+        }
+
+        // Try to reverse geocode using Android's built-in Geocoder
+        var geocodedCityName: String? = null
+        try {
+            val geocoder = Geocoder(getApplication(), Locale.getDefault())
+            val addresses = withContext(Dispatchers.IO) {
+                // geocoder.getFromLocation can block, so we run on IO dispatcher
+                geocoder.getFromLocation(lat, lng, 1)
+            }
+            val address = addresses?.firstOrNull()
+            if (address != null) {
+                // locality is typically the city name, subAdminArea as fallback
+                geocodedCityName = address.locality ?: address.subAdminArea
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        // Check if the geocoded city name matches any city in our database (case-insensitive)
+        var matchedCity: CityEntity? = null
+        if (!geocodedCityName.isNullOrBlank()) {
+            matchedCity = allCities.firstOrNull { city ->
+                city.name.equals(geocodedCityName, ignoreCase = true) ||
+                geocodedCityName.contains(city.name, ignoreCase = true) ||
+                city.name.contains(geocodedCityName, ignoreCase = true)
+            }
+        }
+
+        if (matchedCity != null) {
+            val distance = calculateDistanceInKm(lat, lng, matchedCity.lat, matchedCity.lng)
+            if (!matchedCity.isActive) {
+                return LocationResult.NotServiceable(matchedCity, distance)
+            }
+            // If active and they are actually in/near it, return Serviceable
+            // (e.g., within a reasonable boundary like 100km of the matched center)
+            if (distance <= 100.0f) {
+                return LocationResult.Serviceable(matchedCity, distance)
+            }
+        }
+        
+        // Fallback to closest city by distance calculation
+        var closestCity: CityEntity? = null
+        var minDistance = Float.MAX_VALUE
+        
+        for (city in allCities) {
+            val distance = calculateDistanceInKm(lat, lng, city.lat, city.lng)
+            if (distance < minDistance) {
+                minDistance = distance
+                closestCity = city
+            }
+        }
+        
+        val city = closestCity ?: return LocationResult.Error("Unable to find closest city.")
+        
+        // We set 50 km as serviceable radius limit
+        if (minDistance > 50.0f) {
+            return LocationResult.NotServiceable(city, minDistance)
+        }
+        
+        if (!city.isActive) {
+            return LocationResult.NotServiceable(city, minDistance)
+        }
+        
+        return LocationResult.Serviceable(city, minDistance)
+    }
+
+    private fun calculateDistanceInKm(lat1: Double, lng1: Double, lat2: Double, lng2: Double): Float {
+        val results = FloatArray(1)
+        try {
+            android.location.Location.distanceBetween(lat1, lng1, lat2, lng2, results)
+            return results[0] / 1000f
+        } catch (e: Exception) {
+            // Mathematical fallback (Haversine approximation)
+            val earthRadius = 6371.0 // in km
+            val dLat = Math.toRadians(lat2 - lat1)
+            val dLng = Math.toRadians(lng2 - lng1)
+            val a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                    Math.sin(dLng / 2) * Math.sin(dLng / 2)
+            val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+            return (earthRadius * c).toFloat()
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun detectLocation(context: Context, onResult: (LocationResult) -> Unit) {
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+        val cts = CancellationTokenSource()
+        fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, cts.token)
+            .addOnSuccessListener { location ->
+                if (location != null) {
+                    viewModelScope.launch {
+                        val result = detectLocationAndCheckService(location.latitude, location.longitude)
+                        onResult(result)
+                    }
+                } else {
+                    fusedLocationClient.lastLocation.addOnSuccessListener { lastLoc ->
+                        viewModelScope.launch {
+                            if (lastLoc != null) {
+                                val result = detectLocationAndCheckService(lastLoc.latitude, lastLoc.longitude)
+                                onResult(result)
+                            } else {
+                                onResult(LocationResult.Error("GPS signal unavailable. Please try GPS simulation."))
+                            }
+                        }
+                    }.addOnFailureListener {
+                        onResult(LocationResult.Error("Failed to retrieve GPS location."))
+                    }
+                }
+            }
+            .addOnFailureListener {
+                onResult(LocationResult.Error("Failed to request GPS location."))
+            }
+    }
+
 
     fun logout() {
         _currentUser.value = null
@@ -1152,7 +1325,7 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
             
             _currentUser.value = profile
             _selectedCityId.value = profile.cityId
-            _selectedCityName.value = "Hyderabad"
+            _selectedCityName.value = "Hyderabad, Telangana"
             
             _currentScreen.value = Screen.LocationSelect // go to city selector
             onSuccess()
@@ -1338,6 +1511,17 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
     fun updateAppointmentStatus(appointmentId: String, status: String) {
         viewModelScope.launch {
             repository.updateAppointmentStatus(appointmentId, status)
+        }
+    }
+
+    fun rescheduleAppointment(appointment: AppointmentEntity, newDate: String, newTime: String) {
+        viewModelScope.launch {
+            val updated = appointment.copy(
+                appointmentDate = newDate,
+                appointmentTime = newTime,
+                status = "pending"
+            )
+            repository.insertAppointment(updated)
         }
     }
 

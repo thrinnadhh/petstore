@@ -69,6 +69,24 @@ interface PawsDao {
     @Query("SELECT * FROM categories")
     fun getAllCategoriesFlow(): Flow<List<CategoryEntity>>
 
+    @Query("SELECT COUNT(*) FROM categories")
+    suspend fun getCategoriesCount(): Int
+
+    @Query("SELECT COUNT(*) FROM categories WHERE id = 'cat_food'")
+    suspend fun hasNewCategories(): Int
+
+    @Query("DELETE FROM categories")
+    suspend fun clearCategories()
+
+    @Query("DELETE FROM shops")
+    suspend fun clearShops()
+
+    @Query("DELETE FROM products")
+    suspend fun clearProducts()
+
+    @Query("DELETE FROM services")
+    suspend fun clearServices()
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCategory(category: CategoryEntity)
 
@@ -196,6 +214,9 @@ interface PawsDao {
     @Query("SELECT * FROM appointments WHERE consumerId = :consumerId ORDER BY createdAt DESC")
     fun getAppointmentsForConsumerFlow(consumerId: String): Flow<List<AppointmentEntity>>
 
+    @Query("SELECT * FROM appointments WHERE consumerId = :consumerId")
+    suspend fun getAppointmentsForConsumerSync(consumerId: String): List<AppointmentEntity>
+
     @Query("SELECT * FROM appointments WHERE shopId = :shopId ORDER BY createdAt DESC")
     fun getAppointmentsForShopFlow(shopId: String): Flow<List<AppointmentEntity>>
 
@@ -208,6 +229,9 @@ interface PawsDao {
     // Reminders
     @Query("SELECT * FROM reminders WHERE consumerId = :consumerId ORDER BY dateString ASC")
     fun getRemindersForConsumerFlow(consumerId: String): Flow<List<ReminderEntity>>
+
+    @Query("SELECT * FROM reminders WHERE consumerId = :consumerId")
+    suspend fun getRemindersForConsumerSync(consumerId: String): List<ReminderEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertReminder(reminder: ReminderEntity)

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>PawsApp - Appointments</title>
+<!-- Google Fonts & Material Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-fixed-dim": "#b4c5ff",
+                        "surface-container-highest": "#d3e4fe",
+                        "secondary": "#855300",
+                        "on-secondary": "#ffffff",
+                        "on-primary-container": "#eeefff",
+                        "surface-container": "#e5eeff",
+                        "inverse-surface": "#213145",
+                        "surface-dim": "#cbdbf5",
+                        "on-tertiary-container": "#bdffdb",
+                        "on-surface-variant": "#434655",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f8f9ff",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "surface-container-high": "#dce9ff",
+                        "surface": "#f8f9ff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-container-low": "#eff4ff",
+                        "on-secondary-fixed": "#2a1700",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "tertiary": "#006242",
+                        "on-primary-fixed": "#00174b",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "on-background": "#0b1c30",
+                        "background": "#f8f9ff",
+                        "primary-container": "#2563eb",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#684000",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed": "#6ffbbe",
+                        "tertiary-container": "#007d55",
+                        "primary-fixed": "#dbe1ff",
+                        "primary": "#004ac6",
+                        "secondary-container": "#fea619",
+                        "outline-variant": "#c3c6d7",
+                        "on-surface": "#0b1c30",
+                        "inverse-primary": "#b4c5ff",
+                        "surface-tint": "#0053db",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "secondary-fixed": "#ffddb8",
+                        "on-tertiary-fixed": "#002113",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#d3e4fe",
+                        "outline": "#737686",
+                        "on-primary": "#ffffff"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "gutter": "16px",
+                        "margin-mobile": "16px",
+                        "sm": "12px",
+                        "base": "4px",
+                        "xs": "8px",
+                        "margin-desktop": "48px",
+                        "md": "16px",
+                        "xl": "32px",
+                        "lg": "24px"
+                    },
+                    fontFamily: {
+                        "label-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    fontSize: {
+                        "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "600" }],
+                        "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "800" }],
+                        "label-sm": ["12px", { lineHeight: "16px", fontWeight: "500" }],
+                        "headline-md": ["20px", { lineHeight: "28px", fontWeight: "600" }],
+                        "headline-lg-mobile": ["24px", { lineHeight: "32px", fontWeight: "700" }],
+                        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "headline-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "700" }],
+                        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }]
+                    }
+                }
+            }
+        };
+    </script>
+<style>
+        body { -webkit-tap-highlight-color: transparent; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col pt-[72px] pb-[88px] md:pb-0">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface dark:bg-background">
+<div class="flex justify-between items-center w-full px-margin-mobile py-xs max-w-7xl mx-auto h-[72px]">
+<!-- Leading Icon -->
+<button aria-label="Location" class="p-2 -ml-2 rounded-full hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-on-surface">location_on</span>
+</button>
+<!-- Headline / Brand -->
+<h1 class="font-display-lg text-headline-md font-bold text-primary dark:text-primary-fixed">
+                PawsApp
+            </h1>
+<!-- Trailing Avatar -->
+<button aria-label="Profile" class="w-10 h-10 rounded-full overflow-hidden border-2 border-secondary-container">
+<img alt="Premium user profile" class="w-full h-full object-cover" data-alt="A close-up portrait of a professional looking individual smiling warmly, framed perfectly within a circular avatar border. The background is softly blurred with modern light-mode office lighting. High quality corporate style photography suitable for a premium app profile." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB2YwNOMe08wQT5HC7_1fP0roGDby2v9VT2elw1_xojx6a-WmXM5t2j2mr55QUX-FZedgBz1KrwrBwOZ9mT-EgkAxuilcmkSfWwrPRjYW71yxIAkgJQLF6SGTvnKh-cbUROw0hH6s-r4eeD90bGi3irqYlly003FRTAj-z5eRZKSXuaxvmZLfi2OPx91mELxEtpFORREtuAc7Aby49lMZ3_OFPPfdJuxFSxp9nPdp4utdJFz807gOXSmvkQd4ItX-mzPUxa6K8o-Q"/>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow w-full max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop py-lg space-y-xl">
+<!-- Header Section -->
+<section class="space-y-sm">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-on-background">Appointments</h2>
+<p class="font-body-md text-on-surface-variant">Manage your pet's upcoming visits and view past history.</p>
+</section>
+<!-- Segmented Control (Tabs) -->
+<div class="flex p-1 bg-surface-container-low rounded-lg w-full max-w-md mx-auto md:mx-0">
+<button aria-current="page" class="flex-1 py-2 text-center rounded bg-surface text-primary shadow-sm font-label-md">Upcoming</button>
+<button class="flex-1 py-2 text-center rounded text-on-surface-variant hover:bg-surface-container-highest transition-colors font-label-md">Past</button>
+</div>
+<!-- Appointment Cards List -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
+<!-- Appointment Card 1 (Upcoming) -->
+<article class="bg-surface-container-lowest rounded-xl p-md border border-outline-variant/30 shadow-sm relative overflow-hidden flex flex-col h-full group hover:shadow-lg transition-shadow duration-300">
+<!-- Decorative top edge -->
+<div class="absolute top-0 left-0 w-full h-1 bg-primary"></div>
+<div class="flex justify-between items-start mb-4">
+<div class="flex flex-col">
+<span class="font-label-md text-primary mb-1">Annual Wellness Exam</span>
+<h3 class="font-headline-md text-on-surface">Dr. Sarah Jenkins</h3>
+<p class="font-body-md text-on-surface-variant">City Paws Veterinary Clinic</p>
+</div>
+<div class="bg-surface-container-highest p-2 rounded-lg flex flex-col items-center min-w-[60px]">
+<span class="font-label-sm text-on-surface-variant uppercase">Oct</span>
+<span class="font-headline-md text-primary">24</span>
+</div>
+</div>
+<div class="flex items-center space-x-2 text-on-surface-variant mb-6 font-body-md">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">schedule</span>
+<span>10:30 AM - 11:15 AM</span>
+</div>
+<!-- Pet info -->
+<div class="flex items-center space-x-3 mb-6 bg-surface-container-low p-2 rounded-lg">
+<img alt="Bella" class="w-8 h-8 rounded-full object-cover" data-alt="A cute golden retriever puppy looking directly at the camera with bright eyes. The background is a soft, light studio setting, emphasizing clean modern app design aesthetics. The dog is positioned perfectly for a circular crop." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAISqClwoMoaV-F9pIhuxfP-a4aMulM2CgrGOyamyntBUtzLUmzTEMXlMHWtj5LMNNTYsGyiqKqS1_qwM6BCvyyF-wCxiFpdaEq0_Q8LQ9QeBXfoPe2cszJOW4Kwb-6Zwb2X_7P9TaPgWjHPHF7A5ww5eqtukd_epqBQ2knljgKj3N6_gOlJyVWPhkehJFwBRp09gPeDnGkq5YEJ76tFLNIy10QVgAUnHYN94ImdvciQRnVXq9vsf9r0QeUtG_yqavXUTdQnsRYdo0"/>
+<span class="font-label-md text-on-surface">Bella (Dog)</span>
+</div>
+<div class="mt-auto flex flex-row space-x-sm">
+<button class="flex-1 bg-surface-container-lowest border-2 border-primary text-primary font-label-md py-2 rounded-lg hover:bg-surface-container-low transition-colors flex items-center justify-center space-x-1">
+<span class="material-symbols-outlined text-[18px]">calendar_add_on</span>
+<span>Add to Cal</span>
+</button>
+<button class="flex-1 bg-primary text-on-primary font-label-md py-2 rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center space-x-1">
+<span class="material-symbols-outlined text-[18px]">edit_calendar</span>
+<span>Reschedule</span>
+</button>
+</div>
+</article>
+<!-- Appointment Card 2 (Upcoming) -->
+<article class="bg-surface-container-lowest rounded-xl p-md border border-outline-variant/30 shadow-sm relative overflow-hidden flex flex-col h-full group hover:shadow-lg transition-shadow duration-300">
+<div class="absolute top-0 left-0 w-full h-1 bg-secondary-container"></div>
+<div class="flex justify-between items-start mb-4">
+<div class="flex flex-col">
+<span class="font-label-md text-secondary-container mb-1">Vaccination Update</span>
+<h3 class="font-headline-md text-on-surface">Dr. Michael Chen</h3>
+<p class="font-body-md text-on-surface-variant">Downtown Animal Hospital</p>
+</div>
+<div class="bg-surface-container-highest p-2 rounded-lg flex flex-col items-center min-w-[60px]">
+<span class="font-label-sm text-on-surface-variant uppercase">Nov</span>
+<span class="font-headline-md text-secondary-container">12</span>
+</div>
+</div>
+<div class="flex items-center space-x-2 text-on-surface-variant mb-6 font-body-md">
+<span class="material-symbols-outlined text-secondary-container" style="font-variation-settings: 'FILL' 1;">schedule</span>
+<span>2:00 PM - 2:30 PM</span>
+</div>
+<!-- Pet info -->
+<div class="flex items-center space-x-3 mb-6 bg-surface-container-low p-2 rounded-lg">
+<img alt="Luna" class="w-8 h-8 rounded-full object-cover" data-alt="A fluffy grey tabby cat sitting elegantly on a bright white surface. The lighting is soft and natural, creating a clean, modern aesthetic suitable for a premium pet care application. Perfectly centered for a small circular avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnwwg-3mBoQUyX20kGu6llKgTT9J4YZEd7VUxG2WO8zxEWzrtqcXFOhXao8SE3oqGq7yUmK7I1dM7ED0Ey4mXFy0-sZxvitTRv0oNnniRHhkvwFqNgx5HqZYFQ1kyXgpPrmRxyQIgYBkQl_11BiQ-IUJ7HS4sjLFHxPUvR2Vg3QckJcg5iGRp3Rqmo9e5DS2rwTkrfka3wfnBtdb0HoB3BnJjaKhaBOvuh2gCfgbyS_vdyXuNVq82kbxvHsNAnEVxQryDPfaoQ91M"/>
+<span class="font-label-md text-on-surface">Luna (Cat)</span>
+</div>
+<div class="mt-auto flex flex-row space-x-sm">
+<button class="flex-1 bg-surface-container-lowest border-2 border-primary text-primary font-label-md py-2 rounded-lg hover:bg-surface-container-low transition-colors flex items-center justify-center space-x-1">
+<span class="material-symbols-outlined text-[18px]">calendar_add_on</span>
+<span>Add to Cal</span>
+</button>
+<button class="flex-1 bg-primary text-on-primary font-label-md py-2 rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center space-x-1">
+<span class="material-symbols-outlined text-[18px]">edit_calendar</span>
+<span>Reschedule</span>
+</button>
+</div>
+</article>
+<!-- Book New Action Card -->
+<article class="bg-surface-container border-2 border-dashed border-primary-fixed-dim rounded-xl p-md flex flex-col items-center justify-center text-center h-full min-h-[300px] cursor-pointer hover:bg-surface-container-high transition-colors">
+<div class="w-16 h-16 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-3xl">add</span>
+</div>
+<h3 class="font-headline-md text-on-surface mb-2">Book New Visit</h3>
+<p class="font-body-md text-on-surface-variant max-w-[200px]">Schedule a checkup, grooming, or consultation.</p>
+</article>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-xs pb-safe py-base bg-surface-container-lowest shadow-sm md:hidden rounded-t-xl" style="box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);">
+<!-- Home -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1" href="#">
+<span class="material-symbols-outlined mb-1">home</span>
+<span class="font-label-sm">Home</span>
+</a>
+<!-- Search -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1" href="#">
+<span class="material-symbols-outlined mb-1">search</span>
+<span class="font-label-sm">Search</span>
+</a>
+<!-- Orders (Appointments logic fallback if needed, but keeping standard nav) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1" href="#">
+<span class="material-symbols-outlined mb-1">shopping_bag</span>
+<span class="font-label-sm">Orders</span>
+</a>
+<!-- Profile (Active based on Intent: Appointments usually live under Profile/Account) -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-sm font-bold">Profile</span>
+</a>
+</nav>
+</body></html>

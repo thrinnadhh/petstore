@@ -44,6 +44,11 @@ abstract class AppDatabase : RoomDatabase() {
 
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
+                try {
+                    System.loadLibrary("sqlcipher")
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
                 // Initialize SQLCipher factory helper for secure SQLite encryption at rest
                 val passphrase = "secure_paws_key_passphrase_to_encrypt_sqlite".toByteArray()
                 val factory = net.zetetic.database.sqlcipher.SupportOpenHelperFactory(passphrase)

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<title>PawsApp - Favourites</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed-dim": "#b4c5ff",
+                        "surface-container-highest": "#d3e4fe",
+                        "secondary": "#855300",
+                        "on-secondary": "#ffffff",
+                        "on-primary-container": "#eeefff",
+                        "surface-container": "#e5eeff",
+                        "inverse-surface": "#213145",
+                        "surface-dim": "#cbdbf5",
+                        "on-tertiary-container": "#bdffdb",
+                        "on-surface-variant": "#434655",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f8f9ff",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "surface-container-high": "#dce9ff",
+                        "surface": "#f8f9ff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-container-low": "#eff4ff",
+                        "on-secondary-fixed": "#2a1700",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "tertiary": "#006242",
+                        "on-primary-fixed": "#00174b",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "on-background": "#0b1c30",
+                        "background": "#f8f9ff",
+                        "primary-container": "#2563eb",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#684000",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed": "#6ffbbe",
+                        "tertiary-container": "#007d55",
+                        "primary-fixed": "#dbe1ff",
+                        "primary": "#004ac6",
+                        "secondary-container": "#fea619",
+                        "outline-variant": "#c3c6d7",
+                        "on-surface": "#0b1c30",
+                        "inverse-primary": "#b4c5ff",
+                        "surface-tint": "#0053db",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "secondary-fixed": "#ffddb8",
+                        "on-tertiary-fixed": "#002113",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#d3e4fe",
+                        "outline": "#737686",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "margin-mobile": "16px",
+                        "sm": "12px",
+                        "base": "4px",
+                        "xs": "8px",
+                        "margin-desktop": "48px",
+                        "md": "16px",
+                        "xl": "32px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col pb-[80px] md:pb-0 font-body-md">
+<!-- Top App Bar (Shared Component) -->
+<header class="bg-surface dark:bg-background flat no shadows docked full-width top-0 z-40 sticky">
+<div class="flex justify-between items-center w-full px-margin-mobile py-xs max-w-7xl mx-auto">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed" data-icon="location_on" data-weight="fill" style="font-variation-settings: 'FILL' 1;">location_on</span>
+<span class="font-display-lg text-headline-md-mobile md:text-headline-md font-bold text-primary dark:text-primary-fixed">PawsApp</span>
+</div>
+<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-secondary-container">
+<img alt="Premium user profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBz3nyHQHXRJUaq_SrJ6eAkpwGmfd00o4UECnwUsYJNNFRQGnIUEI274pP7QZ88Sf5MB5XKwNlxrKs6dDP7ZvmezHZpN7wtTMtPpLTc55cJezJMesimTL-JqFlQzxNIuMf__1464w7sTJLvYaeeoj3JOKSR4rK1rbkYZepbEmh9sCTGG2xAGa8wNJLXgs49y4A9H0nFFEBvQ6bKWKy23Bypyska3tP_AYXlFHo1FP0SrH5cPMVJ35wYIQilodmHk8CDOgnXwf175-c"/>
+</div>
+</div>
+<!-- Desktop Navigation (Hidden on mobile) -->
+<nav class="hidden md:flex justify-center gap-xl pb-xs px-margin-desktop max-w-7xl mx-auto border-t border-outline-variant/20 mt-xs pt-sm">
+<a class="text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors font-label-md text-label-md py-1 px-3 rounded-full flex items-center gap-2" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span> Home
+            </a>
+<a class="text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors font-label-md text-label-md py-1 px-3 rounded-full flex items-center gap-2" href="#">
+<span class="material-symbols-outlined" data-icon="search">search</span> Search
+            </a>
+<a class="text-primary dark:text-primary-fixed-dim font-bold opacity-80 scale-95 transition-all font-label-md text-label-md py-1 px-3 rounded-full flex items-center gap-2 bg-primary-container/10" href="#">
+<span class="material-symbols-outlined" data-icon="favorite" data-weight="fill" style="font-variation-settings: 'FILL' 1;">favorite</span> Favourites
+            </a>
+<a class="text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors font-label-md text-label-md py-1 px-3 rounded-full flex items-center gap-2" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_bag">shopping_bag</span> Orders
+            </a>
+<a class="text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors font-label-md text-label-md py-1 px-3 rounded-full flex items-center gap-2" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span> Profile
+            </a>
+</nav>
+</header>
+<!-- Main Content -->
+<main class="flex-1 max-w-7xl mx-auto w-full px-margin-mobile md:px-margin-desktop py-lg">
+<div class="flex items-center justify-between mb-lg">
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-background">Favourites</h1>
+</div>
+<!-- Custom Tabs for Products / Shops -->
+<div class="flex gap-sm mb-lg border-b border-outline-variant/30 pb-xs">
+<button class="font-label-md text-label-md text-primary border-b-2 border-primary pb-xs px-xs transition-colors" id="tab-products">
+                Products
+            </button>
+<button class="font-label-md text-label-md text-on-surface-variant hover:text-primary pb-xs px-xs transition-colors" id="tab-shops">
+                Favourite Shops
+            </button>
+</div>
+<!-- Products Grid View -->
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-md" id="view-products">
+<!-- Product Card 1 -->
+<div class="bg-surface-container-lowest rounded-lg border border-outline-variant/30 flex flex-col overflow-hidden hover:shadow-lg transition-shadow group relative">
+<button class="absolute top-xs right-xs z-10 p-1 bg-surface/80 backdrop-blur-sm rounded-full text-primary hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[20px]" data-icon="favorite" data-weight="fill" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+<div class="aspect-square bg-surface-container-low p-sm relative">
+<span class="absolute top-xs left-xs bg-secondary-container text-on-secondary-container font-label-sm text-label-sm px-2 py-0.5 rounded-full z-10">Best Seller</span>
+<img alt="Premium dry dog food in a modern white bowl" class="w-full h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105" data-alt="A clean, brightly lit studio shot of premium dry dog food kibble arranged neatly in a modern, minimalist white ceramic bowl. The lighting is soft and high-key, emphasizing the premium quality of the product against a stark white background. A subtle, soft shadow grounds the bowl, adding depth without clutter. The overall aesthetic is corporate modern, crisp, and high-trust, utilizing a refined color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBE6mGV7SAFYv_rp47rmCLVefCBh_wOZVU1-cl5j6wBR51xHhcb8U0CA6S7Yla64f4lesj9xvnyxzJTeP1dBLu9tJrF89Ke63nYPbGx5aAClm_96omewGoTO3Cdrv6U5lqga4jqEICaJchTTJqfyUgAT2Xhdp9SDaeGBLTIGmaiLvYdDpMANEV3mY7KE_r8RP515FjSLDx5TIh13lEZGeZnhkciy-vfImTnDR1uVVy_lQRqbKnari_nxPspPl19qYa-7gpXxGqaXSQ"/>
+</div>
+<div class="p-sm flex flex-col flex-1">
+<h3 class="font-label-md text-label-md text-on-surface line-clamp-2 mb-xs">Premium Salmon &amp; Potato Kibble</h3>
+<div class="mt-auto flex items-center justify-between">
+<span class="font-headline-md text-headline-md text-on-background">$42.99</span>
+<button class="bg-primary text-on-primary w-8 h-8 rounded-full flex items-center justify-center hover:bg-primary-fixed-variant transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="bg-surface-container-lowest rounded-lg border border-outline-variant/30 flex flex-col overflow-hidden hover:shadow-lg transition-shadow group relative">
+<button class="absolute top-xs right-xs z-10 p-1 bg-surface/80 backdrop-blur-sm rounded-full text-primary hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[20px]" data-icon="favorite" data-weight="fill" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+<div class="aspect-square bg-surface-container-low p-sm relative">
+<img alt="Orthopedic dog bed" class="w-full h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105" data-alt="A luxurious, plush orthopedic dog bed in a sophisticated neutral grey tone, placed on a pristine white floor. The lighting is bright and evenly distributed, highlighting the soft texture of the fabric and the supportive structure of the bed. The composition is clean and isolated, conveying comfort and high-end pet care within a modern, minimalist visual style. The mood is calm and inviting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7hNkzdoCMnILycr5Mv0oRZnIZPYVADqkfJxT5NqbgaOzOQ8jN_YPMqB1QH0K9MIrCJ5VLeHgXwxxv2EW6L5-j4xbaIaFX3Rk3vl_2q_9ZCtTBuPZPOs1pS-PLoVwfeL-VYo3_Efb5AVc8yrkUUnfW5xTdsY6MO-4uOHSX74wnBmn8-ZWnDkw11UMXk1ZesI85AQFBU5uGNYyLRqpYbl_iy-l8j9AWl3aVpMymJq8NhGbLYIF91dv5fFMTFz_NLknz3Lpzdj23lq0"/>
+</div>
+<div class="p-sm flex flex-col flex-1">
+<h3 class="font-label-md text-label-md text-on-surface line-clamp-2 mb-xs">Cloud 9 Orthopedic Pet Bed</h3>
+<div class="mt-auto flex items-center justify-between">
+<span class="font-headline-md text-headline-md text-on-background">$89.00</span>
+<button class="bg-primary text-on-primary w-8 h-8 rounded-full flex items-center justify-center hover:bg-primary-fixed-variant transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 3 -->
+<div class="bg-surface-container-lowest rounded-lg border border-outline-variant/30 flex flex-col overflow-hidden hover:shadow-lg transition-shadow group relative">
+<button class="absolute top-xs right-xs z-10 p-1 bg-surface/80 backdrop-blur-sm rounded-full text-primary hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[20px]" data-icon="favorite" data-weight="fill" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+<div class="aspect-square bg-surface-container-low p-sm relative">
+<span class="absolute top-xs left-xs bg-error text-on-error font-label-sm text-label-sm px-2 py-0.5 rounded-full z-10">Sale</span>
+<img alt="Durable chew toy" class="w-full h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105" data-alt="A bright, colorful, and durable rubber chew toy for dogs, shaped like a geometric bone, isolated against a brilliant white background. The lighting is crisp and commercial, making the vibrant primary colors of the toy pop. Soft ambient shadows provide depth, ensuring the object feels tangible yet clean. The aesthetic aligns with a modern, high-energy pet retail platform, emphasizing quality and fun." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC28O4eYevrirS390J8MqXqlZaWNF4NMrrfifsbFkpykp28-gzg_JvbAqH-cUNpHm9_Jcc0rhL86K44ie7c6HNaX5a7HE773ieup2CE-bWabsR95-yk7OZg5YbblUgfY71TOtVXuuGc_pMo96ZN4oZRPsfBg1VLGwxSSaZx9qiKm-P_JqLwojpeE0Uy3r7AJIowMbsgFHa3ayXqUV_vU9aPKdXOZpjnfpPYA_D7OEizQCdT26NBihfjHh_LjcYnBrX_xz8KUrCNTCI"/>
+</div>
+<div class="p-sm flex flex-col flex-1">
+<h3 class="font-label-md text-label-md text-on-surface line-clamp-2 mb-xs">ToughChew Geometric Bone</h3>
+<div class="mt-auto flex items-center justify-between flex-wrap">
+<div class="flex items-center gap-2">
+<span class="font-headline-md text-headline-md text-error">$14.50</span>
+<span class="font-label-sm text-label-sm text-outline line-through">$18.99</span>
+</div>
+<button class="bg-primary text-on-primary w-8 h-8 rounded-full flex items-center justify-center hover:bg-primary-fixed-variant transition-colors mt-1">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Shops Grid View (Hidden by default) -->
+<div class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md" id="view-shops">
+<!-- Shop Card -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/30 p-md flex items-start gap-md hover:shadow-lg transition-shadow relative">
+<button class="absolute top-sm right-sm text-primary hover:scale-110 transition-transform">
+<span class="material-symbols-outlined" data-icon="favorite" data-weight="fill" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+<div class="w-16 h-16 rounded-full bg-surface-container-low overflow-hidden shrink-0 border border-outline-variant/20">
+<img alt="Pet Shop Logo" class="w-full h-full object-cover" data-alt="A sophisticated storefront logo for a boutique pet shop, featuring elegant typography and a minimalist line-art dog silhouette. The logo is displayed cleanly inside a perfectly circular frame against a light, neutral background. The lighting is soft and even, highlighting the refined, corporate-modern branding. The overall look communicates trust, premium quality, and a dedicated focus on top-tier pet care services." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCU-tlgVCVCQM6L8Su83Dxt9xlnpodI1wMwOxMeYxbAntw-gMUehHMFVmvYNEWXKvPOSwnNDJHPGfTLPQ7AhoWNMzKmn0ojYoMr4nLji7ebEuDWVPeMyxX5OrZJcwUnPtb9fvrWmE7-gYCftWO7aiEpaZ6-r0oqbxHGG9lFWdM3k3k7YKJ6U3Okm8afzDf1j7_rrev8i73whW7UEv3n4fE438dtnPd_i2XEDO8zDm3wkqKU8tMA5k6H-nBusHvga7J2CoLxdgKEJPY"/>
+</div>
+<div class="flex-1 pt-1">
+<h3 class="font-headline-md text-headline-md text-on-background mb-1">Urban Paws Boutique</h3>
+<div class="flex items-center gap-1 text-on-surface-variant font-label-sm text-label-sm mb-2">
+<span class="material-symbols-outlined text-[14px]" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1; color: #fea619;">star</span>
+<span>4.9 (120 reviews)</span>
+<span class="mx-1">•</span>
+<span>1.2 km</span>
+</div>
+<div class="flex gap-2">
+<span class="bg-surface-container px-2 py-1 rounded-full font-label-sm text-label-sm text-on-surface-variant">Premium Food</span>
+<span class="bg-surface-container px-2 py-1 rounded-full font-label-sm text-label-sm text-on-surface-variant">Toys</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Nav Bar (Shared Component for Mobile) -->
+<nav class="md:hidden shadow-sm bg-surface-container-lowest dark:bg-surface-container-lowest shadow-lg docked full-width bottom-0 rounded-t-xl fixed left-0 w-full z-50 flex justify-around items-center px-xs pb-safe py-base">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-sm text-label-sm mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+<span class="font-label-sm text-label-sm mt-1">Search</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary-container text-on-primary-container dark:text-on-primary-container rounded-full px-4 py-1 scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="favorite" data-weight="fill" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="font-label-sm text-label-sm mt-1">Favourites</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_bag">shopping_bag</span>
+<span class="font-label-sm text-label-sm mt-1">Orders</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm mt-1">Profile</span>
+</a>
+</nav>
+<script>
+        // Simple tab switching logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabProducts = document.getElementById('tab-products');
+            const tabShops = document.getElementById('tab-shops');
+            const viewProducts = document.getElementById('view-products');
+            const viewShops = document.getElementById('view-shops');
+
+            const activeClassList = ['text-primary', 'border-b-2', 'border-primary'];
+            const inactiveClassList = ['text-on-surface-variant', 'hover:text-primary'];
+
+            tabProducts.addEventListener('click', () => {
+                viewProducts.classList.remove('hidden');
+                viewShops.classList.add('hidden');
+                
+                tabProducts.classList.add(...activeClassList);
+                tabProducts.classList.remove(...inactiveClassList);
+                
+                tabShops.classList.add(...inactiveClassList);
+                tabShops.classList.remove(...activeClassList, 'border-b-2', 'border-primary');
+            });
+
+            tabShops.addEventListener('click', () => {
+                viewShops.classList.remove('hidden');
+                viewProducts.classList.add('hidden');
+                
+                tabShops.classList.add(...activeClassList);
+                tabShops.classList.remove(...inactiveClassList);
+                
+                tabProducts.classList.add(...inactiveClassList);
+                tabProducts.classList.remove(...activeClassList, 'border-b-2', 'border-primary');
+            });
+        });
+    </script>
+</body></html>

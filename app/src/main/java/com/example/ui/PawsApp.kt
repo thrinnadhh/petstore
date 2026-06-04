@@ -1,5 +1,6 @@
 package com.example.ui
 
+import android.Manifest
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
@@ -47,6 +48,10 @@ import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,12 +71,95 @@ fun PawsApp(viewModel: PawsViewModel) {
     Scaffold(
         contentWindowInsets = WindowInsets.safeDrawing,
         bottomBar = {
-            // Display swiggy-style cart footer bar on supported consumer views
-            if (currentScreen is Screen.Home || currentScreen is Screen.ShopDetail || currentScreen is Screen.Search || currentScreen is Screen.SavedShops) {
+            val mainConsumerScreens = listOf(
+                Screen.Home, Screen.Search, Screen.Favourites, Screen.Orders, Screen.UserProfile, Screen.SavedShops
+            )
+            val isMainConsumerScreen = currentScreen in mainConsumerScreens ||
+                currentScreen is Screen.ShopDetail
+
+            // Premium 5-tab bottom navigation bar for consumer screens
+            if (isMainConsumerScreen && currentUser?.role == "consumer") {
+                Column {
+                    // Floating cart bar if items in cart
+                    val cartItems by viewModel.cartItems.collectAsState()
+                    val cartShopId by viewModel.cartShopId.collectAsState()
+                    val shopsList by viewModel.shops.collectAsState()
+                    if (cartItems.isNotEmpty() && cartShopId != null) {
+                        val activeShop = shopsList.find { it.id == cartShopId }
+                        if (activeShop != null) {
+                            FloatingCartBar(
+                                itemCount = cartItems.values.sum(),
+                                shopName = activeShop.name,
+                                onViewCart = { viewModel.navigateTo(Screen.Cart) }
+                            )
+                        }
+                    }
+                    // Bottom Navigation Bar
+                    NavigationBar(
+                        containerColor = Color.White,
+                        tonalElevation = 0.dp,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(elevation = 12.dp, shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+                            .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+                    ) {
+                        data class NavItem(val label: String, val icon: ImageVector, val screen: Screen)
+                        val navItems = listOf(
+                            NavItem("Home", Icons.Default.Home, Screen.Home),
+                            NavItem("Search", Icons.Default.Search, Screen.Search),
+                            NavItem("Favourites", Icons.Default.Favorite, Screen.Favourites),
+                            NavItem("Orders", Icons.Default.ShoppingCart, Screen.Orders),
+                            NavItem("Profile", Icons.Default.Person, Screen.UserProfile)
+                        )
+                        navItems.forEach { item ->
+                            val selected = when (item.screen) {
+                                Screen.Home -> currentScreen is Screen.Home || currentScreen is Screen.ShopDetail
+                                Screen.Search -> currentScreen is Screen.Search
+                                Screen.Favourites -> currentScreen is Screen.Favourites || currentScreen is Screen.SavedShops
+                                Screen.Orders -> currentScreen is Screen.Orders || currentScreen is Screen.Cart
+                                Screen.UserProfile -> currentScreen is Screen.UserProfile || currentScreen is Screen.Appointments ||
+                                    currentScreen is Screen.TabletsIssued || currentScreen is Screen.Vaccinations ||
+                                    currentScreen is Screen.ReportsDashboard
+                                else -> false
+                            }
+                            NavigationBarItem(
+                                selected = selected,
+                                onClick = {
+                                    if (!selected) viewModel.clearHistoryAndNavigate(item.screen)
+                                },
+                                icon = {
+                                    Icon(
+                                        imageVector = item.icon,
+                                        contentDescription = item.label,
+                                        modifier = Modifier.size(22.dp)
+                                    )
+                                },
+                                label = {
+                                    Text(
+                                        text = item.label,
+                                        fontSize = 10.sp,
+                                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                },
+                                colors = NavigationBarItemDefaults.colors(
+                                    selectedIconColor = Color(0xFFFC8019),
+                                    selectedTextColor = Color(0xFFFC8019),
+                                    indicatorColor = Color(0xFFFC8019).copy(alpha = 0.12f),
+                                    unselectedIconColor = Color(0xFF8C8C8C),
+                                    unselectedTextColor = Color(0xFF8C8C8C)
+                                )
+                            )
+                        }
+                    }
+                }
+            } else if (!isMainConsumerScreen ||
+                (currentUser?.role != "consumer" &&
+                    (currentScreen is Screen.Home || currentScreen is Screen.ShopDetail ||
+                     currentScreen is Screen.Search || currentScreen is Screen.SavedShops))) {
+                // Show cart bar for non-consumer contexts (e.g., browsing as guest)
                 val cartItems by viewModel.cartItems.collectAsState()
                 val cartShopId by viewModel.cartShopId.collectAsState()
                 val shopsList by viewModel.shops.collectAsState()
-
                 if (cartItems.isNotEmpty() && cartShopId != null) {
                     val activeShop = shopsList.find { it.id == cartShopId }
                     if (activeShop != null) {
@@ -121,6 +209,12 @@ fun PawsApp(viewModel: PawsViewModel) {
                     is Screen.ChatDetail -> ChatDetailScreen(viewModel = viewModel, shopId = screen.shopId)
                     is Screen.MerchantOrders -> MerchantOrdersScreen(viewModel = viewModel)
                     is Screen.MerchantMenu -> MerchantMenuScreen(viewModel = viewModel)
+                    is Screen.Appointments -> AppointmentsScreen(viewModel = viewModel)
+                    is Screen.TabletsIssued -> TabletsIssuedScreen(viewModel = viewModel)
+                    is Screen.Vaccinations -> VaccinationsScreen(viewModel = viewModel)
+                    is Screen.Favourites -> FavouritesScreen(viewModel = viewModel)
+                    is Screen.ReportsDashboard -> ReportsDashboardScreen(viewModel = viewModel)
+                    is Screen.Orders -> OrdersScreen(viewModel = viewModel)
                     else -> Box(modifier = Modifier.fillMaxSize())
                 }
             }
@@ -225,14 +319,14 @@ fun SplashScreen() {
             )
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "Swiggy Paws",
+                text = L10n.getString("app_name"),
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Black,
                 color = Color.White,
                 letterSpacing = 1.sp
             )
             Text(
-                text = "Premium Pet Shop Delivery Platform",
+                text = L10n.getString("splash_tagline"),
                 fontSize = 14.sp,
                 color = Color.White.copy(alpha = 0.6f),
                 modifier = Modifier.padding(top = 4.dp)
@@ -258,18 +352,18 @@ fun OnboardingScreen(onFinish: () -> Unit) {
 
     val slides = listOf(
         OnboardSlide(
-            title = "City-Wide Pet Shops & Foods",
-            desc = "Find premium nutritional kibbles, grain-free snacks, and toys from recruited pet stores across the entire city.",
+            title = L10n.getString("onboarding_title_1"),
+            desc = L10n.getString("onboarding_desc_1"),
             illustration = "https://images.unsplash.com/photo-1589924691106-073b1381cb35?w=600&auto=format&fit=crop&q=80"
         ),
         OnboardSlide(
-            title = "Premium Grooming & Spas",
-            desc = "Connect with top-rated salons and vet clinics in your city. Schedule professional bathes and pet therapy easily.",
+            title = L10n.getString("onboarding_title_2"),
+            desc = L10n.getString("onboarding_desc_2"),
             illustration = "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?w=600&auto=format&fit=crop&q=80"
         ),
         OnboardSlide(
-            title = "Express Delivery Anywhere",
-            desc = "Order from top recruited pet stores in the city and get ultra-fast delivery straight to your doorstep.",
+            title = L10n.getString("onboarding_title_3"),
+            desc = L10n.getString("onboarding_desc_3"),
             illustration = "https://images.unsplash.com/photo-1541599540903-216a46ca1da0?w=600&auto=format&fit=crop&q=80"
         )
     )
@@ -288,7 +382,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
             horizontalArrangement = Arrangement.End
         ) {
             TextButton(onClick = onFinish) {
-                Text("Skip", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
+                Text(L10n.getString("skip"), color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
             }
         }
 
@@ -366,7 +460,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
                 Text(
-                    text = if (currentPage == slides.size - 1) "Get Started" else "Next",
+                    text = if (currentPage == slides.size - 1) L10n.getString("get_started") else L10n.getString("next"),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -519,6 +613,30 @@ fun AuthScreen(viewModel: PawsViewModel) {
         }
     }
 
+    val consumerSelfieLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            regSelfieUrl = uri.toString()
+        }
+    }
+
+    val cameraConsumerSelfieLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview()
+    ) { bitmap ->
+        if (bitmap != null) {
+            val file = java.io.File(context.cacheDir, "consumer_selfie_${System.currentTimeMillis()}.jpg")
+            try {
+                java.io.FileOutputStream(file).use { out ->
+                    bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, out)
+                }
+                regSelfieUrl = Uri.fromFile(file).toString()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -569,7 +687,7 @@ fun AuthScreen(viewModel: PawsViewModel) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    "Login",
+                    L10n.getString("login"),
                     fontWeight = FontWeight.Bold,
                     color = if (activeTab == "login") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                 )
@@ -584,7 +702,7 @@ fun AuthScreen(viewModel: PawsViewModel) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    "Register",
+                    L10n.getString("register"),
                     fontWeight = FontWeight.Bold,
                     color = if (activeTab == "register") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                 )
@@ -600,7 +718,7 @@ fun AuthScreen(viewModel: PawsViewModel) {
                 OutlinedTextField(
                     value = loginEmailOrPhone,
                     onValueChange = { loginEmailOrPhone = it },
-                    label = { Text("Email or Phone Number") },
+                    label = { Text(L10n.getString("email_or_phone")) },
                     placeholder = { Text("e.g. trinadhbandapalli@gmail.com") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
@@ -615,7 +733,7 @@ fun AuthScreen(viewModel: PawsViewModel) {
                 OutlinedTextField(
                     value = loginPassword,
                     onValueChange = { loginPassword = it },
-                    label = { Text("Password") },
+                    label = { Text(L10n.getString("password")) },
                     placeholder = { Text("Enter your password") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
@@ -666,7 +784,7 @@ fun AuthScreen(viewModel: PawsViewModel) {
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Text(
-                        "Login with Password",
+                        L10n.getString("login_btn"),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -682,14 +800,14 @@ fun AuthScreen(viewModel: PawsViewModel) {
                     },
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
-                    Text("Forgot Password? Login via Phone OTP 🔑", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    Text(L10n.getString("forgot_password"), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                 }
             } else {
                 // Phone Number & OTP Login
                 OutlinedTextField(
                     value = loginPhone,
-                    onValueChange = { if (it.length <= 10) loginPhone = it },
-                    label = { Text("Phone Number") },
+                    onValueChange = { if (it.length <= 10 && it.all { char -> char.isDigit() }) loginPhone = it },
+                    label = { Text(L10n.getString("phone_number")) },
                     placeholder = { Text("e.g. 9876543210") },
                     prefix = { Text("+91 ") },
                     modifier = Modifier.fillMaxWidth(),
@@ -713,8 +831,8 @@ fun AuthScreen(viewModel: PawsViewModel) {
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
                         value = loginOtp,
-                        onValueChange = { if (it.length <= 4) loginOtp = it },
-                        label = { Text("Enter 4-Digit OTP") },
+                        onValueChange = { if (it.length <= 4 && it.all { char -> char.isDigit() }) loginOtp = it },
+                        label = { Text(L10n.getString("enter_mock_otp")) },
                         placeholder = { Text("e.g. 1234") },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
@@ -723,7 +841,7 @@ fun AuthScreen(viewModel: PawsViewModel) {
                         leadingIcon = { Icon(Icons.Default.Check, null) }
                     )
                     Text(
-                        "Use any mock OTP (e.g. 1234) to proceed",
+                        L10n.getString("mock_otp_hint"),
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier
@@ -767,7 +885,7 @@ fun AuthScreen(viewModel: PawsViewModel) {
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Text(
-                        if (!isLoginOtpSent) "Send OTP" else "Verify & Login",
+                        if (!isLoginOtpSent) L10n.getString("send_otp") else L10n.getString("verify_and_login"),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -783,7 +901,7 @@ fun AuthScreen(viewModel: PawsViewModel) {
                     },
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
-                    Text("Back to Email/Password Login 🔐", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    Text(L10n.getString("back_to_password_login"), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                 }
             }
         } else {
@@ -791,7 +909,7 @@ fun AuthScreen(viewModel: PawsViewModel) {
             OutlinedTextField(
                 value = regName,
                 onValueChange = { regName = it },
-                label = { Text("Full Name") },
+                label = { Text(L10n.getString("full_name")) },
                 placeholder = { Text("e.g. Arjun Kumar") },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -803,7 +921,7 @@ fun AuthScreen(viewModel: PawsViewModel) {
 
             OutlinedTextField(
                 value = regPhone,
-                onValueChange = { if (it.length <= 10) regPhone = it },
+                onValueChange = { if (it.length <= 10 && it.all { char -> char.isDigit() }) regPhone = it },
                 label = { Text("Phone Number") },
                 placeholder = { Text("e.g. 9876543210") },
                 prefix = { Text("+91 ") },
@@ -998,9 +1116,19 @@ fun AuthScreen(viewModel: PawsViewModel) {
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
+                DocumentAttachmentCard(
+                    title = "Profile Photo (Selfie with Dog) 🤳",
+                    currentValue = regSelfieUrl,
+                    onValueChange = { regSelfieUrl = it },
+                    onSelectFileClick = { consumerSelfieLauncher.launch("image/*") },
+                    onTakePhotoClick = { cameraConsumerSelfieLauncher.launch() },
+                    placeholderUrl = "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=150"
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    "Select Selfie with your Dog (Profile Pic):",
-                    fontSize = 12.sp,
+                    "Or choose a preset avatar from list:",
+                    fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Gray,
                     modifier = Modifier.align(Alignment.Start).padding(start = 4.dp, end = 4.dp, bottom = 8.dp)
@@ -1069,11 +1197,12 @@ fun AuthScreen(viewModel: PawsViewModel) {
                 Spacer(modifier = Modifier.height(12.dp))
                 OutlinedTextField(
                     value = regAadharNumber,
-                    onValueChange = { regAadharNumber = it },
+                    onValueChange = { if (it.length <= 12 && it.all { char -> char.isDigit() }) regAadharNumber = it },
                     label = { Text("Aadhar Card Number 🆔") },
                     placeholder = { Text("e.g. 123456789012") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
                     leadingIcon = { Icon(Icons.Default.Person, null) }
                 )
@@ -1140,7 +1269,7 @@ fun AuthScreen(viewModel: PawsViewModel) {
                 Spacer(modifier = Modifier.height(20.dp))
                 OutlinedTextField(
                     value = regOtp,
-                    onValueChange = { if (it.length <= 4) regOtp = it },
+                    onValueChange = { if (it.length <= 4 && it.all { char -> char.isDigit() }) regOtp = it },
                     label = { Text("Enter 4-Digit OTP") },
                     placeholder = { Text("e.g. 1234") },
                     modifier = Modifier.fillMaxWidth(),
@@ -1171,9 +1300,19 @@ fun AuthScreen(viewModel: PawsViewModel) {
                         Toast.makeText(context, "Please enter a valid 10-digit number", Toast.LENGTH_SHORT).show()
                         return@Button
                     }
-                    if (regRole == "consumer" && regPetName.trim().isEmpty()) {
-                        Toast.makeText(context, "Please enter your pet's name", Toast.LENGTH_SHORT).show()
-                        return@Button
+                    if (regRole == "consumer") {
+                        if (regEmail.trim().isEmpty() || !regEmail.endsWith("@gmail.com", ignoreCase = true)) {
+                            Toast.makeText(context, "Please enter a valid Gmail address (ending with @gmail.com)", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        if (regPassword.length < 6) {
+                            Toast.makeText(context, "Password must be at least 6 characters long", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        if (regPetName.trim().isEmpty()) {
+                            Toast.makeText(context, "Please enter your pet's name", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
                     }
                     if (regRole == "captain") {
                         if (regVehicleNumber.trim().isEmpty()) {
@@ -1433,6 +1572,294 @@ fun LocationSelectScreen(viewModel: PawsViewModel, onCityPicked: (String, String
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
+    var showSimulationDialog by remember { mutableStateOf(false) }
+    var showComingSoonDialog by remember { mutableStateOf(false) }
+    var unserviceableCityName by remember { mutableStateOf("") }
+
+    fun handleLocationResult(result: LocationResult) {
+        when (result) {
+            is LocationResult.Serviceable -> {
+                Toast.makeText(
+                    context,
+                    "Auto-detected: ${result.city.name}, ${result.city.state} (within ${String.format("%.1f", result.distanceKm)} km)",
+                    Toast.LENGTH_LONG
+                ).show()
+                onCityPicked(result.city.id, "${result.city.name}, ${result.city.state}")
+            }
+            is LocationResult.NotServiceable -> {
+                unserviceableCityName = "${result.city.name}, ${result.city.state}"
+                showComingSoonDialog = true
+            }
+            is LocationResult.Error -> {
+                Toast.makeText(context, "Error: ${result.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                      permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        if (granted) {
+            isDetecting = true
+            viewModel.detectLocation(context) { result ->
+                isDetecting = false
+                handleLocationResult(result)
+            }
+        } else {
+            Toast.makeText(context, "Location permission denied. Showing simulator options.", Toast.LENGTH_LONG).show()
+            showSimulationDialog = true
+        }
+    }
+
+    // Coming Soon Dialog (Rollout Control warning)
+    if (showComingSoonDialog) {
+        AlertDialog(
+            onDismissRequest = { showComingSoonDialog = false },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(28.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Coming Soon! 🐾",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+                }
+            },
+            text = {
+                Column {
+                    Text(
+                        text = "We currently don't service $unserviceableCityName yet.",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "To ensure quality care, Swiggy Paws is rolling out phase-by-phase. Currently, we only service Hyderabad, Bengaluru, and Chennai.",
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showComingSoonDialog = false },
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("OK")
+                }
+            },
+            shape = RoundedCornerShape(16.dp),
+            containerColor = MaterialTheme.colorScheme.surface,
+            tonalElevation = 6.dp
+        )
+    }
+
+    // Location Simulation Dialog
+    if (showSimulationDialog) {
+        AlertDialog(
+            onDismissRequest = { showSimulationDialog = false },
+            title = {
+                Text(
+                    "Select Location Source",
+                    fontWeight = FontWeight.Black,
+                    fontSize = 18.sp
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        "Test real GPS or simulate mock coordinates for rollout checks:",
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    
+                    // Device GPS Option
+                    Button(
+                        onClick = {
+                            showSimulationDialog = false
+                            isDetecting = true
+                            val hasPermission = androidx.core.content.ContextCompat.checkSelfPermission(
+                                context,
+                                android.Manifest.permission.ACCESS_FINE_LOCATION
+                            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                            
+                            if (hasPermission) {
+                                viewModel.detectLocation(context) { result ->
+                                    isDetecting = false
+                                    handleLocationResult(result)
+                                }
+                            } else {
+                                isDetecting = false
+                                permissionLauncher.launch(
+                                    arrayOf(
+                                        android.Manifest.permission.ACCESS_FINE_LOCATION,
+                                        android.Manifest.permission.ACCESS_COARSE_LOCATION
+                                    )
+                                )
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.LocationOn, null, tint = Color.White)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Use Real Device GPS", color = Color.White)
+                        }
+                    }
+                    
+                    Text(
+                        "Presets (Active Service Areas):",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                    
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        OutlinedButton(
+                            onClick = {
+                                showSimulationDialog = false
+                                isDetecting = true
+                                scope.launch {
+                                    delay(1000)
+                                    isDetecting = false
+                                    val result = viewModel.detectLocationAndCheckService(17.3850, 78.4867) // Hyd
+                                    handleLocationResult(result)
+                                }
+                            },
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("Hyderabad", fontSize = 11.sp)
+                        }
+                        
+                        OutlinedButton(
+                            onClick = {
+                                showSimulationDialog = false
+                                isDetecting = true
+                                scope.launch {
+                                    delay(1000)
+                                    isDetecting = false
+                                    val result = viewModel.detectLocationAndCheckService(12.9716, 77.5946) // Blr
+                                    handleLocationResult(result)
+                                }
+                            },
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("Bengaluru", fontSize = 11.sp)
+                        }
+                    }
+                    
+                    OutlinedButton(
+                        onClick = {
+                            showSimulationDialog = false
+                            isDetecting = true
+                            scope.launch {
+                                delay(1000)
+                                isDetecting = false
+                                val result = viewModel.detectLocationAndCheckService(13.0827, 80.2707) // Chennai
+                                handleLocationResult(result)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text("Chennai (Active)")
+                    }
+                    
+                    Text(
+                        "Rollout Controlled (Coming Soon / Disabled):",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                    
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        OutlinedButton(
+                            onClick = {
+                                showSimulationDialog = false
+                                isDetecting = true
+                                scope.launch {
+                                    delay(1000)
+                                    isDetecting = false
+                                    val result = viewModel.detectLocationAndCheckService(28.6139, 77.2090) // Delhi
+                                    handleLocationResult(result)
+                                }
+                            },
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
+                        ) {
+                            Text("Delhi", fontSize = 11.sp)
+                        }
+                        
+                        OutlinedButton(
+                            onClick = {
+                                showSimulationDialog = false
+                                isDetecting = true
+                                scope.launch {
+                                    delay(1000)
+                                    isDetecting = false
+                                    val result = viewModel.detectLocationAndCheckService(19.0760, 72.8777) // Mumbai
+                                    handleLocationResult(result)
+                                }
+                            },
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
+                        ) {
+                            Text("Mumbai", fontSize = 11.sp)
+                        }
+                    }
+                    
+                    OutlinedButton(
+                        onClick = {
+                            showSimulationDialog = false
+                            isDetecting = true
+                            scope.launch {
+                                delay(1000)
+                                isDetecting = false
+                                val result = viewModel.detectLocationAndCheckService(51.5074, -0.1278) // London
+                                handleLocationResult(result)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.DarkGray)
+                    ) {
+                        Text("Simulate London (Out of Range)")
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showSimulationDialog = false }) {
+                    Text("Cancel")
+                }
+            },
+            shape = RoundedCornerShape(16.dp),
+            containerColor = MaterialTheme.colorScheme.surface,
+            tonalElevation = 6.dp
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -1448,13 +1875,13 @@ fun LocationSelectScreen(viewModel: PawsViewModel, onCityPicked: (String, String
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            "Select Your City",
+            L10n.getString("select_city_title"),
             fontSize = 24.sp,
             fontWeight = FontWeight.Black,
             color = MaterialTheme.colorScheme.onBackground
         )
         Text(
-            "Swiggy Paws delivers premium pet foods, grooming & toys from top pet shops across the city.",
+            L10n.getString("select_city_desc"),
             fontSize = 13.sp,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
             textAlign = TextAlign.Center,
@@ -1464,13 +1891,7 @@ fun LocationSelectScreen(viewModel: PawsViewModel, onCityPicked: (String, String
         // GPS Auto-detect Button
         OutlinedButton(
             onClick = {
-                isDetecting = true
-                scope.launch {
-                    delay(1500)
-                    isDetecting = false
-                    Toast.makeText(context, "GPS auto-detected: Hyderabad!", Toast.LENGTH_SHORT).show()
-                    onCityPicked("hyd", "Hyderabad")
-                }
+                showSimulationDialog = true
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -1518,7 +1939,7 @@ fun LocationSelectScreen(viewModel: PawsViewModel, onCityPicked: (String, String
         ) {
             items(citiesList) { city ->
                 Card(
-                    onClick = { onCityPicked(city.id, city.name) },
+                    onClick = { onCityPicked(city.id, "${city.name}, ${city.state}") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -1539,8 +1960,7 @@ fun LocationSelectScreen(viewModel: PawsViewModel, onCityPicked: (String, String
                             )
                             Spacer(modifier = Modifier.width(16.dp))
                             Column {
-                                Text(city.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                Text(city.state, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
+                                Text("${city.name}, ${city.state}", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                             }
                         }
                         Icon(
@@ -2042,6 +2462,8 @@ fun HomeScreen(viewModel: PawsViewModel) {
     val context = LocalContext.current
     val syncState by viewModel.powerSyncState.collectAsState()
     val isSwiggyOne by viewModel.isSwiggyOneSubscriber.collectAsState()
+    var showLanguageDialog by remember { mutableStateOf(false) }
+    val currentLanguage by viewModel.appLanguage.collectAsState()
 
     // Query state links
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -2236,6 +2658,7 @@ fun HomeScreen(viewModel: PawsViewModel) {
                 onCityClick = { showCityPickerSheet = true },
                 onProfileClick = { viewModel.navigateTo(Screen.UserProfile) },
                 onChatClick = { viewModel.navigateTo(Screen.ChatList) },
+                onLanguageClick = { showLanguageDialog = true },
                 syncState = syncState,
                 onSyncClick = { viewModel.triggerManualPowerSync() }
             )
@@ -2329,6 +2752,88 @@ fun HomeScreen(viewModel: PawsViewModel) {
             }
         }
 
+        // ── CATEGORIES ROW ──────────────────────────────────────────────────────────
+        if (categoryList.isNotEmpty()) {
+            item {
+                Column(modifier = Modifier.padding(vertical = 12.dp)) {
+                    Text(
+                        text = "What's on your pet's mind? 🐾",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(start = 20.dp, bottom = 4.dp, top = 8.dp)
+                    )
+                    Text(
+                        text = "Choose from premium foods, toys, grooming services & more",
+                        fontSize = 11.sp,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(start = 20.dp, bottom = 12.dp)
+                    )
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 20.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items(categoryList) { category ->
+                            val isSelected = selectedCategoryIds.contains(category.id)
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier
+                                    .width(72.dp)
+                                    .clickable { viewModel.toggleSelectedCategory(category.id) }
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(64.dp)
+                                        .background(
+                                            color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) 
+                                                    else MaterialTheme.colorScheme.surface,
+                                            shape = CircleShape
+                                        )
+                                        .border(
+                                            width = if (isSelected) 2.5.dp else 1.dp,
+                                            color = if (isSelected) Color(0xFFFC8019) 
+                                                    else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                                            shape = CircleShape
+                                        )
+                                        .padding(4.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Card(
+                                        shape = CircleShape,
+                                        modifier = Modifier.fillMaxSize()
+                                    ) {
+                                        Image(
+                                            painter = rememberAsyncImagePainter(
+                                                model = ImageRequest.Builder(LocalContext.current)
+                                                    .data(category.iconUrl)
+                                                    .crossfade(true)
+                                                    .build()
+                                            ),
+                                            contentDescription = category.name,
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = category.name,
+                                    fontSize = 10.sp,
+                                    fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Bold,
+                                    color = if (isSelected) Color(0xFFFC8019) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                                    maxLines = 2,
+                                    minLines = 2,
+                                    textAlign = TextAlign.Center,
+                                    overflow = TextOverflow.Ellipsis,
+                                    lineHeight = 11.sp
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // Horizontally Scrolling Pet Care Guides Section
         item {
             Column(modifier = Modifier.padding(vertical = 12.dp)) {
@@ -2419,6 +2924,55 @@ fun HomeScreen(viewModel: PawsViewModel) {
 
         // Swiggy One pass removed per user request
 
+        // ── ACTIVE FILTERS & SORTING ROW ──────────────────────────────────────────
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Filter badge / Reset Button
+                if (selectedCategoryIds.isNotEmpty() || filterOpenNow || filterDelivery || filterRating) {
+                    Box(
+                        modifier = Modifier
+                            .background(Color(0xFFFC8019), RoundedCornerShape(8.dp))
+                            .clickable { viewModel.resetAllFilters() }
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = "Clear All ✕",
+                            color = Color.White,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+                
+                // Open Now Pill
+                FilterPill(
+                    label = "Open Now",
+                    active = filterOpenNow,
+                    onClick = { viewModel.toggleFilterOpenNow() }
+                )
+                
+                // Delivery Pill
+                FilterPill(
+                    label = "Free Delivery",
+                    active = filterDelivery,
+                    onClick = { viewModel.toggleFilterDelivery() }
+                )
+                
+                // Rating Pill
+                FilterPill(
+                    label = "Top Rated (4.5+)",
+                    active = filterRating,
+                    onClick = { viewModel.toggleFilterRating() }
+                )
+            }
+        }
+
         // Feed list
         if (displayShops.isEmpty()) {
             item {
@@ -2430,7 +2984,7 @@ fun HomeScreen(viewModel: PawsViewModel) {
                 item {
                     Column(modifier = Modifier.padding(vertical = 12.dp)) {
                         Text(
-                            "Popular & Top Rated Stores 🏆",
+                            L10n.getString("premium_shops_nearby") + " 🏆",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(start = 20.dp, bottom = 4.dp, top = 8.dp)
@@ -2468,7 +3022,7 @@ fun HomeScreen(viewModel: PawsViewModel) {
                 item {
                     Column(modifier = Modifier.padding(vertical = 12.dp)) {
                         Text(
-                            "Grooming & Spa Specialists 🛁",
+                            L10n.getString("grooming_spas") + " 🛁",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(start = 20.dp, bottom = 4.dp, top = 8.dp)
@@ -4097,6 +4651,54 @@ fun HomeScreen(viewModel: PawsViewModel) {
             }
         }
     }
+
+    if (showLanguageDialog) {
+        LanguageSelectionDialog(
+            currentLanguage = currentLanguage,
+            onLanguageSelected = { viewModel.setAppLanguage(it) },
+            onDismissRequest = { showLanguageDialog = false }
+        )
+    }
+}
+
+@Composable
+fun FilterPill(
+    label: String,
+    active: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .background(
+                color = if (active) Color(0xFFFC8019).copy(alpha = 0.15f) else MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(8.dp)
+            )
+            .border(
+                width = 1.dp,
+                color = if (active) Color(0xFFFC8019) else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                shape = RoundedCornerShape(8.dp)
+            )
+            .clickable { onClick() }
+            .padding(horizontal = 10.dp, vertical = 6.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = label,
+                color = if (active) Color(0xFFFC8019) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                fontSize = 11.sp,
+                fontWeight = if (active) FontWeight.Bold else FontWeight.Medium
+            )
+            if (active) {
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "✓",
+                    color = Color(0xFFFC8019),
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
 }
 
 // Sub Component: Header
@@ -4109,6 +4711,7 @@ fun HomeHeader(
     onCityClick: () -> Unit,
     onProfileClick: () -> Unit,
     onChatClick: () -> Unit,
+    onLanguageClick: () -> Unit,
     syncState: PowerSyncManager.SyncState,
     onSyncClick: () -> Unit
 ) {
@@ -4269,6 +4872,19 @@ fun HomeHeader(
                                 modifier = Modifier.size(16.dp),
                                 tint = Color.DarkGray
                             )
+                        }
+
+                        // Language Switcher
+                        IconButton(
+                            onClick = onLanguageClick,
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(
+                                    Color.Gray.copy(alpha = 0.08f),
+                                    CircleShape
+                                )
+                        ) {
+                            Text("🌐", fontSize = 16.sp)
                         }
 
                         // Profile Avatar with rotating border
@@ -4444,7 +5060,7 @@ fun SearchBarPlaceholder(query: String, onQueryChange: (String) -> Unit, onTapSe
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
-        placeholder = { Text("Search dog foods, grooming salons...") },
+        placeholder = { Text(L10n.getString("search_placeholder")) },
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 4.dp)
@@ -6052,7 +6668,7 @@ fun CartScreen(viewModel: PawsViewModel) {
         ) {
             Icon(Icons.Default.ShoppingCart, null, modifier = Modifier.size(80.dp), tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.15f))
             Spacer(modifier = Modifier.height(16.dp))
-            Text("Your Cart is Empty", fontWeight = FontWeight.Black, fontSize = 20.sp)
+            Text(L10n.getString("my_cart"), fontWeight = FontWeight.Black, fontSize = 20.sp)
             Text("Add delicious foods & grooming spa vouchers to proceed with placing orders.", fontSize = 12.sp, color = Color.Gray, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 4.dp))
             Spacer(modifier = Modifier.height(24.dp))
             Button(onClick = { viewModel.navigateTo(Screen.Home) }) {
@@ -6118,7 +6734,7 @@ fun CartScreen(viewModel: PawsViewModel) {
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Column {
-                    Text("Secure Checkout", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Text(L10n.getString("my_cart"), fontWeight = FontWeight.Bold, fontSize = 18.sp)
                     Text(currentShop.name, fontSize = 12.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
                 }
             }
@@ -6240,7 +6856,7 @@ fun CartScreen(viewModel: PawsViewModel) {
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Delivery Address", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(L10n.getString("delivery_address"), fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(8.dp))
                         OutlinedTextField(
                             value = addressInput,
@@ -6372,17 +6988,17 @@ fun CartScreen(viewModel: PawsViewModel) {
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Invoice Summary", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text(L10n.getString("bill_details"), fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(12.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Item Subtotal", fontSize = 13.sp)
+                        Text(L10n.getString("item_total"), fontSize = 13.sp)
                         Text("₹$computedSubtotal", fontSize = 13.sp, fontWeight = FontWeight.Bold)
                     }
                     
                     Spacer(modifier = Modifier.height(6.dp))
                     
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Delivery Partner Fee", fontSize = 13.sp)
+                        Text(L10n.getString("delivery_fee"), fontSize = 13.sp)
                         if (deliveryType == "delivery") {
                             if (isSwiggyOne) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -6414,7 +7030,7 @@ fun CartScreen(viewModel: PawsViewModel) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Grand Total to Pay", fontWeight = FontWeight.Black, fontSize = 15.sp)
+                        Text(L10n.getString("to_pay"), fontWeight = FontWeight.Black, fontSize = 15.sp)
                         Text("₹$grandTotal", fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.primary, fontSize = 16.sp)
                     }
                 }
@@ -6454,7 +7070,7 @@ fun CartScreen(viewModel: PawsViewModel) {
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             shape = RoundedCornerShape(14.dp)
         ) {
-            Text("PROCEED TO PAY • ₹$grandTotal", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.White)
+            Text(L10n.getString("proceed_checkout") + " • ₹$grandTotal", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.White)
         }
     }
 }
@@ -6626,11 +7242,11 @@ fun OrderTrackingScreen(viewModel: PawsViewModel, orderId: String) {
                 Spacer(modifier = Modifier.height(20.dp))
 
                 val trackingSteps = listOf(
-                    TimelineStep("Order Placed", "Your order has been registered by Swiggy Paws", "pending"),
-                    TimelineStep("Order Accepted", "The merchant clinic has confirmed and verified stock", "accepted"),
-                    TimelineStep("Preparing Delivery", "Dog items are packed carefully under clean standards", "preparing"),
-                    TimelineStep("Out for Delivery", "Delivering directly via secure local dog service", "out_for_delivery"),
-                    TimelineStep("Delivered successfully", "Package received by dog parent", "delivered")
+                    TimelineStep(L10n.getString("status_pending"), L10n.getString("desc_pending"), "pending"),
+                    TimelineStep(L10n.getString("status_accepted"), L10n.getString("desc_accepted"), "accepted"),
+                    TimelineStep(L10n.getString("status_preparing"), L10n.getString("desc_preparing"), "preparing"),
+                    TimelineStep(L10n.getString("status_out_for_delivery"), L10n.getString("desc_out_for_delivery"), "out_for_delivery"),
+                    TimelineStep(L10n.getString("status_delivered"), L10n.getString("desc_delivered"), "delivered")
                 )
 
                 trackingSteps.forEachIndexed { i, step ->
@@ -7541,139 +8157,158 @@ fun UserProfileScreen(viewModel: PawsViewModel) {
     val currentUser by viewModel.currentUser.collectAsState()
     val context = LocalContext.current
     var showCareCalendar by remember { mutableStateOf(false) }
+    var showLanguageDialog by remember { mutableStateOf(false) }
+    val currentLanguage by viewModel.appLanguage.collectAsState()
+    val selectedCityName by viewModel.selectedCityName.collectAsState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(Color(0xFFF7F8FA))
+            .verticalScroll(rememberScrollState())
     ) {
-        // Toolbar
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
-            IconButton(onClick = { viewModel.navigateBack() }) {
-                Icon(Icons.Default.ArrowBack, null)
+        // ── Premium Header ──────────────────────────────────────────
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(brush = Brush.verticalGradient(colors = listOf(Color(0xFF1A1A2E), Color(0xFF16213E))))
+                .padding(horizontal = 20.dp, vertical = 28.dp)
+        ) {
+            Column {
+                Surface(shape = RoundedCornerShape(20.dp), color = Color(0xFFFFD700).copy(alpha = 0.15f)) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(Icons.Default.Star, null, tint = Color(0xFFFFD700), modifier = Modifier.size(14.dp))
+                        Text("Premium \u2022 Max", color = Color(0xFFFFD700), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Image(
+                        painter = rememberAsyncImagePainter(currentUser?.avatarUrl ?: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop"),
+                        contentDescription = null,
+                        modifier = Modifier.size(72.dp).clip(CircleShape).border(2.dp, Color(0xFFFC8019), CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Text(currentUser?.fullName ?: "Arjun Kumar", color = Color.White, fontWeight = FontWeight.Black, fontSize = 22.sp)
+                        Text(currentUser?.email ?: "arjun@gmail.com", color = Color.White.copy(alpha = 0.6f), fontSize = 13.sp)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text("\uD83D\uDCCD $selectedCityName", color = Color(0xFFFC8019), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+                // Dog Stats Card
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.15f))
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("\uD83D\uDC15", fontSize = 22.sp)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text("Max", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            Text("Golden Retriever \u2022 3 Yrs", color = Color.White.copy(alpha = 0.55f), fontSize = 10.sp)
+                        }
+                        Divider(modifier = Modifier.height(40.dp).width(1.dp), color = Color.White.copy(alpha = 0.2f))
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("32 kg", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            Text("Weight", color = Color.White.copy(alpha = 0.55f), fontSize = 10.sp)
+                        }
+                        Divider(modifier = Modifier.height(40.dp).width(1.dp), color = Color.White.copy(alpha = 0.2f))
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("High", color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            Text("Activity", color = Color.White.copy(alpha = 0.55f), fontSize = 10.sp)
+                        }
+                    }
+                }
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Image(
-            painter = rememberAsyncImagePainter(currentUser?.avatarUrl),
-            contentDescription = null,
-            modifier = Modifier
-                .size(100.dp)
-                .clip(CircleShape)
-                .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape),
-            contentScale = ContentScale.Crop
-        )
+        // ── Pet Health Section ─────────────────────────────────────
+        Text("Pet Health", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8C8C8C), modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp))
+        Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color.White), elevation = CardDefaults.cardElevation(1.dp)) {
+            Column {
+                ProfileOptionRow(icon = Icons.Default.Favorite, title = "Health Hub", subtitle = "Vaccination status & medical records", onClick = { viewModel.navigateTo(Screen.ReportsDashboard) })
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                ProfileOptionRow(icon = Icons.Default.DateRange, title = "Appointments", subtitle = "Manage pet checkups & upcoming visits", onClick = { viewModel.navigateTo(Screen.Appointments) })
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                ProfileOptionRow(icon = Icons.Default.CheckCircle, title = "Medication Log", subtitle = "Track daily pills & chewable doses", onClick = { viewModel.navigateTo(Screen.TabletsIssued) })
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                ProfileOptionRow(icon = Icons.Default.Star, title = "Health & Vaccinations", subtitle = "Full vaccination history & health records", onClick = { viewModel.navigateTo(Screen.Vaccinations) })
+            }
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(currentUser?.fullName ?: "Arjun", fontWeight = FontWeight.Black, fontSize = 24.sp)
-        Text("+91 ${currentUser?.phone ?: "9876543210"}", color = Color.Gray, fontSize = 14.sp)
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Actions List
-        Card(modifier = Modifier.fillMaxWidth()) {
+        // ── Shopping Section ───────────────────────────────────────
+        Text("Shopping", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8C8C8C), modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp))
+        Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color.White), elevation = CardDefaults.cardElevation(1.dp)) {
             Column {
-                ProfileOptionRow(icon = Icons.Default.Favorite, title = "Saved Wishlist", subtitle = "Your marked favorite dog stores", onClick = { viewModel.navigateTo(Screen.SavedShops) })
+                ProfileOptionRow(icon = Icons.Default.Favorite, title = "Favourites", subtitle = "Saved products & shops", onClick = { viewModel.navigateTo(Screen.Favourites) })
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-                ProfileOptionRow(icon = Icons.Default.DateRange, title = "Care Calendar & Reminders", subtitle = "Manage vaccine schedules and birthdays", onClick = { showCareCalendar = true })
+                ProfileOptionRow(icon = Icons.Default.ShoppingCart, title = "My Orders", subtitle = "Track current & past orders", onClick = { viewModel.navigateTo(Screen.Orders) })
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-                ProfileOptionRow(icon = Icons.Default.LocationOn, title = "Change City Location", subtitle = "Current city Hyderabad", onClick = { viewModel.navigateTo(Screen.LocationSelect) })
-                
-                // Show Super Admin Controls if they have the role
+                ProfileOptionRow(icon = Icons.Default.Lock, title = "Payment Methods", subtitle = "UPI, Cards & wallet options", onClick = { Toast.makeText(context, "Coming soon! \uD83D\uDCB3", Toast.LENGTH_SHORT).show() })
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                ProfileOptionRow(icon = Icons.Default.Star, title = "Subscription Details", subtitle = "PawsApp Premium plan", onClick = { Toast.makeText(context, "Manage subscription coming soon!", Toast.LENGTH_SHORT).show() })
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // ── Account Section ────────────────────────────────────────
+        Text("Account", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8C8C8C), modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp))
+        Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color.White), elevation = CardDefaults.cardElevation(1.dp)) {
+            Column {
+                ProfileOptionRow(icon = Icons.Default.DateRange, title = L10n.getString("care_calendar"), subtitle = "Vaccine schedules & birthdays", onClick = { showCareCalendar = true })
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                ProfileOptionRow(icon = Icons.Default.LocationOn, title = L10n.getString("change_city"), subtitle = "Current: $selectedCityName", onClick = { viewModel.navigateTo(Screen.LocationSelect) })
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                ProfileOptionRow(icon = Icons.Default.Info, title = L10n.getString("select_language"), subtitle = L10n.getString("language_subtitle"), onClick = { showLanguageDialog = true })
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                ProfileOptionRow(icon = Icons.Default.Info, title = "Support", subtitle = "Help center & FAQs", onClick = { Toast.makeText(context, "Support center coming soon! \uD83E\uDD1D", Toast.LENGTH_SHORT).show() })
                 if (currentUser?.role == "superadmin" || currentUser?.role == "admin") {
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-                    ProfileOptionRow(icon = Icons.Default.Settings, title = "Super Admin Controls", subtitle = "Approve pet stores and push banners", onClick = { viewModel.navigateTo(Screen.SuperAdmin) })
+                    ProfileOptionRow(icon = Icons.Default.Settings, title = L10n.getString("super_admin_controls"), subtitle = "Approve pet stores and push banners", onClick = { viewModel.navigateTo(Screen.SuperAdmin) })
                 }
             }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        val fcmToken by viewModel.fcmToken.collectAsState()
-        val clipboardManager = androidx.compose.ui.platform.LocalClipboardManager.current
-
+        // ── Logout ─────────────────────────────────────────────────
         Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).clickable { viewModel.logout() },
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEDED)),
+            border = BorderStroke(1.dp, Color(0xFFFF4444).copy(alpha = 0.3f)),
+            elevation = CardDefaults.cardElevation(0.dp)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Google Firebase FCM Service Credentials",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Registration token:",
-                    fontSize = 11.sp,
-                    color = Color.Gray
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
-                        .padding(8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = fcmToken,
-                        fontSize = 11.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Copy",
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.clickable {
-                            clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(fcmToken))
-                            Toast.makeText(context, "FCM token copied to clipboard! 📋", Toast.LENGTH_SHORT).show()
-                        }
-                    )
-                }
+            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                Icon(Icons.Default.ExitToApp, null, tint = Color(0xFFFF4444), modifier = Modifier.size(20.dp))
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(L10n.getString("logout_btn"), color = Color(0xFFFF4444), fontWeight = FontWeight.Bold, fontSize = 15.sp)
             }
         }
 
         Spacer(modifier = Modifier.height(32.dp))
-
-        OutlinedButton(
-            onClick = { viewModel.logout() },
-            modifier = Modifier.fillMaxWidth().height(52.dp),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
-            border = BorderStroke(1.5.dp, Color.Red),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Text("Log out of Swiggy Paws", fontWeight = FontWeight.Bold)
-        }
     }
 
-    if (showCareCalendar) {
-        CareCalendarSheet(
-            viewModel = viewModel,
-            onDismiss = { showCareCalendar = false }
-        )
-    }
+    if (showCareCalendar) { CareCalendarSheet(viewModel = viewModel, onDismiss = { showCareCalendar = false }) }
+    if (showLanguageDialog) { LanguageSelectionDialog(currentLanguage = currentLanguage, onLanguageSelected = { viewModel.setAppLanguage(it) }, onDismissRequest = { showLanguageDialog = false }) }
 }
 
 @Composable
@@ -11597,3 +12232,1960 @@ fun MerchantMenuScreen(viewModel: PawsViewModel) {
         }
     }
 }
+
+@Composable
+fun LanguageSelectionDialog(
+    currentLanguage: String,
+    onLanguageSelected: (String) -> Unit,
+    onDismissRequest: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = L10n.getString("select_language_title"),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                val options = listOf(
+                    Triple("en", "English", "English"),
+                    Triple("hi", "हिन्दी", "Hindi"),
+                    Triple("te", "తెలుగు", "Telugu")
+                )
+                
+                options.forEach { (code, nativeName, engName) ->
+                    val isSelected = code == currentLanguage
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(
+                                if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                                else Color.Transparent
+                            )
+                            .clickable {
+                                onLanguageSelected(code)
+                                onDismissRequest()
+                            }
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Text(
+                                text = nativeName,
+                                fontSize = 16.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = engName,
+                                fontSize = 12.sp,
+                                color = Color.Gray
+                            )
+                        }
+                        if (isSelected) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = "Selected",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                TextButton(onClick = onDismissRequest) {
+                    Text(L10n.getString("cancel"))
+                }
+            }
+        }
+    }
+}
+
+// ==========================================
+// SCREEN: APPOINTMENTS
+// ==========================================
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AppointmentsScreen(viewModel: PawsViewModel) {
+    val appointments by viewModel.activeAppointments.collectAsState()
+    val context = LocalContext.current
+    var selectedTab by remember { mutableStateOf(0) } // 0 = Upcoming, 1 = Past
+    var showRescheduleDialog by remember { mutableStateOf<AppointmentEntity?>(null) }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Top Bar
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = { viewModel.navigateBack() }) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Appointments",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            
+            // Profile image
+            val currentUser by viewModel.currentUser.collectAsState()
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .border(1.5.dp, MaterialTheme.colorScheme.secondary, CircleShape)
+            ) {
+                Image(
+                    painter = rememberAsyncImagePainter(
+                        currentUser?.avatarUrl ?: "https://lh3.googleusercontent.com/aida-public/AB6AXuCB2YwNOMe08wQT5HC7_1fP0roGDby2v9VT2elw1_xojx6a-WmXM5t2j2mr55QUX-FZedgBz1KrwrBwOZ9mT-EgkAxuilcmkSfWwrPRjYW71yxIAkgJQLF6SGTvnKh-cbUROw0hH6s-r4eeD90bGi3irqYlly003FRTAj-z5eRZKSXuaxvmZLfi2OPx91mELxEtpFORREtuAc7Aby49lMZ3_OFPPfdJuxFSxp9nPdp4utdJFz807gOXSmvkQd4ItX-mzPUxa6K8o-Q"
+                    ),
+                    contentDescription = "Profile",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
+        }
+
+        // Subtitle
+        Text(
+            text = "Manage your pet's upcoming visits and view past history.",
+            fontSize = 14.sp,
+            color = Color.Gray,
+            modifier = Modifier.padding(horizontal = 20.dp).padding(bottom = 16.dp)
+        )
+
+        // Segmented Control (Tabs)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 8.dp)
+                .background(Color(0xFFE5EEFF), RoundedCornerShape(12.dp))
+                .padding(4.dp)
+        ) {
+            val upcomingSelected = selectedTab == 0
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(if (upcomingSelected) Color.White else Color.Transparent)
+                    .clickable { selectedTab = 0 }
+                    .padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Upcoming",
+                    fontWeight = FontWeight.Bold,
+                    color = if (upcomingSelected) MaterialTheme.colorScheme.primary else Color.Gray,
+                    fontSize = 14.sp
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(if (!upcomingSelected) Color.White else Color.Transparent)
+                    .clickable { selectedTab = 1 }
+                    .padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Past",
+                    fontWeight = FontWeight.Bold,
+                    color = if (!upcomingSelected) MaterialTheme.colorScheme.primary else Color.Gray,
+                    fontSize = 14.sp
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Filtered Appointments
+        val filtered = remember(appointments, selectedTab) {
+            appointments.filter { appt ->
+                if (selectedTab == 0) {
+                    appt.status == "pending" || appt.status == "confirmed"
+                } else {
+                    appt.status == "completed" || appt.status == "cancelled"
+                }
+            }
+        }
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = 24.dp)
+        ) {
+            items(filtered) { appt ->
+                AppointmentCard(
+                    appointment = appt,
+                    isUpcoming = selectedTab == 0,
+                    onAddToCal = {
+                        Toast.makeText(context, "Added to Calendar! 📅", Toast.LENGTH_SHORT).show()
+                    },
+                    onReschedule = {
+                        showRescheduleDialog = appt
+                    },
+                    onCancel = {
+                        viewModel.updateAppointmentStatus(appt.id, "cancelled")
+                        Toast.makeText(context, "Appointment cancelled", Toast.LENGTH_SHORT).show()
+                    }
+                )
+            }
+
+            if (selectedTab == 0) {
+                item {
+                    // Book New Visit Card
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp)
+                            .clickable {
+                                viewModel.navigateTo(Screen.Home)
+                            },
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFFE5EEFF)
+                        ),
+                        border = BorderStroke(1.5.dp, Color(0xFF2563EB).copy(alpha = 0.5f))
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFF2563EB))
+                                    .padding(8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = "Book",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = "Book New Visit",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Schedule a checkup, grooming, or consultation.",
+                                fontSize = 12.sp,
+                                color = Color.Gray,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+            } else {
+                if (filtered.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("No past appointments found", color = Color.Gray)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Reschedule Dialog
+    showRescheduleDialog?.let { appt ->
+        var newDate by remember { mutableStateOf(appt.appointmentDate) }
+        var newTime by remember { mutableStateOf(appt.appointmentTime) }
+
+        AlertDialog(
+            onDismissRequest = { showRescheduleDialog = null },
+            title = { Text("Reschedule Appointment") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text("Select new date and time for ${appt.petName}'s appointment:")
+                    
+                    OutlinedTextField(
+                        value = newDate,
+                        onValueChange = { newDate = it },
+                        label = { Text("New Date (e.g. YYYY-MM-DD)") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    OutlinedTextField(
+                        value = newTime,
+                        onValueChange = { newTime = it },
+                        label = { Text("New Time (e.g. HH:MM AM/PM)") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.rescheduleAppointment(appt, newDate, newTime)
+                        showRescheduleDialog = null
+                        Toast.makeText(context, "Rescheduled successfully!", Toast.LENGTH_SHORT).show()
+                    }
+                ) {
+                    Text("Confirm")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRescheduleDialog = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun AppointmentCard(
+    appointment: AppointmentEntity,
+    isUpcoming: Boolean,
+    onAddToCal: () -> Unit,
+    onReschedule: () -> Unit,
+    onCancel: () -> Unit
+) {
+    val doctorName = if (appointment.shopId == "shop_hyd_1") "Dr. Sarah Jenkins" else "Dr. Michael Chen"
+    val clinicName = if (appointment.shopId == "shop_hyd_1") "City Paws Veterinary Clinic" else "Downtown Animal Hospital"
+    val dateParts = appointment.appointmentDate.split("-")
+    val monthStr = if (dateParts.size >= 2) {
+        when (dateParts[1]) {
+            "01" -> "Jan"
+            "02" -> "Feb"
+            "03" -> "Mar"
+            "04" -> "Apr"
+            "05" -> "May"
+            "06" -> "Jun"
+            "07" -> "Jul"
+            "08" -> "Aug"
+            "09" -> "Sep"
+            "10" -> "Oct"
+            "11" -> "Nov"
+            "12" -> "Dec"
+            else -> "Oct"
+        }
+    } else "Oct"
+    val dayStr = if (dateParts.size >= 3) dateParts[2] else "24"
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.3f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = appointment.serviceName,
+                        fontWeight = FontWeight.Bold,
+                        color = if (appointment.shopId == "shop_hyd_1") Color(0xFF004AC6) else Color(0xFF855300),
+                        fontSize = 14.sp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = doctorName,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = clinicName,
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
+                }
+
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFFD3E4FE)
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.width(60.dp)
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = monthStr.uppercase(),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Gray
+                        )
+                        Text(
+                            text = dayStr,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color(0xFF004AC6)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.DateRange,
+                    contentDescription = "Time",
+                    tint = Color(0xFF004AC6),
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "${appointment.appointmentTime} - ${if (appointment.serviceName.contains("Wellness")) "11:15 AM" else "02:30 PM"}",
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFFEFF4FF), RoundedCornerShape(8.dp))
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val avatar = if (appointment.petName.contains("Bella")) {
+                    "https://images.unsplash.com/photo-1552053831-71594a27632d?w=200"
+                } else {
+                    "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200"
+                }
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(CircleShape)
+                ) {
+                    Image(
+                        painter = rememberAsyncImagePainter(avatar),
+                        contentDescription = "Pet Avatar",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "${appointment.petName} (${if (appointment.petName.contains("Bella")) "Dog" else "Cat"})",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+
+            if (isUpcoming) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onAddToCal,
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(40.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary)
+                    ) {
+                        Icon(Icons.Default.DateRange, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Add to Cal", fontSize = 12.sp)
+                    }
+
+                    Button(
+                        onClick = onReschedule,
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(40.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Reschedule", fontSize = 12.sp, color = Color.White)
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                TextButton(
+                    onClick = onCancel,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)
+                ) {
+                    Text("Cancel Appointment", fontSize = 12.sp)
+                }
+            } else {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "Status: ${appointment.status.uppercase()}",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (appointment.status == "completed") Color(0xFF006242) else Color.Red
+                )
+            }
+        }
+    }
+}
+
+// ==========================================
+// SCREEN: TABLETS ISSUED (MEDICATION LOG)
+// ==========================================
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TabletsIssuedScreen(viewModel: PawsViewModel) {
+    val reminders by viewModel.activeReminders.collectAsState()
+    val context = LocalContext.current
+    var showAddMedDialog by remember { mutableStateOf(false) }
+
+    val medications = remember(reminders) {
+        reminders.filter { it.type == "medication" }
+    }
+
+    val dueToday = remember(medications) {
+        medications.filter { it.id == "rem_med_1" || (it.notes.contains("Due") && !it.isCompleted) }
+    }
+
+    val activePrescriptions = remember(medications) {
+        medications.filter { (it.id == "rem_med_2" || it.id == "rem_med_3" || (!it.notes.contains("Due") && !it.notes.contains("Completed") && !it.isCompleted)) && it.id != "rem_med_1" }
+    }
+
+    val pastHistory = remember(medications) {
+        medications.filter { it.isCompleted || it.notes.contains("Completed") }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+        ) {
+            // Top Bar
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = { viewModel.navigateBack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Medication Log",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                val currentUser by viewModel.currentUser.collectAsState()
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .border(1.5.dp, MaterialTheme.colorScheme.secondary, CircleShape)
+                ) {
+                    Image(
+                        painter = rememberAsyncImagePainter(
+                            currentUser?.avatarUrl ?: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100"
+                        ),
+                        contentDescription = "Profile",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            }
+
+            // Today's Tasks Bento Card
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 8.dp),
+                shape = RoundedCornerShape(16.dp),
+                border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.3f)),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text("Due Today", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
+                            Text("Don't forget Buddy's meds", fontSize = 12.sp, color = Color.Gray)
+                        }
+
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Default.DateRange, null, tint = Color.White, modifier = Modifier.size(14.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Oct 24", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    if (dueToday.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("No medications due today! 🎉", color = Color.Gray, fontSize = 14.sp)
+                        }
+                    } else {
+                        dueToday.forEach { med ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color(0xFFF8F9FF), RoundedCornerShape(12.dp))
+                                    .border(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.2f), RoundedCornerShape(12.dp))
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFFE5EEFF)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(Icons.Default.Info, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                                }
+
+                                Spacer(modifier = Modifier.width(12.dp))
+
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(med.title, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Card(
+                                            colors = CardDefaults.cardColors(containerColor = Color(0xFFFEDBA6).copy(alpha = 0.3f)),
+                                            shape = RoundedCornerShape(4.dp)
+                                        ) {
+                                            Text(
+                                                "DUE",
+                                                fontSize = 9.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF855300),
+                                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                            )
+                                        }
+                                    }
+                                    Text(
+                                        text = med.notes.substringBefore("|").trim(),
+                                        fontSize = 12.sp,
+                                        color = Color.Gray
+                                    )
+                                }
+
+                                val isGiven = med.isCompleted
+                                val btnBg = if (isGiven) Color(0xFFE5EEFF) else MaterialTheme.colorScheme.primary
+                                val btnTextColor = if (isGiven) MaterialTheme.colorScheme.primary else Color.White
+
+                                Box(
+                                    modifier = Modifier
+                                        .size(60.dp)
+                                        .clip(CircleShape)
+                                        .background(btnBg)
+                                        .clickable {
+                                            viewModel.toggleReminderCompletion(med.id, !med.isCompleted)
+                                            Toast
+                                                .makeText(
+                                                    context,
+                                                    if (!med.isCompleted) "Medication marked as Given! 💊" else "Medication marked as Pending",
+                                                    Toast.LENGTH_SHORT
+                                                )
+                                                .show()
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Icon(
+                                            imageVector = if (isGiven) Icons.Default.CheckCircle else Icons.Default.Check,
+                                            contentDescription = "Give",
+                                            tint = btnTextColor,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Text(
+                                            text = if (isGiven) "Done" else "Give",
+                                            fontSize = 9.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = btnTextColor
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Active Prescriptions List
+            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                Text(
+                    text = "Active Prescriptions",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+
+                activePrescriptions.forEach { med ->
+                    val notesParts = med.notes.split("|").map { it.trim() }
+                    val dosage = notesParts.getOrNull(0) ?: "1 Chew"
+                    val frequency = notesParts.getOrNull(1) ?: "Monthly"
+                    val category = notesParts.getOrNull(2) ?: "General"
+                    val lastGiven = notesParts.getOrNull(3) ?: "Last given: N/A"
+                    val nextDue = notesParts.getOrNull(4) ?: "Next: N/A"
+
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.3f)),
+                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(36.dp)
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(Color(0xFFEFF4FF)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Info,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Column {
+                                        Text(med.title, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                                        Text(category, fontSize = 11.sp, color = Color.Gray)
+                                    }
+                                }
+
+                                Card(
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFD1FAE5)),
+                                    shape = RoundedCornerShape(16.dp)
+                                ) {
+                                    Text(
+                                        text = "Active",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF065F46),
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color(0xFFF8F9FF), RoundedCornerShape(8.dp))
+                                    .border(0.5.dp, Color(0xFFC3C6D7).copy(alpha = 0.2f), RoundedCornerShape(8.dp))
+                                    .padding(8.dp)
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text("Dosage", fontSize = 11.sp, color = Color.Gray)
+                                    Text(dosage, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                                }
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text("Frequency", fontSize = 11.sp, color = Color.Gray)
+                                    Text(frequency, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.Info,
+                                        contentDescription = null,
+                                        tint = Color.Gray,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(lastGiven, fontSize = 11.sp, color = Color.Gray)
+                                }
+                                Text(nextDue, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Past History List
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 20.dp)
+                    .alpha(0.8f)
+            ) {
+                Text(
+                    text = "Past History",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = Color.Gray
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.2f)),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        pastHistory.forEachIndexed { idx, med ->
+                            val notesParts = med.notes.split("|").map { it.trim() }
+                            val sub = notesParts.getOrNull(0) ?: "Completed"
+                            val dateText = notesParts.getOrNull(2) ?: ""
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.CheckCircle,
+                                        contentDescription = "Completed",
+                                        tint = Color.Gray,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Column {
+                                        Text(med.title, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                        Text(
+                                            text = if (notesParts.size >= 2) "${notesParts[1]} • $sub" else sub,
+                                            fontSize = 11.sp,
+                                            color = Color.Gray
+                                        )
+                                    }
+                                }
+                                Text(dateText, fontSize = 12.sp, color = Color.Gray)
+                            }
+
+                            if (idx < pastHistory.size - 1) {
+                                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(100.dp))
+        }
+
+        FloatingActionButton(
+            onClick = { showAddMedDialog = true },
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = Color.White,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(24.dp)
+                .size(56.dp)
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "Add Medication", modifier = Modifier.size(24.dp))
+        }
+    }
+
+    if (showAddMedDialog) {
+        var name by remember { mutableStateOf("") }
+        var dosage by remember { mutableStateOf("") }
+        var frequency by remember { mutableStateOf("") }
+        var category by remember { mutableStateOf("") }
+        var nextDue by remember { mutableStateOf("") }
+
+        AlertDialog(
+            onDismissRequest = { showAddMedDialog = false },
+            title = { Text("Add Medication Prescription") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = { name = it },
+                        label = { Text("Medication Name (e.g. Heartgard Plus)") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = dosage,
+                        onValueChange = { dosage = it },
+                        label = { Text("Dosage (e.g. 1 Chewable)") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = frequency,
+                        onValueChange = { frequency = it },
+                        label = { Text("Frequency (e.g. Monthly)") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = category,
+                        onValueChange = { category = it },
+                        label = { Text("Category (e.g. Flea & Tick)") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = nextDue,
+                        onValueChange = { nextDue = it },
+                        label = { Text("Next Due Date (e.g. Nov 10)") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (name.isNotEmpty()) {
+                            val notesText = "$dosage | $frequency | $category | Last given: N/A | Next: $nextDue"
+                            viewModel.createReminder(
+                                title = name,
+                                petName = "Buddy",
+                                dateString = "2026-10-24",
+                                notes = notesText,
+                                type = "medication"
+                            )
+                            showAddMedDialog = false
+                            Toast.makeText(context, "Prescription added successfully!", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                ) {
+                    Text("Add")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddMedDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+}
+
+// ==========================================
+// SCREEN: HEALTH & VACCINATIONS
+// ==========================================
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun VaccinationsScreen(viewModel: PawsViewModel) {
+    val reminders by viewModel.activeReminders.collectAsState()
+    val context = LocalContext.current
+    var showAddVaccDialog by remember { mutableStateOf(false) }
+
+    val vaccinations = remember(reminders) {
+        reminders.filter { it.type == "vaccination" }
+    }
+
+    val petName = "Buddy"
+    val breed = "Golden Retriever"
+    val age = "3 Years Old"
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+    ) {
+        // Top Bar
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = { viewModel.navigateBack() }) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Health & Vaccinations",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .border(1.5.dp, MaterialTheme.colorScheme.secondary, CircleShape)
+            ) {
+                Image(
+                    painter = rememberAsyncImagePainter(
+                        "https://images.unsplash.com/photo-1552053831-71594a27632d?w=100"
+                    ),
+                    contentDescription = "Profile",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
+        }
+
+        // Pet Profile Summary Card
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 8.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.3f)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Brush.horizontalGradient(
+                            colors = listOf(
+                                Color(0xFF2563EB).copy(alpha = 0.1f),
+                                Color.Transparent
+                            )
+                        )
+                    )
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(72.dp)
+                        .clip(CircleShape)
+                        .border(3.dp, Color.White, CircleShape)
+                ) {
+                    Image(
+                        painter = rememberAsyncImagePainter(
+                            "https://images.unsplash.com/photo-1552053831-71594a27632d?w=200"
+                        ),
+                        contentDescription = "Buddy Avatar",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column {
+                    Text(
+                        text = petName,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "$breed • $age",
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFD1FAE5)),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = Color(0xFF047857),
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Up to date",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF047857)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Vaccination History",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text("Track Buddy's immunizations and due dates.", fontSize = 11.sp, color = Color.Gray)
+                }
+
+                TextButton(
+                    onClick = { showAddVaccDialog = true }
+                ) {
+                    Icon(Icons.Default.Add, null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Add Record", fontSize = 12.sp)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 12.dp)
+            ) {
+                vaccinations.forEachIndexed { index, vacc ->
+                    val notesParts = vacc.notes.split("|").map { it.trim() }
+                    val adminStr = notesParts.getOrNull(0) ?: "Administered: N/A"
+                    val dueStr = notesParts.getOrNull(1) ?: ""
+                    val docName = notesParts.getOrNull(2) ?: "Dr. Sarah Jenkins"
+                    val hospName = notesParts.getOrNull(3) ?: ""
+                    val hasCert = notesParts.getOrNull(4) == "cert"
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.width(24.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(12.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (index == 0) MaterialTheme.colorScheme.primary 
+                                        else Color.LightGray
+                                    )
+                            )
+                            if (index < vaccinations.size - 1) {
+                                Box(
+                                    modifier = Modifier
+                                        .width(2.dp)
+                                        .height(140.dp)
+                                        .background(Color(0xFFE5EEFF))
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Card(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(bottom = 16.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.3f)),
+                            colors = CardDefaults.cardColors(containerColor = Color.White)
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(vacc.title, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                                    if (dueStr.isNotEmpty()) {
+                                        Card(
+                                            colors = CardDefaults.cardColors(containerColor = Color(0xFFEFF4FF)),
+                                            shape = RoundedCornerShape(12.dp)
+                                        ) {
+                                            Text(
+                                                text = dueStr,
+                                                fontSize = 10.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.primary,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                            )
+                                        }
+                                    }
+                                }
+
+                                Text(adminStr, fontSize = 11.sp, color = Color.Gray)
+
+                                Spacer(modifier = Modifier.height(12.dp))
+                                HorizontalDivider(color = Color(0xFFEFF4FF))
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.Info,
+                                            contentDescription = null,
+                                            tint = Color.Gray,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Column {
+                                            Text(docName, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                            if (hospName.isNotEmpty()) {
+                                                Text(hospName, fontSize = 10.sp, color = Color.Gray)
+                                            }
+                                        }
+                                    }
+
+                                    if (hasCert) {
+                                        IconButton(
+                                            onClick = {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Downloading vaccination certificate for ${vacc.title}... 📄",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            },
+                                            modifier = Modifier.size(24.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Info,
+                                                contentDescription = "Certificate",
+                                                tint = MaterialTheme.colorScheme.primary,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = "Health Records & Documents",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text("Tap to view scanned documents or lab results.", fontSize = 11.sp, color = Color.Gray)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            val docs = listOf(
+                Pair("Blood Report", "Oct 2023"),
+                Pair("X-Ray Chest", "Jun 2023"),
+                Pair("Vaccination Cert", "Mar 2023"),
+                Pair("Prescription", "Oct 2023")
+            )
+
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                for (i in docs.indices step 2) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        for (j in i..i+1) {
+                            if (j < docs.size) {
+                                val doc = docs[j]
+                                Card(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable {
+                                            Toast.makeText(
+                                                context,
+                                                "Opening document: ${doc.first} (${doc.second})... 💾",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        },
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.2f))
+                                ) {
+                                    Column(
+                                        modifier = Modifier.padding(16.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(40.dp)
+                                                .clip(CircleShape)
+                                                .background(Color(0xFFEFF4FF)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Info,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.primary,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Text(
+                                            text = doc.first,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 13.sp,
+                                            textAlign = TextAlign.Center
+                                        )
+                                        Text(
+                                            text = doc.second,
+                                            fontSize = 11.sp,
+                                            color = Color.Gray
+                                        )
+                                    }
+                                }
+                            } else {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(60.dp))
+    }
+
+    if (showAddVaccDialog) {
+        var name by remember { mutableStateOf("") }
+        var dateAdministered by remember { mutableStateOf("") }
+        var nextDue by remember { mutableStateOf("") }
+        var docName by remember { mutableStateOf("") }
+
+        AlertDialog(
+            onDismissRequest = { showAddVaccDialog = false },
+            title = { Text("Add Vaccination Record") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = { name = it },
+                        label = { Text("Vaccine Name (e.g. Rabies)") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = dateAdministered,
+                        onValueChange = { dateAdministered = it },
+                        label = { Text("Date Administered (e.g. Oct 15, 2023)") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = nextDue,
+                        onValueChange = { nextDue = it },
+                        label = { Text("Next Due Date (e.g. Oct 15, 2024)") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = docName,
+                        onValueChange = { docName = it },
+                        label = { Text("Doctor Name (e.g. Dr. Sarah Jenkins)") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (name.isNotEmpty()) {
+                            val notesText = "Administered: $dateAdministered | Due: $nextDue | $docName | City Vet Clinic | cert"
+                            viewModel.createReminder(
+                                title = name,
+                                petName = "Buddy",
+                                dateString = "2026-10-24",
+                                notes = notesText,
+                                type = "vaccination"
+                            )
+                            showAddVaccDialog = false
+                            Toast.makeText(context, "Vaccination record added successfully!", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                ) {
+                    Text("Add")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddVaccDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+}
+
+// ==========================================
+// SCREEN: FAVOURITES
+// ==========================================
+@Composable
+fun FavouritesScreen(viewModel: PawsViewModel) {
+    val wishlists by viewModel.wishlists.collectAsState()
+    val shopsList by viewModel.shops.collectAsState()
+    var selectedTab by remember { mutableStateOf(0) }
+
+    val favShops = remember(wishlists, shopsList) {
+        shopsList.filter { shop -> wishlists.any { it.shopId == shop.id } }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF7F8FA))
+    ) {
+        // Header
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+                .padding(horizontal = 20.dp, vertical = 16.dp)
+        ) {
+            Column {
+                Text("Favourites", fontWeight = FontWeight.Black, fontSize = 24.sp)
+                Text("Your saved shops & products", fontSize = 13.sp, color = Color.Gray)
+            }
+        }
+
+        // Tabs
+        TabRow(
+            selectedTabIndex = selectedTab,
+            containerColor = Color.White,
+            contentColor = Color(0xFFFC8019),
+            indicator = { tabPositions ->
+                TabRowDefaults.Indicator(
+                    modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                    color = Color(0xFFFC8019),
+                    height = 3.dp
+                )
+            }
+        ) {
+            Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }) {
+                Text("Shops", modifier = Modifier.padding(vertical = 14.dp), fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Normal, fontSize = 14.sp)
+            }
+            Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }) {
+                Text("Products", modifier = Modifier.padding(vertical = 14.dp), fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal, fontSize = 14.sp)
+            }
+        }
+
+        when (selectedTab) {
+            0 -> {
+                if (favShops.isEmpty()) {
+                    Column(
+                        modifier = Modifier.fillMaxSize().padding(32.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("🐾", fontSize = 48.sp)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text("No saved shops yet", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Text("Tap ♥ on any shop to save it here", fontSize = 13.sp, color = Color.Gray, textAlign = TextAlign.Center)
+                    }
+                } else {
+                    LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        items(favShops) { shop ->
+                            Card(
+                                modifier = Modifier.fillMaxWidth().clickable { viewModel.navigateTo(Screen.ShopDetail(shop.id)) },
+                                shape = RoundedCornerShape(16.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                elevation = CardDefaults.cardElevation(2.dp)
+                            ) {
+                                Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                                    Image(
+                                        painter = rememberAsyncImagePainter(shop.photos.firstOrNull()),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(60.dp).clip(RoundedCornerShape(12.dp)),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(shop.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                        Text(shop.description, fontSize = 12.sp, color = Color.Gray, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            Surface(shape = RoundedCornerShape(6.dp), color = Color(0xFFFFF3E0)) {
+                                                Text("⭐ ${shop.rating}", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFC8019), modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
+                                            }
+                                            Text(if (shop.deliveryAvailable) "Delivery available" else "Pickup only", fontSize = 11.sp, color = Color.Gray)
+                                        }
+                                    }
+                                    Icon(Icons.Default.Favorite, null, tint = Color(0xFFFC8019), modifier = Modifier.size(20.dp))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            1 -> {
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(32.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("🛒", fontSize = 48.sp)
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text("No saved products yet", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Text("Browse shops and save products you love", fontSize = 13.sp, color = Color.Gray, textAlign = TextAlign.Center)
+                    Spacer(modifier = Modifier.height(20.dp))
+                    Button(
+                        onClick = { viewModel.clearHistoryAndNavigate(Screen.Home) },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFC8019)),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Browse Shops", fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ==========================================
+// SCREEN: ORDERS
+// ==========================================
+@Composable
+fun OrdersScreen(viewModel: PawsViewModel) {
+    var selectedTab by remember { mutableStateOf(0) }
+    val context = LocalContext.current
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF7F8FA))
+    ) {
+        Box(
+            modifier = Modifier.fillMaxWidth().background(Color.White).padding(horizontal = 20.dp, vertical = 16.dp)
+        ) {
+            Column {
+                Text("My Orders", fontWeight = FontWeight.Black, fontSize = 24.sp)
+                Text("Track & manage your pet orders", fontSize = 13.sp, color = Color.Gray)
+            }
+        }
+
+        TabRow(
+            selectedTabIndex = selectedTab,
+            containerColor = Color.White,
+            contentColor = Color(0xFFFC8019),
+            indicator = { tabPositions ->
+                TabRowDefaults.Indicator(
+                    modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                    color = Color(0xFFFC8019), height = 3.dp
+                )
+            }
+        ) {
+            Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }) {
+                Text("Current", modifier = Modifier.padding(vertical = 14.dp), fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Normal, fontSize = 14.sp)
+            }
+            Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }) {
+                Text("Past Orders", modifier = Modifier.padding(vertical = 14.dp), fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal, fontSize = 14.sp)
+            }
+        }
+
+        when (selectedTab) {
+            0 -> {
+                // Current orders - check cart first
+                Column(modifier = Modifier.fillMaxSize()) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    // Active order card
+                    Card(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(2.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Surface(shape = CircleShape, color = Color(0xFFF0FFF4)) {
+                                    Icon(Icons.Default.ArrowForward, null, tint = Color(0xFF4CAF50), modifier = Modifier.size(36.dp).padding(8.dp))
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text("PawsApp Order #2847", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                                    Text("Royal Canin • Himalaya Dog Treats", fontSize = 12.sp, color = Color.Gray)
+                                }
+                                Surface(shape = RoundedCornerShape(8.dp), color = Color(0xFFF0FFF4)) {
+                                    Text("On the way", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF4CAF50), modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+                            // Progress bar
+                            val steps = listOf("Placed", "Confirmed", "Packed", "Picked up", "Delivered")
+                            val currentStep = 3
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                steps.forEachIndexed { index, step ->
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
+                                        Box(
+                                            modifier = Modifier.size(24.dp).background(
+                                                if (index <= currentStep) Color(0xFF4CAF50) else Color(0xFFE0E0E0),
+                                                CircleShape
+                                            ),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            if (index < currentStep) {
+                                                Icon(Icons.Default.Check, null, tint = Color.White, modifier = Modifier.size(14.dp))
+                                            } else if (index == currentStep) {
+                                                Box(modifier = Modifier.size(10.dp).background(Color.White, CircleShape))
+                                            }
+                                        }
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(step, fontSize = 8.sp, textAlign = TextAlign.Center, color = if (index <= currentStep) Color(0xFF4CAF50) else Color.Gray, maxLines = 1)
+                                    }
+                                    if (index < steps.size - 1) {
+                                        Box(modifier = Modifier.height(2.dp).weight(0.5f).background(if (index < currentStep) Color(0xFF4CAF50) else Color(0xFFE0E0E0)).align(Alignment.CenterVertically))
+                                    }
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+                            HorizontalDivider()
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text("Estimated delivery:", fontSize = 12.sp, color = Color.Gray)
+                                Text("25–35 min", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Color(0xFFFC8019))
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            OutlinedButton(
+                                onClick = { viewModel.navigateTo(Screen.Cart) },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFFC8019)),
+                                border = BorderStroke(1.dp, Color(0xFFFC8019)),
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Text("Track Order", fontWeight = FontWeight.SemiBold)
+                            }
+                        }
+                    }
+                }
+            }
+            1 -> {
+                LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    val pastOrders = listOf(
+                        Triple("Order #2841", "Royal Canin Adult Dog Food 3kg", "₹1,249"),
+                        Triple("Order #2829", "Himalaya Pet Care Shampoo + Treats", "₹589"),
+                        Triple("Order #2810", "Pedigree Chum 400g × 6 packs", "₹720"),
+                    )
+                    items(pastOrders) { (id, items, price) ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            elevation = CardDefaults.cardElevation(1.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(id, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                        Text(items, fontSize = 12.sp, color = Color.Gray, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                    }
+                                    Text(price, fontWeight = FontWeight.Bold, color = Color(0xFFFC8019), fontSize = 14.sp)
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Surface(shape = RoundedCornerShape(6.dp), color = Color(0xFFF0FFF4), modifier = Modifier.weight(1f)) {
+                                        Text("✅ Delivered", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF4CAF50), textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 6.dp))
+                                    }
+                                    OutlinedButton(
+                                        onClick = { Toast.makeText(context, "Reorder feature coming soon! 🛒", Toast.LENGTH_SHORT).show() },
+                                        modifier = Modifier.weight(1f).height(34.dp),
+                                        shape = RoundedCornerShape(8.dp),
+                                        contentPadding = PaddingValues(0.dp),
+                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFFC8019)),
+                                        border = BorderStroke(1.dp, Color(0xFFFC8019))
+                                    ) {
+                                        Text("Reorder", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ==========================================
+// SCREEN: REPORTS DASHBOARD (HEALTH HUB)
+// ==========================================
+@Composable
+fun ReportsDashboardScreen(viewModel: PawsViewModel) {
+    val context = LocalContext.current
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF7F8FA))
+            .verticalScroll(rememberScrollState())
+    ) {
+        // Premium gradient header
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(brush = Brush.verticalGradient(colors = listOf(Color(0xFF0D7377), Color(0xFF14A085))))
+                .padding(horizontal = 20.dp, vertical = 24.dp)
+        ) {
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = { viewModel.navigateBack() }, modifier = Modifier.size(36.dp)) {
+                        Icon(Icons.Default.ArrowBack, null, tint = Color.White, modifier = Modifier.size(20.dp))
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Health Hub", color = Color.White, fontWeight = FontWeight.Black, fontSize = 22.sp)
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    // Overall health score
+                    Card(
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.2f)),
+                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f))
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("🐾", fontSize = 28.sp)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text("92", color = Color.White, fontWeight = FontWeight.Black, fontSize = 28.sp)
+                            Text("Health Score", color = Color.White.copy(alpha = 0.7f), fontSize = 11.sp)
+                        }
+                    }
+                    Column(modifier = Modifier.weight(2f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Card(
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.15f)),
+                            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.25f))
+                        ) {
+                            Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text("💉", fontSize = 16.sp)
+                                Column {
+                                    Text("Vaccinations", color = Color.White.copy(alpha = 0.7f), fontSize = 10.sp)
+                                    Text("4/5 complete", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                }
+                            }
+                        }
+                        Card(
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.15f)),
+                            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.25f))
+                        ) {
+                            Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text("📅", fontSize = 16.sp)
+                                Column {
+                                    Text("Next Checkup", color = Color.White.copy(alpha = 0.7f), fontSize = 10.sp)
+                                    Text("Jun 15, 2025", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Quick Actions
+        Text("Quick Actions", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8C8C8C), modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp))
+        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            val quickActions = listOf(
+                Triple("💉", "Vaccines", Screen.Vaccinations),
+                Triple("📋", "Appointments", Screen.Appointments),
+                Triple("💊", "Medication", Screen.TabletsIssued)
+            )
+            quickActions.forEach { (emoji, label, screen) ->
+                Card(
+                    modifier = Modifier.weight(1f).clickable { viewModel.navigateTo(screen) },
+                    shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(2.dp)
+                ) {
+                    Column(modifier = Modifier.padding(vertical = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(emoji, fontSize = 24.sp)
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(label, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Vaccination Progress
+        Text("Vaccination Progress", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8C8C8C), modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp))
+        Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color.White), elevation = CardDefaults.cardElevation(1.dp)) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                val vaccines = listOf(
+                    Triple("DHPPiL (Core)", true, "Mar 2025"),
+                    Triple("Rabies", true, "Mar 2025"),
+                    Triple("Leptospirosis", true, "Jan 2025"),
+                    Triple("Bordetella", true, "Dec 2024"),
+                    Triple("Canine Influenza", false, "Due Jun 2025")
+                )
+                vaccines.forEach { (name, done, date) ->
+                    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Surface(shape = CircleShape, color = if (done) Color(0xFFF0FFF4) else Color(0xFFFFF3E0), modifier = Modifier.size(32.dp)) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    if (done) Icons.Default.CheckCircle else Icons.Default.Refresh,
+                                    null,
+                                    tint = if (done) Color(0xFF4CAF50) else Color(0xFFFC8019),
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(name, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                            Text(date, fontSize = 11.sp, color = Color.Gray)
+                        }
+                        Surface(shape = RoundedCornerShape(6.dp), color = if (done) Color(0xFFF0FFF4) else Color(0xFFFFF3E0)) {
+                            Text(if (done) "Done" else "Pending", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (done) Color(0xFF4CAF50) else Color(0xFFFC8019), modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp))
+                        }
+                    }
+                    if (vaccines.indexOf(Triple(name, done, date)) < vaccines.size - 1) {
+                        HorizontalDivider(color = Color(0xFFF5F5F5))
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Monthly Activity Summary
+        Text("Monthly Summary", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8C8C8C), modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp))
+        Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color.White), elevation = CardDefaults.cardElevation(1.dp)) {
+            Row(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
+                val stats = listOf(
+                    Triple("🏃", "18 Walks", "This month"),
+                    Triple("🍖", "Good Diet", "Compliance"),
+                    Triple("💊", "28/30", "Med doses"),
+                    Triple("🛁", "3 Baths", "Grooming")
+                )
+                stats.forEach { (emoji, value, label) ->
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(emoji, fontSize = 20.sp)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(value, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        Text(label, fontSize = 10.sp, color = Color.Gray)
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Weight & Growth Trend
+        Text("Max's Health Tip", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8C8C8C), modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp))
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9)),
+            border = BorderStroke(1.dp, Color(0xFF4CAF50).copy(alpha = 0.3f)),
+            elevation = CardDefaults.cardElevation(0.dp)
+        ) {
+            Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text("💡", fontSize = 28.sp)
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                    Text("Time for Canine Influenza Vaccine!", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color(0xFF2E7D32))
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text("Max's annual Canine Influenza vaccination is due next month. Schedule a vet visit soon to stay protected.", fontSize = 12.sp, color = Color(0xFF388E3C))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(
+                        onClick = { viewModel.navigateTo(Screen.Appointments) },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
+                        modifier = Modifier.height(32.dp)
+                    ) {
+                        Text("Book Appointment", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+    }
+}
+

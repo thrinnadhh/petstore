@@ -106,7 +106,7 @@ dependencies {
   implementation(libs.androidx.room.ktx)
   implementation(libs.androidx.room.runtime)
   // Secure SQLite Data-at-Rest Encryption (SQLCipher)
-  implementation("net.zetetic:sqlcipher-android:4.5.4")
+  implementation("net.zetetic:sqlcipher-android:4.6.1")
   implementation(libs.coil.compose)
   implementation(libs.converter.moshi)
   // implementation(libs.firebase.ai)
@@ -119,7 +119,7 @@ dependencies {
   implementation(libs.logging.interceptor)
   implementation(libs.moshi.kotlin)
   implementation(libs.okhttp)
-  // implementation(libs.play.services.location)
+  implementation(libs.play.services.location)
   implementation(libs.retrofit)
   
   // Supabase & Ktor & PostHog

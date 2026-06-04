@@ -194,17 +194,153 @@ class PawsRepository(private val pawsDao: PawsDao) {
     // Seed Database if empty
     suspend fun seedDatabaseIfEmpty() = withContext(Dispatchers.IO) {
         val existingCities = pawsDao.getAllCitiesSync()
-        if (existingCities.isNotEmpty()) {
-            return@withContext
-        }
-
-        // 1. Seed Cities
         val cities = listOf(
             CityEntity("hyd", "Hyderabad", "Telangana", true, 17.3850, 78.4867),
             CityEntity("blr", "Bengaluru", "Karnataka", true, 12.9716, 77.5946),
-            CityEntity("maa", "Chennai", "Tamil Nadu", true, 13.0827, 80.2707)
+            CityEntity("maa", "Chennai", "Tamil Nadu", true, 13.0827, 80.2707),
+            CityEntity("del", "Delhi", "Delhi", false, 28.6139, 77.2090),
+            CityEntity("bom", "Mumbai", "Maharashtra", false, 19.0760, 72.8777),
+            CityEntity("ccu", "Kolkata", "West Bengal", false, 22.5726, 88.3639)
         )
         cities.forEach { pawsDao.insertCity(it) }
+
+        val hasNew = pawsDao.hasNewCategories()
+        if (hasNew == 0) {
+            pawsDao.clearCategories()
+            pawsDao.clearShops()
+            pawsDao.clearProducts()
+            pawsDao.clearServices()
+        } else {
+            // New database structure already seeded, check if we need to seed appointments/reminders
+            val existingAppts = pawsDao.getAppointmentsForConsumerSync("consumer_arjun")
+            if (existingAppts.none { it.id.startsWith("appt_seed_") }) {
+                val seededAppointments = listOf(
+                    AppointmentEntity(
+                        id = "appt_seed_1",
+                        consumerId = "consumer_arjun",
+                        shopId = "shop_hyd_1",
+                        serviceId = "service_seed_1",
+                        serviceName = "Annual Wellness Exam",
+                        price = 800.0,
+                        appointmentDate = "2026-10-24",
+                        appointmentTime = "10:30 AM",
+                        petName = "Bella",
+                        status = "pending",
+                        createdAt = System.currentTimeMillis()
+                    ),
+                    AppointmentEntity(
+                        id = "appt_seed_2",
+                        consumerId = "consumer_arjun",
+                        shopId = "shop_hyd_2",
+                        serviceId = "service_seed_2",
+                        serviceName = "Vaccination Update",
+                        price = 500.0,
+                        appointmentDate = "2026-11-12",
+                        appointmentTime = "02:00 PM",
+                        petName = "Luna",
+                        status = "pending",
+                        createdAt = System.currentTimeMillis()
+                    )
+                )
+                seededAppointments.forEach { pawsDao.insertAppointment(it) }
+            }
+
+            val existingReminders = pawsDao.getRemindersForConsumerSync("consumer_arjun")
+            if (existingReminders.none { it.id.startsWith("rem_med_") || it.id.startsWith("rem_vacc_") }) {
+                val seededMedReminders = listOf(
+                    ReminderEntity(
+                        id = "rem_med_1",
+                        consumerId = "consumer_arjun",
+                        title = "Heartgard Plus",
+                        petName = "Buddy",
+                        dateString = "2026-10-24",
+                        notes = "1 Chewable | Monthly | Due",
+                        isCompleted = false,
+                        type = "medication",
+                        createdAt = System.currentTimeMillis()
+                    ),
+                    ReminderEntity(
+                        id = "rem_med_2",
+                        consumerId = "consumer_arjun",
+                        title = "NexGard",
+                        petName = "Buddy",
+                        dateString = "2026-11-10",
+                        notes = "1 Chew (68mg) | Monthly | Flea & Tick | Last given: Oct 10 | Next: Nov 10",
+                        isCompleted = false,
+                        type = "medication",
+                        createdAt = System.currentTimeMillis()
+                    ),
+                    ReminderEntity(
+                        id = "rem_med_3",
+                        consumerId = "consumer_arjun",
+                        title = "Apoquel",
+                        petName = "Buddy",
+                        dateString = "2026-10-25",
+                        notes = "1/2 Tablet | Daily | Allergy Relief | Last given: Today 8am | Next: Tmrw 8am",
+                        isCompleted = false,
+                        type = "medication",
+                        createdAt = System.currentTimeMillis()
+                    ),
+                    ReminderEntity(
+                        id = "rem_med_4",
+                        consumerId = "consumer_arjun",
+                        title = "Deworming Liquid",
+                        petName = "Buddy",
+                        dateString = "2026-08-15",
+                        notes = "3 doses | Completed | Aug 15",
+                        isCompleted = true,
+                        type = "medication",
+                        createdAt = System.currentTimeMillis()
+                    ),
+                    ReminderEntity(
+                        id = "rem_med_5",
+                        consumerId = "consumer_arjun",
+                        title = "Antibiotic Ointment",
+                        petName = "Buddy",
+                        dateString = "2026-07-02",
+                        notes = "14 days | Completed | Jul 02",
+                        isCompleted = true,
+                        type = "medication",
+                        createdAt = System.currentTimeMillis()
+                    ),
+                    ReminderEntity(
+                        id = "rem_vacc_1",
+                        consumerId = "consumer_arjun",
+                        title = "Rabies (1 Year)",
+                        petName = "Buddy",
+                        dateString = "2024-10-15",
+                        notes = "Administered: Oct 15, 2023 | Due: Oct 15, 2024 | Dr. Sarah Jenkins | City Vet Clinic | cert",
+                        isCompleted = false,
+                        type = "vaccination",
+                        createdAt = System.currentTimeMillis()
+                    ),
+                    ReminderEntity(
+                        id = "rem_vacc_2",
+                        consumerId = "consumer_arjun",
+                        title = "DHPP (Distemper/Parvo)",
+                        petName = "Buddy",
+                        dateString = "2026-06-10",
+                        notes = "Administered: Jun 10, 2023 | Valid 3 Years | Dr. Michael Chen | Downtown Pet Hospital",
+                        isCompleted = true,
+                        type = "vaccination",
+                        createdAt = System.currentTimeMillis()
+                    ),
+                    ReminderEntity(
+                        id = "rem_vacc_3",
+                        consumerId = "consumer_arjun",
+                        title = "Bordetella (Kennel Cough)",
+                        petName = "Buddy",
+                        dateString = "2023-03-22",
+                        notes = "Administered: Mar 22, 2023 | Dr. Sarah Jenkins",
+                        isCompleted = true,
+                        type = "vaccination",
+                        createdAt = System.currentTimeMillis()
+                    )
+                )
+                seededMedReminders.forEach { pawsDao.insertReminder(it) }
+            }
+            return@withContext
+        }
 
         // 2. Seed Categories
         val categories = listOf(
@@ -854,5 +990,134 @@ class PawsRepository(private val pawsDao: PawsDao) {
         )
         pawsDao.insertProfile(superAdminProfile)
         pawsDao.insertProfile(defaultCustomerProfile)
+
+        // Seed Appointments and Reminders for Arjun
+        val existingAppts = pawsDao.getAppointmentsForConsumerSync("consumer_arjun")
+        if (existingAppts.none { it.id.startsWith("appt_seed_") }) {
+            val seededAppointments = listOf(
+                AppointmentEntity(
+                    id = "appt_seed_1",
+                    consumerId = "consumer_arjun",
+                    shopId = "shop_hyd_1",
+                    serviceId = "service_seed_1",
+                    serviceName = "Annual Wellness Exam",
+                    price = 800.0,
+                    appointmentDate = "2026-10-24",
+                    appointmentTime = "10:30 AM",
+                    petName = "Bella",
+                    status = "pending",
+                    createdAt = System.currentTimeMillis()
+                ),
+                AppointmentEntity(
+                    id = "appt_seed_2",
+                    consumerId = "consumer_arjun",
+                    shopId = "shop_hyd_2",
+                    serviceId = "service_seed_2",
+                    serviceName = "Vaccination Update",
+                    price = 500.0,
+                    appointmentDate = "2026-11-12",
+                    appointmentTime = "02:00 PM",
+                    petName = "Luna",
+                    status = "pending",
+                    createdAt = System.currentTimeMillis()
+                )
+            )
+            seededAppointments.forEach { pawsDao.insertAppointment(it) }
+        }
+
+        val existingReminders = pawsDao.getRemindersForConsumerSync("consumer_arjun")
+        if (existingReminders.none { it.id.startsWith("rem_med_") || it.id.startsWith("rem_vacc_") }) {
+            val seededMedReminders = listOf(
+                ReminderEntity(
+                    id = "rem_med_1",
+                    consumerId = "consumer_arjun",
+                    title = "Heartgard Plus",
+                    petName = "Buddy",
+                    dateString = "2026-10-24",
+                    notes = "1 Chewable | Monthly | Due",
+                    isCompleted = false,
+                    type = "medication",
+                    createdAt = System.currentTimeMillis()
+                ),
+                ReminderEntity(
+                    id = "rem_med_2",
+                    consumerId = "consumer_arjun",
+                    title = "NexGard",
+                    petName = "Buddy",
+                    dateString = "2026-11-10",
+                    notes = "1 Chew (68mg) | Monthly | Flea & Tick | Last given: Oct 10 | Next: Nov 10",
+                    isCompleted = false,
+                    type = "medication",
+                    createdAt = System.currentTimeMillis()
+                ),
+                ReminderEntity(
+                    id = "rem_med_3",
+                    consumerId = "consumer_arjun",
+                    title = "Apoquel",
+                    petName = "Buddy",
+                    dateString = "2026-10-25",
+                    notes = "1/2 Tablet | Daily | Allergy Relief | Last given: Today 8am | Next: Tmrw 8am",
+                    isCompleted = false,
+                    type = "medication",
+                    createdAt = System.currentTimeMillis()
+                ),
+                ReminderEntity(
+                    id = "rem_med_4",
+                    consumerId = "consumer_arjun",
+                    title = "Deworming Liquid",
+                    petName = "Buddy",
+                    dateString = "2026-08-15",
+                    notes = "3 doses | Completed | Aug 15",
+                    isCompleted = true,
+                    type = "medication",
+                    createdAt = System.currentTimeMillis()
+                ),
+                ReminderEntity(
+                    id = "rem_med_5",
+                    consumerId = "consumer_arjun",
+                    title = "Antibiotic Ointment",
+                    petName = "Buddy",
+                    dateString = "2026-07-02",
+                    notes = "14 days | Completed | Jul 02",
+                    isCompleted = true,
+                    type = "medication",
+                    createdAt = System.currentTimeMillis()
+                ),
+                ReminderEntity(
+                    id = "rem_vacc_1",
+                    consumerId = "consumer_arjun",
+                    title = "Rabies (1 Year)",
+                    petName = "Buddy",
+                    dateString = "2024-10-15",
+                    notes = "Administered: Oct 15, 2023 | Due: Oct 15, 2024 | Dr. Sarah Jenkins | City Vet Clinic | cert",
+                    isCompleted = false,
+                    type = "vaccination",
+                    createdAt = System.currentTimeMillis()
+                ),
+                ReminderEntity(
+                    id = "rem_vacc_2",
+                    consumerId = "consumer_arjun",
+                    title = "DHPP (Distemper/Parvo)",
+                    petName = "Buddy",
+                    dateString = "2026-06-10",
+                    notes = "Administered: Jun 10, 2023 | Valid 3 Years | Dr. Michael Chen | Downtown Pet Hospital",
+                    isCompleted = true,
+                    type = "vaccination",
+                    createdAt = System.currentTimeMillis()
+                ),
+                ReminderEntity(
+                    id = "rem_vacc_3",
+                    consumerId = "consumer_arjun",
+                    title = "Bordetella (Kennel Cough)",
+                    petName = "Buddy",
+                    dateString = "2023-03-22",
+                    notes = "Administered: Mar 22, 2023 | Dr. Sarah Jenkins",
+                    isCompleted = true,
+                    type = "vaccination",
+                    createdAt = System.currentTimeMillis()
+                )
+            )
+            seededMedReminders.forEach { pawsDao.insertReminder(it) }
+        }
     }
 }

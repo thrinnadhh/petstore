@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PawsApp - Health Reports</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-fixed-dim": "#b4c5ff",
+                        "surface-container-highest": "#d3e4fe",
+                        "secondary": "#855300",
+                        "on-secondary": "#ffffff",
+                        "on-primary-container": "#eeefff",
+                        "surface-container": "#e5eeff",
+                        "inverse-surface": "#213145",
+                        "surface-dim": "#cbdbf5",
+                        "on-tertiary-container": "#bdffdb",
+                        "on-surface-variant": "#434655",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f8f9ff",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "surface-container-high": "#dce9ff",
+                        "surface": "#f8f9ff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-container-low": "#eff4ff",
+                        "on-secondary-fixed": "#2a1700",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "tertiary": "#006242",
+                        "on-primary-fixed": "#00174b",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "on-background": "#0b1c30",
+                        "background": "#f8f9ff",
+                        "primary-container": "#2563eb",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#684000",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed": "#6ffbbe",
+                        "tertiary-container": "#007d55",
+                        "primary-fixed": "#dbe1ff",
+                        "primary": "#004ac6",
+                        "secondary-container": "#fea619",
+                        "outline-variant": "#c3c6d7",
+                        "on-surface": "#0b1c30",
+                        "inverse-primary": "#b4c5ff",
+                        "surface-tint": "#0053db",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "secondary-fixed": "#ffddb8",
+                        "on-tertiary-fixed": "#002113",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#d3e4fe",
+                        "outline": "#737686",
+                        "on-primary": "#ffffff"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "gutter": "16px",
+                        "margin-mobile": "16px",
+                        "sm": "12px",
+                        "base": "4px",
+                        "xs": "8px",
+                        "margin-desktop": "48px",
+                        "md": "16px",
+                        "xl": "32px",
+                        "lg": "24px"
+                    },
+                    fontFamily: {
+                        "label-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    fontSize: {
+                        "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "600" }],
+                        "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "800" }],
+                        "label-sm": ["12px", { lineHeight: "16px", fontWeight: "500" }],
+                        "headline-md": ["20px", { lineHeight: "28px", fontWeight: "600" }],
+                        "headline-lg-mobile": ["24px", { lineHeight: "32px", fontWeight: "700" }],
+                        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "headline-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "700" }],
+                        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Hide scrollbar for clean look */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col font-body-md">
+<!-- TopAppBar -->
+<header class="bg-surface docked full-width top-0 z-40 transition-all duration-300">
+<div class="flex justify-between items-center w-full px-margin-mobile py-xs max-w-7xl mx-auto">
+<button aria-label="Location" class="flex items-center justify-center p-2 text-primary hover:bg-surface-container-low transition-colors rounded-full">
+<span class="material-symbols-outlined text-[24px]" data-icon="location_on">location_on</span>
+</button>
+<h1 class="font-display-lg text-headline-md font-bold text-primary tracking-tight">PawsApp</h1>
+<button aria-label="Profile" class="flex items-center justify-center w-10 h-10 rounded-full overflow-hidden border-2 border-secondary-container hover:scale-95 transition-transform">
+<!-- Using a placeholder pattern as requested instead of data-alt for avatar to keep it simple, but adding a nice gradient -->
+<div class="w-full h-full bg-gradient-to-tr from-primary-fixed to-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-[20px]" data-icon="person">person</span>
+</div>
+</button>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-grow w-full max-w-7xl mx-auto px-margin-mobile pt-md pb-32 md:pb-xl flex flex-col gap-lg">
+<!-- Header Area -->
+<div class="flex flex-col gap-xs mt-sm">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">Health Hub</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage your pet's medical records and schedules.</p>
+</div>
+<!-- Summary Widget (Bento Grid Style) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<!-- Next Vaccination Card -->
+<div class="bg-primary text-on-primary rounded-xl p-lg flex flex-col justify-between relative overflow-hidden shadow-sm group hover:shadow-lg transition-all duration-300 cursor-pointer">
+<!-- Decorative background element -->
+<div class="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-500"></div>
+<div class="flex justify-between items-start mb-md relative z-10">
+<div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
+<span class="material-symbols-outlined text-[24px] text-white" data-icon="vaccines">vaccines</span>
+</div>
+<span class="bg-error px-3 py-1 rounded-full font-label-sm text-label-sm text-on-error shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="warning" data-weight="fill">warning</span> Due Soon
+                    </span>
+</div>
+<div class="relative z-10">
+<p class="font-label-md text-label-md text-primary-fixed mb-1">Next Vaccination</p>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-white tracking-tight">Rabies Booster</h3>
+<p class="font-body-md text-body-md text-primary-fixed-dim mt-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="event">event</span> Oct 24, 2024
+                    </p>
+</div>
+</div>
+<!-- Last Checkup Card -->
+<div class="bg-surface-container-high rounded-xl p-lg flex flex-col justify-between shadow-sm hover:shadow-md transition-all duration-300 border border-surface-container-highest cursor-pointer">
+<div class="flex justify-between items-start mb-md">
+<div class="w-12 h-12 rounded-full bg-surface text-tertiary-container flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[24px]" data-icon="stethoscope" data-weight="fill">stethoscope</span>
+</div>
+<span class="bg-tertiary-container text-on-tertiary-container px-3 py-1 rounded-full font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="check_circle" data-weight="fill">check_circle</span> All Clear
+                    </span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant mb-1">Last General Checkup</p>
+<h3 class="font-headline-md text-headline-md text-on-surface">Dr. Smith's Clinic</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2">Sep 12, 2024</p>
+</div>
+</div>
+</div>
+<!-- Navigation Cards -->
+<h3 class="font-headline-md text-headline-md text-on-surface mt-sm">Records &amp; Actions</h3>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<!-- Card 1: Health & Vaccinations -->
+<a class="bg-surface-container-lowest rounded-xl p-md flex items-center gap-md shadow-sm hover:shadow-md border border-surface-container-highest transition-all duration-200 group" href="#">
+<div class="w-14 h-14 rounded-full bg-surface-container flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors duration-300 flex-shrink-0">
+<span class="material-symbols-outlined text-[28px]" data-icon="medical_information">medical_information</span>
+</div>
+<div class="flex-grow">
+<h4 class="font-headline-md text-headline-md text-on-surface mb-1">Health &amp; Vax</h4>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Full medical history</p>
+</div>
+<div class="text-outline-variant group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</div>
+</a>
+<!-- Card 2: Tablets Issued -->
+<a class="bg-surface-container-lowest rounded-xl p-md flex items-center gap-md shadow-sm hover:shadow-md border border-surface-container-highest transition-all duration-200 group" href="#">
+<div class="w-14 h-14 rounded-full bg-surface-container flex items-center justify-center text-secondary-container group-hover:bg-secondary-container group-hover:text-on-secondary-container transition-colors duration-300 flex-shrink-0">
+<span class="material-symbols-outlined text-[28px]" data-icon="medication">medication</span>
+</div>
+<div class="flex-grow">
+<h4 class="font-headline-md text-headline-md text-on-surface mb-1">Tablets Issued</h4>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Active prescriptions</p>
+</div>
+<div class="text-outline-variant group-hover:text-secondary-container transition-colors">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</div>
+</a>
+<!-- Card 3: Future Appointments -->
+<a class="bg-surface-container-lowest rounded-xl p-md flex items-center gap-md shadow-sm hover:shadow-md border border-surface-container-highest transition-all duration-200 group" href="#">
+<div class="w-14 h-14 rounded-full bg-surface-container flex items-center justify-center text-tertiary-container group-hover:bg-tertiary-container group-hover:text-on-tertiary-container transition-colors duration-300 flex-shrink-0">
+<span class="material-symbols-outlined text-[28px]" data-icon="calendar_month">calendar_month</span>
+</div>
+<div class="flex-grow">
+<h4 class="font-headline-md text-headline-md text-on-surface mb-1">Appointments</h4>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Upcoming visits</p>
+</div>
+<div class="text-outline-variant group-hover:text-tertiary-container transition-colors">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</div>
+</a>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="md:hidden bg-surface-container-lowest shadow-lg docked full-width bottom-0 rounded-t-xl fixed left-0 w-full z-50 flex justify-around items-center px-xs pb-safe py-base">
+<!-- Home (Inactive here as we are in Profile/Hub context, let's highlight Profile based on Intent Fallback rule) -->
+<button aria-label="Home" class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors px-4 py-1">
+<span class="material-symbols-outlined text-[24px]" data-icon="home">home</span>
+<span class="font-label-sm text-label-sm mt-1">Home</span>
+</button>
+<button aria-label="Search" class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors px-4 py-1">
+<span class="material-symbols-outlined text-[24px]" data-icon="search">search</span>
+<span class="font-label-sm text-label-sm mt-1">Search</span>
+</button>
+<button aria-label="Orders" class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors px-4 py-1">
+<span class="material-symbols-outlined text-[24px]" data-icon="shopping_bag">shopping_bag</span>
+<span class="font-label-sm text-label-sm mt-1">Orders</span>
+</button>
+<!-- Profile is Active since Reports usually fall under the user/pet profile domain -->
+<button aria-label="Profile" class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 scale-90 transition-transform duration-150">
+<span class="material-symbols-outlined text-[24px]" data-icon="person" data-weight="fill">person</span>
+<span class="font-label-sm text-label-sm mt-1">Profile</span>
+</button>
+</nav>
+</body></html>
