@@ -35,6 +35,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -205,6 +208,8 @@ fun PawsApp(viewModel: PawsViewModel) {
                     is Screen.MerchantDashboard -> MerchantDashboardScreen(viewModel = viewModel)
                     is Screen.MerchantShopSetup -> MerchantShopSetupScreen(viewModel = viewModel)
                     is Screen.SuperAdmin -> SuperAdminScreen(viewModel = viewModel)
+                    is Screen.SuperAdminUsers -> SuperAdminUsersScreen(viewModel = viewModel)
+                    is Screen.MerchantInventory -> MerchantInventoryScreen(viewModel = viewModel)
                     is Screen.ChatList -> ChatListScreen(viewModel = viewModel)
                     is Screen.ChatDetail -> ChatDetailScreen(viewModel = viewModel, shopId = screen.shopId)
                     is Screen.MerchantOrders -> MerchantOrdersScreen(viewModel = viewModel)
@@ -215,7 +220,13 @@ fun PawsApp(viewModel: PawsViewModel) {
                     is Screen.Favourites -> FavouritesScreen(viewModel = viewModel)
                     is Screen.ReportsDashboard -> ReportsDashboardScreen(viewModel = viewModel)
                     is Screen.Orders -> OrdersScreen(viewModel = viewModel)
-                    else -> Box(modifier = Modifier.fillMaxSize())
+                    is Screen.FoodNutrition -> CatalogScreen(categoryId = "cat_food", viewModel = viewModel)
+                    is Screen.TreatsChews -> CatalogScreen(categoryId = "cat_treats", viewModel = viewModel)
+                    is Screen.ToysEnrichment -> CatalogScreen(categoryId = "cat_toys", viewModel = viewModel)
+                    is Screen.GroomingServices -> GroomingServicesScreen(viewModel = viewModel)
+                    is Screen.TravelApparel -> CatalogScreen(categoryId = "cat_travel", viewModel = viewModel)
+                    is Screen.FurnitureSleep -> CatalogScreen(categoryId = "cat_furniture", viewModel = viewModel)
+                    is Screen.WasteManagement -> CatalogScreen(categoryId = "cat_waste", viewModel = viewModel)
                 }
             }
 
@@ -2525,15 +2536,15 @@ fun HomeScreen(viewModel: PawsViewModel) {
     val mockShops = remember {
         listOf(
             ShopEntity(
-                id = "mock_hyd_1",
+                id = "mock_posh_paws",
                 ownerId = "system",
                 cityId = "hyd",
-                name = "Banjara Hills Premium Pet Care 🐾",
-                description = "Sleek pet spa, gourmet boutique organic supplies & direct vet diagnostics.",
+                name = "The Posh Paws",
+                description = "Luxury Accessories & Food",
                 address = "Road No 2, Banjara Hills, Hyderabad",
                 locality = "Banjara Hills",
                 phone = "9876543210",
-                email = "banjara@paws.com",
+                email = "posh@paws.com",
                 photos = listOf("https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=600"),
                 isOpen = true,
                 opensAt = "08:00",
@@ -2544,47 +2555,47 @@ fun HomeScreen(viewModel: PawsViewModel) {
                 isVerified = true,
                 isActive = true,
                 isFeatured = true,
-                groomingEnabled = true,
-                vetClinicEnabled = true
+                groomingEnabled = false,
+                vetClinicEnabled = false
             ),
             ShopEntity(
-                id = "mock_hyd_2",
+                id = "mock_healthy_hounds",
                 ownerId = "system",
                 cityId = "hyd",
-                name = "Hitech City Paws & Claws Resort 🛁",
-                description = "Elite luxury styling, modern diagnostic lab and interactive grooming suites.",
-                address = "Phase 2, Hitech City, Hyderabad",
-                locality = "Hitech City",
+                name = "Healthy Hounds Pantry",
+                description = "Organic & Raw Diet Specialist",
+                address = "Phase 2, Jubilee Hills, Hyderabad",
+                locality = "Jubilee Hills",
                 phone = "9876543211",
-                email = "hitech@paws.com",
+                email = "healthy@paws.com",
                 photos = listOf("https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=600"),
                 isOpen = true,
                 opensAt = "09:00",
                 closesAt = "21:00",
-                rating = 4.9,
+                rating = 4.5,
                 totalReviews = 88,
                 deliveryAvailable = true,
                 isVerified = true,
                 isActive = true,
                 isFeatured = true,
-                groomingEnabled = true,
+                groomingEnabled = false,
                 vetClinicEnabled = false
             ),
             ShopEntity(
-                id = "mock_hyd_3",
+                id = "mock_city_hospital",
                 ownerId = "system",
                 cityId = "hyd",
-                name = "Madhapur Vet & Grooming Hub 🩺",
-                description = "Rapid local medicines delivery, standard vaccinations and holistic flea/tick dips.",
+                name = "City Pet Hospital",
+                description = "24/7 Emergency & Surgery",
                 address = "Metro Station Road, Madhapur, Hyderabad",
                 locality = "Madhapur",
                 phone = "9876543212",
-                email = "madhapur@paws.com",
+                email = "cityhospital@paws.com",
                 photos = listOf("https://images.unsplash.com/photo-1597633425046-08f5110420b5?auto=format&fit=crop&q=80&w=600"),
                 isOpen = true,
                 opensAt = "07:00",
                 closesAt = "23:00",
-                rating = 4.6,
+                rating = 4.9,
                 totalReviews = 19,
                 deliveryAvailable = true,
                 isVerified = true,
@@ -2592,6 +2603,52 @@ fun HomeScreen(viewModel: PawsViewModel) {
                 isFeatured = false,
                 groomingEnabled = false,
                 vetClinicEnabled = true
+            ),
+            ShopEntity(
+                id = "mock_fluffy_friends",
+                ownerId = "system",
+                cityId = "hyd",
+                name = "Fluffy Friends",
+                description = "Full Grooming & Spa",
+                address = "Hitech City, Hyderabad",
+                locality = "Hitech City",
+                phone = "9876543213",
+                email = "fluffy@paws.com",
+                photos = emptyList(),
+                isOpen = true,
+                opensAt = "09:00",
+                closesAt = "20:00",
+                rating = 4.8,
+                totalReviews = 56,
+                deliveryAvailable = true,
+                isVerified = true,
+                isActive = true,
+                isFeatured = false,
+                groomingEnabled = true,
+                vetClinicEnabled = false
+            ),
+            ShopEntity(
+                id = "mock_paw_spa",
+                ownerId = "system",
+                cityId = "hyd",
+                name = "Paw Spa",
+                description = "Bath & Nail Clipping",
+                address = "Kondapur, Hyderabad",
+                locality = "Kondapur",
+                phone = "9876543214",
+                email = "pawspa@paws.com",
+                photos = emptyList(),
+                isOpen = true,
+                opensAt = "10:00",
+                closesAt = "19:00",
+                rating = 4.6,
+                totalReviews = 27,
+                deliveryAvailable = true,
+                isVerified = true,
+                isActive = true,
+                isFeatured = false,
+                groomingEnabled = true,
+                vetClinicEnabled = false
             )
         )
     }
@@ -2635,8 +2692,11 @@ fun HomeScreen(viewModel: PawsViewModel) {
     val remediesIndex = baseIndexForShops + if (displayShops.isEmpty()) 1 else displayShops.size
     val auctionIndex = remediesIndex + 1
 
-    val popularShops = remember(displayShops) {
-        displayShops.filter { it.isFeatured || it.rating >= 4.5 }
+    val premiumShops = remember(displayShops) {
+        displayShops.filter { !it.vetClinicEnabled && !it.groomingEnabled && (it.isFeatured || it.rating >= 4.5) }
+    }
+    val hospitalShops = remember(displayShops) {
+        displayShops.filter { it.vetClinicEnabled }
     }
     val groomingShops = remember(displayShops) {
         displayShops.filter { it.groomingEnabled }
@@ -2676,19 +2736,11 @@ fun HomeScreen(viewModel: PawsViewModel) {
         // ── QUICK ACCESS SHORTCUTS ROW ──────────────────────────────────────────────
         item {
             val shortcuts = listOf(
-                Triple("🛍️", "Favourites", { viewModel.navigateTo(Screen.SavedShops) }),
-                Triple("📋", "My Orders", { viewModel.navigateTo(Screen.Cart) }),
-                Triple("💊", "Remedies", {
-                    remediesExpanded = true
-                    coroutineScope.launch {
-                        listState.animateScrollToItem(remediesIndex)
-                    }
-                }),
-                Triple("👥", "Group Buy", {
-                    auctionExpanded = true
-                    coroutineScope.launch {
-                        listState.animateScrollToItem(auctionIndex)
-                    }
+                Triple(Icons.Default.Favorite, "Favourites", { viewModel.navigateTo(Screen.SavedShops) }),
+                Triple(Icons.Default.ShoppingCart, "Orders", { viewModel.navigateTo(Screen.Cart) }),
+                Triple(Icons.Default.Star, "New Arrivals", {
+                    viewModel.updateSearchQuery("New Arrivals")
+                    viewModel.navigateTo(Screen.Search)
                 })
             )
             Row(
@@ -2697,14 +2749,15 @@ fun HomeScreen(viewModel: PawsViewModel) {
                     .padding(horizontal = 16.dp, vertical = 10.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                shortcuts.forEach { (emoji, label, action) ->
+                shortcuts.forEach { (icon, label, action) ->
                     Card(
                         modifier = Modifier
                             .weight(1f)
                             .clickable { action() },
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        border = BorderStroke(0.5.dp, Color(0xFF004AC6).copy(alpha = 0.15f))
                     ) {
                         Column(
                             modifier = Modifier
@@ -2713,13 +2766,18 @@ fun HomeScreen(viewModel: PawsViewModel) {
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
-                            Text(emoji, fontSize = 22.sp)
-                            Spacer(modifier = Modifier.height(4.dp))
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = label,
+                                modifier = Modifier.size(24.dp),
+                                tint = Color(0xFF004AC6)
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                label,
-                                fontSize = 10.sp,
+                                text = label,
+                                fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
+                                color = Color(0xFF004AC6),
                                 textAlign = TextAlign.Center
                             )
                         }
@@ -2775,57 +2833,90 @@ fun HomeScreen(viewModel: PawsViewModel) {
                     ) {
                         items(categoryList) { category ->
                             val isSelected = selectedCategoryIds.contains(category.id)
+                            val categoryImageUrl = when (category.id) {
+                                "cat_food" -> "https://lh3.googleusercontent.com/aida/AP1WRLtm0J5MuRuW4w4olkkflcjkSX-9bxCk23-GrLzJRiqZ3_Zhhy2q5eirMvjXv9zBuFs-CX_wO-6hy7L6dSiuCztDtcMr-ivqfjh1miBnYaJCBqeENN0uVuip23wlVEFdtlPGQnFLRX3DX5fIQbX-zxuI7suRgPsZfrgEES97W4eShI8nPsgFqE4D5gfrllobU8d8bK_gIhaDhfBFjG_xFI4evQH34o8Zj-nfArMBARfijbV2pPvCBxZhVNc"
+                                "cat_treats" -> "https://lh3.googleusercontent.com/aida/AP1WRLu2j9XUv_Re8vRJWJIq3otI7IoX2NgLk7u6dz-Q8YcKZM56ZhlEEG2hhVjR_8a8TLk1hk-4Tl9pMOlZyJGEzTBYJn_bkhNE9uLeijZ6EWFbm_jLi4gI6TBl8Gw26ZsyNvJfA59F0JWB29hKlzMIleF_-IFt7EarCxyfY7nXTlogfRnnfkUY63uBoXugR7m67gBg3tiS5d5irmOdJvPRSbNWfAdde8rkOop9HKp5a_RfrM4tCAPcR1ICVDY"
+                                "cat_toys" -> "https://lh3.googleusercontent.com/aida/AP1WRLtxvZTVCFJV_VWo3wS_Re5Qq0invY-1glo_OjI0J4hnMPR5MsjoVIKEEB49TttNQJp72uxI1VSi0wNPgKqXEtHAdcpBZuG27EMpH_1RfaFojtTrIRgPUv35DFFVg-9ecM4jajxDGRfXVSmtgvzxmHysSJYFIWRJ2SMSFm1lNrv4u-Ghvt7H5oCHglK5OaRJ6K3T0Op6_cCx801FfzvuWPMT2d8gdn5EVH4KwwsSeKMDpOeSeMGimOg2jHY"
+                                "cat_groom" -> "https://lh3.googleusercontent.com/aida-public/AB6AXuCLDcsiQzTJ35jcCpCNHSC0CPGtsB--0Xdb-LVHpAoteDtktABgPSTQMMPGcfAgwvMEa22Twz_PWoxMANUVHDlfmcOgn53ytuQl7eHMq2kD2oBJX8mNowGEJjxAIHOdSyARgHYwDg6TFxoXYoYnVogC8c3QqEQxzKXQHBhPxhv1VK3mWc1o8kwr-eyteIwsACN_yi3C9LZwRdXcVVbk_7sQFr6t-JFQsx7yaIuZTVNVZeEEPbhBBDvdW00lu99huqxwo4ClJpdhVnY"
+                                "cat_travel" -> "https://lh3.googleusercontent.com/aida/AP1WRLtGMKTRDD97W5R-veADg2j3lfveNZ2oerY0hevdFnQgDaTJbt99ZIlpABlOxwf1kGlPaGHbVZr7PUJCnX_EqmzDgRXFImh97MiasRQu_kNuciIDGp_S8g_B8MuPXvZLKO5kwtSueMsWt0dFZ7G13zv6VLEpf_WPg54CPQsq_GGFnu6K70UjqfxgalRLTUqFmz49cSXfKPKZstWqH44WXlNCUPSDxaZcoGPJPblVe195H6OdCKuPMTGxRTo"
+                                "cat_furniture" -> "https://lh3.googleusercontent.com/aida/AP1WRLuM8GS_upn2HJga7jQOuDSmL5SqawQMTfZHP4nqQkhuqR7hiXqhvYa3W67xUXLK1TVCgShE7PifD6yxJiutvXETsQMmAT2cZfHUtxsAP6dr9aGy97dPGFz7JDrOFOKmBD2i1JaL5BAEkvwVyg1jfIfdMw9AolveynTuW2IBc26GAI91P9GHwtN0zPO-C-NrS4O2qOhN2XkYQpMSLFxGCOkqkdCUbWS9S21KyEinwpCw0eSDPZrcLq1iHXA"
+                                "cat_waste" -> "https://lh3.googleusercontent.com/aida-public/AB6AXuA8-OnbYbH6ervRc4iDKjRxKLt6mO6wKvK8uA3YF7QqP3s6MzG7DILE7cEzhjoG1QhhOujkvk6kROOkrlX_HL2AqoacPYkIXR9PWO8eOCuNrkd24m2rUzV3v_SsO_Tt-eng-sTQpDJE-rHj2Ksx8Qw8uGaUZB-6jpIsSfhmFTkAVrxBXvue6givMDI98jjybom420pH3sbIUeml2Io6RygcKD0Xk279U3oRRXPXcZSjpIgZMptmDBLqWFDLWZce7mlSIJJ-aZXYgOs"
+                                else -> category.iconUrl
+                            }
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 modifier = Modifier
                                     .width(72.dp)
-                                    .clickable { viewModel.toggleSelectedCategory(category.id) }
+                                    .clickable {
+                                        when (category.id) {
+                                            "cat_food" -> viewModel.navigateTo(Screen.FoodNutrition)
+                                            "cat_treats" -> viewModel.navigateTo(Screen.TreatsChews)
+                                            "cat_toys" -> viewModel.navigateTo(Screen.ToysEnrichment)
+                                            "cat_groom" -> viewModel.navigateTo(Screen.GroomingServices)
+                                            "cat_travel" -> viewModel.navigateTo(Screen.TravelApparel)
+                                            "cat_furniture" -> viewModel.navigateTo(Screen.FurnitureSleep)
+                                            "cat_waste" -> viewModel.navigateTo(Screen.WasteManagement)
+                                            else -> viewModel.toggleSelectedCategory(category.id)
+                                        }
+                                    }
                             ) {
                                 Box(
                                     modifier = Modifier
                                         .size(64.dp)
                                         .background(
-                                            color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) 
-                                                    else MaterialTheme.colorScheme.surface,
-                                            shape = CircleShape
-                                        )
-                                        .border(
-                                            width = if (isSelected) 2.5.dp else 1.dp,
-                                            color = if (isSelected) Color(0xFFFC8019) 
-                                                    else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                                            color = if (isSelected) Color(0xFF2563EB) else Color(0xFFD3E4FE),
                                             shape = CircleShape
                                         )
                                         .padding(4.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Card(
-                                        shape = CircleShape,
-                                        modifier = Modifier.fillMaxSize()
-                                    ) {
-                                        Image(
-                                            painter = rememberAsyncImagePainter(
-                                                model = ImageRequest.Builder(LocalContext.current)
-                                                    .data(category.iconUrl)
-                                                    .crossfade(true)
-                                                    .build()
-                                            ),
-                                            contentDescription = category.name,
-                                            contentScale = ContentScale.Crop,
-                                            modifier = Modifier.fillMaxSize()
-                                        )
-                                    }
+                                    Image(
+                                        painter = rememberAsyncImagePainter(categoryImageUrl),
+                                        contentDescription = category.name,
+                                        modifier = Modifier.fillMaxSize().clip(CircleShape),
+                                        contentScale = ContentScale.Crop
+                                    )
                                 }
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
                                     text = category.name,
                                     fontSize = 10.sp,
                                     fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Bold,
-                                    color = if (isSelected) Color(0xFFFC8019) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                                    color = if (isSelected) Color(0xFFFC8019) else Color(0xFF434655),
                                     maxLines = 2,
                                     minLines = 2,
                                     textAlign = TextAlign.Center,
                                     overflow = TextOverflow.Ellipsis,
                                     lineHeight = 11.sp
+                                )
+                            }
+                        }
+                    }
+
+                    // Horizontal sub-filters underneath
+                    val subFilters = listOf("All", "Dry Food", "Wet Food", "Puppy", "Adult", "Senior")
+                    var selectedSubFilter by remember { mutableStateOf("All") }
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 20.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth().padding(top = 14.dp)
+                    ) {
+                        items(subFilters) { filter ->
+                            val isSelected = selectedSubFilter == filter
+                            Box(
+                                modifier = Modifier
+                                    .background(
+                                        color = if (isSelected) Color(0xFF004AC6) else Color(0xFFE5EEFF),
+                                        shape = RoundedCornerShape(20.dp)
+                                    )
+                                    .clickable { selectedSubFilter = filter }
+                                    .padding(horizontal = 14.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    text = filter,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isSelected) Color.White else Color(0xFF004AC6)
                                 )
                             }
                         }
@@ -2979,18 +3070,18 @@ fun HomeScreen(viewModel: PawsViewModel) {
                 EmptyShopsState()
             }
         } else {
-            // Row 1: Popular & Top Rated Stores
-            if (popularShops.isNotEmpty()) {
+            // Row 1: Premium Pet Shops Nearby
+            if (premiumShops.isNotEmpty()) {
                 item {
                     Column(modifier = Modifier.padding(vertical = 12.dp)) {
                         Text(
-                            L10n.getString("premium_shops_nearby") + " 🏆",
+                            text = L10n.getString("premium_shops_nearby") + " 🏆",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(start = 20.dp, bottom = 4.dp, top = 8.dp)
                         )
                         Text(
-                            "Handpicked elite stores with exceptional ratings near you",
+                            text = "Handpicked elite stores with exceptional ratings near you",
                             fontSize = 11.sp,
                             color = Color.Gray,
                             modifier = Modifier.padding(start = 20.dp, bottom = 12.dp)
@@ -3000,7 +3091,7 @@ fun HomeScreen(viewModel: PawsViewModel) {
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            items(popularShops) { shop ->
+                            items(premiumShops) { shop ->
                                 val totalOrders = allOrders.count { it.shopId == shop.id }
                                 val deliveredOrderIds = allOrders.filter { it.shopId == shop.id && it.status == "delivered" }.map { it.id }.toSet()
                                 val totalDeliveredProducts = allOrderItems.filter { it.orderId in deliveredOrderIds }.sumOf { it.quantity }
@@ -3017,18 +3108,56 @@ fun HomeScreen(viewModel: PawsViewModel) {
                 }
             }
 
-            // Row 2: Grooming & Spa Specialists
-            if (groomingShops.isNotEmpty()) {
+            // Row 2: Hospitals Nearby
+            if (hospitalShops.isNotEmpty()) {
                 item {
                     Column(modifier = Modifier.padding(vertical = 12.dp)) {
                         Text(
-                            L10n.getString("grooming_spas") + " 🛁",
+                            text = L10n.getString("hospitals_nearby") + " 🏥",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(start = 20.dp, bottom = 4.dp, top = 8.dp)
                         )
                         Text(
-                            "Premium styling and pampering centers for your pets",
+                            text = "24/7 veterinary assistance and critical medical care",
+                            fontSize = 11.sp,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(start = 20.dp, bottom = 12.dp)
+                        )
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = 20.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            items(hospitalShops) { shop ->
+                                val totalOrders = allOrders.count { it.shopId == shop.id }
+                                val deliveredOrderIds = allOrders.filter { it.shopId == shop.id && it.status == "delivered" }.map { it.id }.toSet()
+                                val totalDeliveredProducts = allOrderItems.filter { it.orderId in deliveredOrderIds }.sumOf { it.quantity }
+                                
+                                HorizontalShopCard(
+                                    shop = shop,
+                                    totalOrders = totalOrders,
+                                    totalDeliveredProducts = totalDeliveredProducts,
+                                    onClick = { viewModel.navigateTo(Screen.ShopDetail(shop.id)) }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Row 3: Grooming Nearby
+            if (groomingShops.isNotEmpty()) {
+                item {
+                    Column(modifier = Modifier.padding(vertical = 12.dp)) {
+                        Text(
+                            text = L10n.getString("grooming_nearby") + " ✂️",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(start = 20.dp, bottom = 4.dp, top = 8.dp)
+                        )
+                        Text(
+                            text = "Premium styling, bath, and pampering centers for your pets",
                             fontSize = 11.sp,
                             color = Color.Gray,
                             modifier = Modifier.padding(start = 20.dp, bottom = 12.dp)
@@ -3053,28 +3182,6 @@ fun HomeScreen(viewModel: PawsViewModel) {
                         }
                     }
                 }
-            }
-
-            // Row 3: All Local Pet Shops
-            item {
-                Text(
-                    "All Local Pet Shops near you 🏬",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = 20.dp, top = 16.dp, bottom = 12.dp)
-                )
-            }
-            items(displayShops) { shop ->
-                val totalOrders = allOrders.count { it.shopId == shop.id }
-                val deliveredOrderIds = allOrders.filter { it.shopId == shop.id && it.status == "delivered" }.map { it.id }.toSet()
-                val totalDeliveredProducts = allOrderItems.filter { it.orderId in deliveredOrderIds }.sumOf { it.quantity }
-
-                ShopItemCard(
-                    shop = shop,
-                    totalOrders = totalOrders,
-                    totalDeliveredProducts = totalDeliveredProducts,
-                    onClick = { viewModel.navigateTo(Screen.ShopDetail(shop.id)) }
-                )
             }
         }
 
@@ -4038,254 +4145,6 @@ fun HomeScreen(viewModel: PawsViewModel) {
             } // end outer auction Column
         } // end outer auction item
 
-        // Horizontal Categories List
-        item {
-            Column(modifier = Modifier.padding(vertical = 12.dp)) {
-                Text(
-                    "Discover by Category",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = 20.dp, bottom = 12.dp, top = 8.dp)
-                )
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    item {
-                        CategoryChip(
-                            name = "All",
-                            iconUrl = "",
-                            isSelected = selectedCategoryIds.isEmpty(),
-                            onClick = { viewModel.clearSelectedCategories() }
-                        )
-                    }
-                    items(categoryList) { cat ->
-                        CategoryChip(
-                            name = cat.name,
-                            iconUrl = cat.iconUrl,
-                            isSelected = cat.id in selectedCategoryIds,
-                            onClick = { viewModel.toggleSelectedCategory(cat.id) }
-                        )
-                    }
-                }
-            }
-        }
-
-        // ── COLLAPSIBLE FILTER & SORT PANEL (☰ icon) ───────────────────────────────
-        item {
-            var filterPanelExpanded by remember { mutableStateOf(false) }
-            val activeFilterCount = listOf(filterOpenNow, filterDelivery, filterRating).count { it }
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp)
-            ) {
-                // Collapsed bar: ☰ icon + active filter chips
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                        .clickable { filterPanelExpanded = !filterPanelExpanded }
-                        .padding(horizontal = 14.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        // Hamburger 3-line icon
-                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            repeat(3) {
-                                Box(
-                                    modifier = Modifier
-                                        .width(18.dp)
-                                        .height(2.dp)
-                                        .background(
-                                            if (filterPanelExpanded || activeFilterCount > 0) Color(0xFFFC8019)
-                                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                            RoundedCornerShape(1.dp)
-                                        )
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            "Filters & Sort",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (filterPanelExpanded || activeFilterCount > 0) Color(0xFFFC8019)
-                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                        )
-                        if (activeFilterCount > 0) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Box(
-                                modifier = Modifier
-                                    .background(Color(0xFFFC8019), CircleShape)
-                                    .size(18.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text("$activeFilterCount", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                            }
-                        }
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        // Show active filter labels in collapsed state
-                        if (!filterPanelExpanded) {
-                            if (filterOpenNow) Box(
-                                modifier = Modifier.background(Color(0xFFFC8019).copy(alpha = 0.12f), RoundedCornerShape(6.dp)).padding(horizontal = 6.dp, vertical = 2.dp)
-                            ) { Text("Open", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFC8019)) }
-                            if (filterDelivery) Box(
-                                modifier = Modifier.background(Color(0xFFFC8019).copy(alpha = 0.12f), RoundedCornerShape(6.dp)).padding(horizontal = 6.dp, vertical = 2.dp)
-                            ) { Text("Delivery", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFC8019)) }
-                            if (filterRating) Box(
-                                modifier = Modifier.background(Color(0xFFFC8019).copy(alpha = 0.12f), RoundedCornerShape(6.dp)).padding(horizontal = 6.dp, vertical = 2.dp)
-                            ) { Text("4.5★+", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFC8019)) }
-                        }
-                        Icon(
-                            imageVector = if (filterPanelExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                            contentDescription = null,
-                            tint = Color(0xFFFC8019),
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-
-                // Expanded filter panel
-                androidx.compose.animation.AnimatedVisibility(
-                    visible = filterPanelExpanded,
-                    enter = androidx.compose.animation.expandVertically(
-                        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium)
-                    ) + androidx.compose.animation.fadeIn(),
-                    exit = androidx.compose.animation.shrinkVertically(
-                        animationSpec = spring(stiffness = Spring.StiffnessMedium)
-                    ) + androidx.compose.animation.fadeOut()
-                ) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
-                        shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            // SORT BY row
-                            Text("SORT BY", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Color.Gray, letterSpacing = 1.sp)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                listOf("Popular 🏆", "Top Rated", "New", "A-Z").forEach { option ->
-                                    val isActive = sortType == option
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(20.dp))
-                                            .background(
-                                                if (isActive) Color(0xFFFC8019) else MaterialTheme.colorScheme.surfaceVariant
-                                            )
-                                            .clickable { viewModel.setSortType(option) }
-                                            .padding(horizontal = 12.dp, vertical = 6.dp)
-                                    ) {
-                                        Text(
-                                            option,
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = if (isActive) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(14.dp))
-                            HorizontalDivider()
-                            Spacer(modifier = Modifier.height(14.dp))
-
-                            // FILTERS row
-                            Text("FILTERS", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Color.Gray, letterSpacing = 1.sp)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                listOf(
-                                    Triple("Open Now", filterOpenNow, { viewModel.toggleFilterOpenNow() }),
-                                    Triple("Delivery", filterDelivery, { viewModel.toggleFilterDelivery() }),
-                                    Triple("⭐ 4.5+", filterRating, { viewModel.toggleFilterRating() })
-                                ).forEach { (label, isOn, toggle) ->
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(20.dp))
-                                            .background(
-                                                if (isOn) Color(0xFFFC8019) else MaterialTheme.colorScheme.surfaceVariant
-                                            )
-                                            .clickable { toggle() }
-                                            .padding(horizontal = 14.dp, vertical = 7.dp)
-                                    ) {
-                                        Text(
-                                            label,
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = if (isOn) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-
-        // ── PARTNER RECRUITMENT BANNER (below shop list) ────────────────────────────
-        item {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 16.dp)
-                    .clickable { viewModel.navigateTo(Screen.MerchantShopSetup) },
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.75f)
-                ),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
-                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
-            ) {
-                Row(
-                    modifier = Modifier.padding(18.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                "Partner with Swiggy Paws 🐾",
-                                fontWeight = FontWeight.ExtraBold,
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Box(
-                                modifier = Modifier
-                                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
-                                    .padding(horizontal = 5.dp, vertical = 2.dp)
-                            ) {
-                                Text("HIRING", fontSize = 8.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(5.dp))
-                        Text(
-                            "Own a clinic, grooming salon, or boutique? List your store and reach thousands of pet owners city-wide!",
-                            fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            lineHeight = 15.sp
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(14.dp))
-                    Box(
-                        modifier = Modifier
-                            .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(30.dp))
-                            .padding(horizontal = 14.dp, vertical = 10.dp)
-                    ) {
-                        Text("Register ➔", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                    }
-                }
-            }
-        }
     }
 
     // Remedy Product Details & Store Availability Dialog
@@ -4701,7 +4560,7 @@ fun FilterPill(
     }
 }
 
-// Sub Component: Header
+
 @Composable
 fun HomeHeader(
     cityName: String,
@@ -4715,233 +4574,213 @@ fun HomeHeader(
     syncState: PowerSyncManager.SyncState,
     onSyncClick: () -> Unit
 ) {
-    val infiniteTransition = rememberInfiniteTransition()
-    
-    // Rotation animation for the premium profile ring
-    val rotationAngle by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(8000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "profileRingRotation"
-    )
-
-    // Pulse animation for the pet status greeting bubble
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val pulseScale by infiniteTransition.animateFloat(
-        initialValue = 0.96f,
-        targetValue = 1.04f,
+        initialValue = 0.98f,
+        targetValue = 1.02f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1400, easing = FastOutSlowInEasing),
+            animation = tween(1500, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "petBubblePulse"
+        label = "pulse"
     )
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(
-                brush = Brush.linearGradient(
-                    colors = listOf(Color(0xFFFC8019), Color(0xFFFF9E80))
-                ),
-                shape = RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp)
-            )
-            .padding(bottom = 20.dp)
+            .background(Color.White)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.92f)),
-            border = BorderStroke(1.2.dp, Color.White.copy(alpha = 0.6f)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+        // Row 1: App Branding & Controls
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                // Top line: Location & Controls
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.clickable { onCityClick() }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.LocationOn,
-                                contentDescription = null,
-                                tint = Color(0xFFFC8019),
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = cityName,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Black,
-                                color = Color(0xFF333333)
-                            )
-                            Icon(
-                                imageVector = Icons.Default.ArrowDropDown,
-                                contentDescription = null,
-                                tint = Color(0xFF333333)
-                            )
+            // App Logo / Branding
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text("🐾", fontSize = 22.sp)
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(style = SpanStyle(color = Color(0xFFFC8019), fontWeight = FontWeight.Bold)) {
+                            append("Swiggy ")
                         }
-                        
-                        Text(
-                            text = "Welcome back, $userName!",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.DarkGray,
-                            modifier = Modifier.padding(top = 2.dp)
-                        )
-                        
-                        // Sync state
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .padding(top = 4.dp)
-                                .clickable { onSyncClick() }
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(6.dp)
-                                    .background(
-                                        color = when (syncState) {
-                                            is PowerSyncManager.SyncState.Connected -> Color(0xFF4CAF50)
-                                            is PowerSyncManager.SyncState.Syncing -> Color(0xFFFFC107)
-                                            is PowerSyncManager.SyncState.Paused -> Color(0xFF9E9E9E)
-                                            is PowerSyncManager.SyncState.Offline -> Color(0xFFF44336)
-                                        },
-                                        shape = CircleShape
-                                    )
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = when (syncState) {
-                                    is PowerSyncManager.SyncState.Connected -> "Sync: Connected"
-                                    is PowerSyncManager.SyncState.Syncing -> "Syncing..."
-                                    is PowerSyncManager.SyncState.Paused -> "Paused"
-                                    is PowerSyncManager.SyncState.Offline -> "Offline"
-                                },
-                                fontSize = 9.sp,
-                                color = Color.Gray,
-                                fontWeight = FontWeight.Medium
-                            )
+                        withStyle(style = SpanStyle(color = Color(0xFF004AC6), fontWeight = FontWeight.Black)) {
+                            append("Paws")
                         }
-                    }
+                    },
+                    fontSize = 20.sp
+                )
+            }
 
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Chat envelope icon
-                        IconButton(
-                            onClick = onChatClick,
-                            modifier = Modifier
-                                .size(36.dp)
-                                .background(
-                                    Color(0xFFFC8019).copy(alpha = 0.08f),
-                                    CircleShape
-                                )
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Email,
-                                contentDescription = "Chats",
-                                modifier = Modifier.size(16.dp),
-                                tint = Color(0xFFFC8019)
-                            )
-                        }
-
-                        // Notification Mock
-                        IconButton(
-                            onClick = {},
-                            modifier = Modifier
-                                .size(36.dp)
-                                .background(
-                                    Color.Gray.copy(alpha = 0.08f),
-                                    CircleShape
-                                )
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Notifications,
-                                contentDescription = "Notifications",
-                                modifier = Modifier.size(16.dp),
-                                tint = Color.DarkGray
-                            )
-                        }
-
-                        // Language Switcher
-                        IconButton(
-                            onClick = onLanguageClick,
-                            modifier = Modifier
-                                .size(36.dp)
-                                .background(
-                                    Color.Gray.copy(alpha = 0.08f),
-                                    CircleShape
-                                )
-                        ) {
-                            Text("🌐", fontSize = 16.sp)
-                        }
-
-                        // Profile Avatar with rotating border
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.size(44.dp)
-                        ) {
-                            Canvas(modifier = Modifier.fillMaxSize()) {
-                                drawArc(
-                                    color = Color(0xFFFC8019),
-                                    startAngle = rotationAngle,
-                                    sweepAngle = 280f,
-                                    useCenter = false,
-                                    style = Stroke(width = 2.dp.toPx())
-                                )
-                            }
-                            Image(
-                                painter = rememberAsyncImagePainter(
-                                    model = ImageRequest.Builder(LocalContext.current)
-                                        .data(avatarUrl)
-                                        .crossfade(true)
-                                        .error(R.drawable.paws_logo_1779795154399)
-                                        .build()
-                                ),
-                                contentDescription = "Profile",
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(CircleShape)
-                                    .clickable { onProfileClick() },
-                                contentScale = ContentScale.Crop
-                            )
-                        }
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                // WOW Factor 3: Animated Pet Welcomer Bubble
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
+            // Minimized Controls Row
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Chats button
+                IconButton(
+                    onClick = onChatClick,
                     modifier = Modifier
-                        .scale(pulseScale)
-                        .background(Color(0xFFFC8019).copy(alpha = 0.08f), RoundedCornerShape(12.dp))
-                        .border(1.dp, Color(0xFFFC8019).copy(alpha = 0.15f), RoundedCornerShape(12.dp))
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
-                        .fillMaxWidth()
+                        .size(32.dp)
+                        .background(Color(0xFF004AC6).copy(alpha = 0.05f), CircleShape)
                 ) {
-                    Text("🐾", fontSize = 14.sp)
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "$petName is dreaming of premium treats! 🦴",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFD35400)
+                    Icon(
+                        imageVector = Icons.Default.Email,
+                        contentDescription = "Chats",
+                        modifier = Modifier.size(15.dp),
+                        tint = Color(0xFF004AC6)
+                    )
+                }
+
+                // Notification button
+                IconButton(
+                    onClick = {},
+                    modifier = Modifier
+                        .size(32.dp)
+                        .background(Color.Gray.copy(alpha = 0.05f), CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Notifications,
+                        contentDescription = "Notifications",
+                        modifier = Modifier.size(15.dp),
+                        tint = Color.DarkGray
+                    )
+                }
+
+                // Language button
+                IconButton(
+                    onClick = onLanguageClick,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .background(Color.Gray.copy(alpha = 0.05f), CircleShape)
+                ) {
+                    Text("🌐", fontSize = 14.sp)
+                }
+
+                Spacer(modifier = Modifier.width(2.dp))
+
+                // Minimized circular Profile Avatar
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clip(CircleShape)
+                        .border(1.5.dp, Color(0xFFFC8019), CircleShape)
+                        .clickable { onProfileClick() }
+                ) {
+                    Image(
+                        painter = rememberAsyncImagePainter(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(avatarUrl)
+                                .crossfade(true)
+                                .error(R.drawable.paws_logo_1779795154399)
+                                .build()
+                        ),
+                        contentDescription = "Profile",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
                     )
                 }
             }
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Row 2: Location selector & Sync Status (compact & premium)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Location Selector Pill
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .background(Color(0xFFFC8019).copy(alpha = 0.06f), RoundedCornerShape(20.dp))
+                    .border(0.5.dp, Color(0xFFFC8019).copy(alpha = 0.15f), RoundedCornerShape(20.dp))
+                    .clickable { onCityClick() }
+                    .padding(horizontal = 10.dp, vertical = 4.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.LocationOn,
+                    contentDescription = null,
+                    tint = Color(0xFFFC8019),
+                    modifier = Modifier.size(14.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = cityName,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF282C3F)
+                )
+                Spacer(modifier = Modifier.width(2.dp))
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = null,
+                    tint = Color(0xFF282C3F),
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+
+            // Sync status (small & clean)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .clickable { onSyncClick() }
+                    .padding(horizontal = 6.dp, vertical = 4.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .background(
+                            color = when (syncState) {
+                                is PowerSyncManager.SyncState.Connected -> Color(0xFF4CAF50)
+                                is PowerSyncManager.SyncState.Syncing -> Color(0xFFFFC107)
+                                is PowerSyncManager.SyncState.Paused -> Color(0xFF9E9E9E)
+                                is PowerSyncManager.SyncState.Offline -> Color(0xFFF44336)
+                            },
+                            shape = CircleShape
+                        )
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = when (syncState) {
+                        is PowerSyncManager.SyncState.Connected -> "Sync: Connected"
+                        is PowerSyncManager.SyncState.Syncing -> "Syncing..."
+                        is PowerSyncManager.SyncState.Paused -> "Paused"
+                        is PowerSyncManager.SyncState.Offline -> "Offline"
+                    },
+                    fontSize = 9.sp,
+                    color = Color.Gray,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Row 3: Slim Welcome Greeting Banner
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .scale(pulseScale)
+                .fillMaxWidth()
+                .border(1.dp, Color(0xFFFC8019).copy(alpha = 0.15f), RoundedCornerShape(12.dp))
+                .padding(horizontal = 12.dp, vertical = 6.dp)
+        ) {
+            Text("🐾", fontSize = 14.sp)
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = "${if (petName.isBlank()) "Buddy" else petName} is dreaming of premium treats! 🦴",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFD35400)
+            )
         }
     }
 }
@@ -5697,32 +5536,51 @@ fun HorizontalShopCard(
                     .fillMaxWidth()
                     .height(130.dp)
             ) {
-                Image(
-                    painter = rememberAsyncImagePainter(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(shop.photos.firstOrNull())
-                            .crossfade(true)
-                            .build()
-                    ),
-                    contentDescription = shop.name,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
+                if (shop.photos.isNotEmpty() && shop.photos.first().isNotBlank()) {
+                    Image(
+                        painter = rememberAsyncImagePainter(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(shop.photos.first())
+                                .crossfade(true)
+                                .build()
+                        ),
+                        contentDescription = shop.name,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    // Placeholder background
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0xFF004AC6).copy(alpha = 0.05f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = if (shop.vetClinicEnabled) Icons.Default.Info else Icons.Default.Home,
+                            contentDescription = null,
+                            tint = Color(0xFF004AC6).copy(alpha = 0.3f),
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
+                }
+
                 // scrim
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(
                             brush = Brush.verticalGradient(
-                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.5f)),
+                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.3f)),
                                 startY = 40f
                             )
                         )
                 )
-                // Open status
+
+                // Open status (Top Start)
                 Box(
                     modifier = Modifier
-                        .align(Alignment.TopEnd)
+                        .align(Alignment.TopStart)
                         .padding(8.dp)
                         .background(
                             color = if (shop.isOpen) Color(0xFF2E7D32) else Color(0xFFC62828),
@@ -5737,12 +5595,13 @@ fun HorizontalShopCard(
                         fontWeight = FontWeight.ExtraBold
                     )
                 }
-                // Rating
+
+                // Rating (Top End)
                 Row(
                     modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(start = 8.dp, bottom = 8.dp)
-                        .background(Color.Black.copy(alpha = 0.55f), RoundedCornerShape(6.dp))
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                        .background(Color.White.copy(alpha = 0.9f), RoundedCornerShape(6.dp))
                         .padding(horizontal = 6.dp, vertical = 3.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -5750,10 +5609,65 @@ fun HorizontalShopCard(
                     Spacer(modifier = Modifier.width(3.dp))
                     Text(
                         text = shop.rating.toString(),
-                        color = Color(0xFFFFD54F),
+                        color = Color(0xFF282C3F),
                         fontWeight = FontWeight.ExtraBold,
-                        fontSize = 11.sp
+                        fontSize = 10.sp
                     )
+                }
+
+                // Category overlay tags (Bottom Start)
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    if (shop.vetClinicEnabled) {
+                        // Hospital Tag (Orange)
+                        Box(
+                            modifier = Modifier
+                                .background(Color(0xFFFC8019).copy(alpha = 0.2f), RoundedCornerShape(4.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text("Hospital", color = Color(0xFFFC8019), fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                        }
+                        // Medicine Tag (Green)
+                        Box(
+                            modifier = Modifier
+                                .background(Color(0xFF4CAF50).copy(alpha = 0.2f), RoundedCornerShape(4.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text("Medicine", color = Color(0xFF2E7D32), fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                        }
+                    } else if (shop.groomingEnabled) {
+                        // Grooming Tag (Orange)
+                        Box(
+                            modifier = Modifier
+                                .background(Color(0xFFFC8019).copy(alpha = 0.2f), RoundedCornerShape(4.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text("Grooming", color = Color(0xFFFC8019), fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                        }
+                    } else {
+                        // Shop Tag (Orange)
+                        Box(
+                            modifier = Modifier
+                                .background(Color(0xFFFC8019).copy(alpha = 0.2f), RoundedCornerShape(4.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text("Shop", color = Color(0xFFFC8019), fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                        }
+                        // If it is Healthy Hounds Pantry, also add Medicine Tag
+                        if (shop.name.contains("Pantry", ignoreCase = true) || shop.description.contains("Diet", ignoreCase = true)) {
+                            Box(
+                                modifier = Modifier
+                                    .background(Color(0xFF4CAF50).copy(alpha = 0.2f), RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text("Medicine", color = Color(0xFF2E7D32), fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
                 }
             }
 
@@ -5898,6 +5812,20 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
     }
 
     val shop = shopState.value ?: return
+
+    if (shop.id == "mock_posh_paws") {
+        PoshPawsShopDetailScreen(
+            shop = shop,
+            viewModel = viewModel,
+            productsList = productsList,
+            filteredProductsList = filteredProductsList,
+            selectedCategoryId = selectedCategoryId,
+            onCategorySelected = { selectedCategoryId = it },
+            wishlists = wishlists,
+            cartItems = cartItems
+        )
+        return
+    }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -7411,15 +7339,15 @@ fun SearchScreen(viewModel: PawsViewModel) {
     val mockShops = remember {
         listOf(
             ShopEntity(
-                id = "mock_hyd_1",
+                id = "mock_posh_paws",
                 ownerId = "system",
                 cityId = "hyd",
-                name = "Banjara Hills Premium Pet Care 🐾",
-                description = "Sleek pet spa, gourmet boutique organic supplies & direct vet diagnostics.",
+                name = "The Posh Paws",
+                description = "Luxury Accessories & Food",
                 address = "Road No 2, Banjara Hills, Hyderabad",
                 locality = "Banjara Hills",
                 phone = "9876543210",
-                email = "banjara@paws.com",
+                email = "posh@paws.com",
                 photos = listOf("https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=600"),
                 isOpen = true,
                 opensAt = "08:00",
@@ -7430,47 +7358,47 @@ fun SearchScreen(viewModel: PawsViewModel) {
                 isVerified = true,
                 isActive = true,
                 isFeatured = true,
-                groomingEnabled = true,
-                vetClinicEnabled = true
+                groomingEnabled = false,
+                vetClinicEnabled = false
             ),
             ShopEntity(
-                id = "mock_hyd_2",
+                id = "mock_healthy_hounds",
                 ownerId = "system",
                 cityId = "hyd",
-                name = "Hitech City Paws & Claws Resort 🛁",
-                description = "Elite luxury styling, modern diagnostic lab and interactive grooming suites.",
-                address = "Phase 2, Hitech City, Hyderabad",
-                locality = "Hitech City",
+                name = "Healthy Hounds Pantry",
+                description = "Organic & Raw Diet Specialist",
+                address = "Phase 2, Jubilee Hills, Hyderabad",
+                locality = "Jubilee Hills",
                 phone = "9876543211",
-                email = "hitech@paws.com",
+                email = "healthy@paws.com",
                 photos = listOf("https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=600"),
                 isOpen = true,
                 opensAt = "09:00",
                 closesAt = "21:00",
-                rating = 4.9,
+                rating = 4.5,
                 totalReviews = 88,
                 deliveryAvailable = true,
                 isVerified = true,
                 isActive = true,
                 isFeatured = true,
-                groomingEnabled = true,
+                groomingEnabled = false,
                 vetClinicEnabled = false
             ),
             ShopEntity(
-                id = "mock_hyd_3",
+                id = "mock_city_hospital",
                 ownerId = "system",
                 cityId = "hyd",
-                name = "Madhapur Vet & Grooming Hub 🩺",
-                description = "Rapid local medicines delivery, standard vaccinations and holistic flea/tick dips.",
+                name = "City Pet Hospital",
+                description = "24/7 Emergency & Surgery",
                 address = "Metro Station Road, Madhapur, Hyderabad",
                 locality = "Madhapur",
                 phone = "9876543212",
-                email = "madhapur@paws.com",
+                email = "cityhospital@paws.com",
                 photos = listOf("https://images.unsplash.com/photo-1597633425046-08f5110420b5?auto=format&fit=crop&q=80&w=600"),
                 isOpen = true,
                 opensAt = "07:00",
                 closesAt = "23:00",
-                rating = 4.6,
+                rating = 4.9,
                 totalReviews = 19,
                 deliveryAvailable = true,
                 isVerified = true,
@@ -7478,6 +7406,52 @@ fun SearchScreen(viewModel: PawsViewModel) {
                 isFeatured = false,
                 groomingEnabled = false,
                 vetClinicEnabled = true
+            ),
+            ShopEntity(
+                id = "mock_fluffy_friends",
+                ownerId = "system",
+                cityId = "hyd",
+                name = "Fluffy Friends",
+                description = "Full Grooming & Spa",
+                address = "Hitech City, Hyderabad",
+                locality = "Hitech City",
+                phone = "9876543213",
+                email = "fluffy@paws.com",
+                photos = emptyList(),
+                isOpen = true,
+                opensAt = "09:00",
+                closesAt = "20:00",
+                rating = 4.8,
+                totalReviews = 56,
+                deliveryAvailable = true,
+                isVerified = true,
+                isActive = true,
+                isFeatured = false,
+                groomingEnabled = true,
+                vetClinicEnabled = false
+            ),
+            ShopEntity(
+                id = "mock_paw_spa",
+                ownerId = "system",
+                cityId = "hyd",
+                name = "Paw Spa",
+                description = "Bath & Nail Clipping",
+                address = "Kondapur, Hyderabad",
+                locality = "Kondapur",
+                phone = "9876543214",
+                email = "pawspa@paws.com",
+                photos = emptyList(),
+                isOpen = true,
+                opensAt = "10:00",
+                closesAt = "19:00",
+                rating = 4.6,
+                totalReviews = 27,
+                deliveryAvailable = true,
+                isVerified = true,
+                isActive = true,
+                isFeatured = false,
+                groomingEnabled = true,
+                vetClinicEnabled = false
             )
         )
     }
@@ -8440,7 +8414,30 @@ fun MerchantDashboardScreen(viewModel: PawsViewModel) {
                 }
             }
 
-            // Shop Open Switch Toggle
+            // Inventory Manager Shortcut
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 6.dp)
+                    .clickable { viewModel.navigateTo(Screen.MerchantInventory) },
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF004AC6))
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text("📦 Inventory & Pricing Manager", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.White)
+                        Text("Stock levels • Pricing • Campaigns", fontSize = 11.sp, color = Color.White.copy(alpha = 0.75f))
+                    }
+                    Icon(Icons.Default.ArrowForward, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                }
+            }
+
+
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -9765,6 +9762,7 @@ fun SuperAdminScreen(viewModel: PawsViewModel) {
                 val navItems = listOf(
                     Triple("shops", "🏪 Shop Approvals", pendingShops.size),
                     Triple("captains", "🛵 Captain Approvals", pendingCaptains.size),
+                    Triple("users", "👥 User Management", 0),
                     Triple("banners", "🖼️ Promo Banners", allBanners.size),
                     Triple("catalog", "🛠️ Catalog Controls", 0),
                     Triple("specs", "📦 Specs & Assets", 0),
@@ -9776,7 +9774,10 @@ fun SuperAdminScreen(viewModel: PawsViewModel) {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { selectedTab = tabId },
+                            .clickable {
+                                if (tabId == "users") viewModel.navigateTo(Screen.SuperAdminUsers)
+                                else selectedTab = tabId
+                            },
                         shape = RoundedCornerShape(10.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = if (isSelected) Color(0xFFFC8019) else Color.Transparent
@@ -12786,469 +12787,7 @@ fun AppointmentCard(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TabletsIssuedScreen(viewModel: PawsViewModel) {
-    val reminders by viewModel.activeReminders.collectAsState()
-    val context = LocalContext.current
-    var showAddMedDialog by remember { mutableStateOf(false) }
-
-    val medications = remember(reminders) {
-        reminders.filter { it.type == "medication" }
-    }
-
-    val dueToday = remember(medications) {
-        medications.filter { it.id == "rem_med_1" || (it.notes.contains("Due") && !it.isCompleted) }
-    }
-
-    val activePrescriptions = remember(medications) {
-        medications.filter { (it.id == "rem_med_2" || it.id == "rem_med_3" || (!it.notes.contains("Due") && !it.notes.contains("Completed") && !it.isCompleted)) && it.id != "rem_med_1" }
-    }
-
-    val pastHistory = remember(medications) {
-        medications.filter { it.isCompleted || it.notes.contains("Completed") }
-    }
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-        ) {
-            // Top Bar
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = { viewModel.navigateBack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Medication Log",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                val currentUser by viewModel.currentUser.collectAsState()
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .border(1.5.dp, MaterialTheme.colorScheme.secondary, CircleShape)
-                ) {
-                    Image(
-                        painter = rememberAsyncImagePainter(
-                            currentUser?.avatarUrl ?: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100"
-                        ),
-                        contentDescription = "Profile",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                }
-            }
-
-            // Today's Tasks Bento Card
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 8.dp),
-                shape = RoundedCornerShape(16.dp),
-                border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.3f)),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text("Due Today", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
-                            Text("Don't forget Buddy's meds", fontSize = 12.sp, color = Color.Gray)
-                        }
-
-                        Card(
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                            shape = RoundedCornerShape(16.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(Icons.Default.DateRange, null, tint = Color.White, modifier = Modifier.size(14.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Oct 24", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    if (dueToday.isEmpty()) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("No medications due today! 🎉", color = Color.Gray, fontSize = 14.sp)
-                        }
-                    } else {
-                        dueToday.forEach { med ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(Color(0xFFF8F9FF), RoundedCornerShape(12.dp))
-                                    .border(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.2f), RoundedCornerShape(12.dp))
-                                    .padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .clip(CircleShape)
-                                        .background(Color(0xFFE5EEFF)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(Icons.Default.Info, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-                                }
-
-                                Spacer(modifier = Modifier.width(12.dp))
-
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(med.title, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                                        Spacer(modifier = Modifier.width(6.dp))
-                                        Card(
-                                            colors = CardDefaults.cardColors(containerColor = Color(0xFFFEDBA6).copy(alpha = 0.3f)),
-                                            shape = RoundedCornerShape(4.dp)
-                                        ) {
-                                            Text(
-                                                "DUE",
-                                                fontSize = 9.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = Color(0xFF855300),
-                                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-                                            )
-                                        }
-                                    }
-                                    Text(
-                                        text = med.notes.substringBefore("|").trim(),
-                                        fontSize = 12.sp,
-                                        color = Color.Gray
-                                    )
-                                }
-
-                                val isGiven = med.isCompleted
-                                val btnBg = if (isGiven) Color(0xFFE5EEFF) else MaterialTheme.colorScheme.primary
-                                val btnTextColor = if (isGiven) MaterialTheme.colorScheme.primary else Color.White
-
-                                Box(
-                                    modifier = Modifier
-                                        .size(60.dp)
-                                        .clip(CircleShape)
-                                        .background(btnBg)
-                                        .clickable {
-                                            viewModel.toggleReminderCompletion(med.id, !med.isCompleted)
-                                            Toast
-                                                .makeText(
-                                                    context,
-                                                    if (!med.isCompleted) "Medication marked as Given! 💊" else "Medication marked as Pending",
-                                                    Toast.LENGTH_SHORT
-                                                )
-                                                .show()
-                                        },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        Icon(
-                                            imageVector = if (isGiven) Icons.Default.CheckCircle else Icons.Default.Check,
-                                            contentDescription = "Give",
-                                            tint = btnTextColor,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                        Text(
-                                            text = if (isGiven) "Done" else "Give",
-                                            fontSize = 9.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = btnTextColor
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Active Prescriptions List
-            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                Text(
-                    text = "Active Prescriptions",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-
-                activePrescriptions.forEach { med ->
-                    val notesParts = med.notes.split("|").map { it.trim() }
-                    val dosage = notesParts.getOrNull(0) ?: "1 Chew"
-                    val frequency = notesParts.getOrNull(1) ?: "Monthly"
-                    val category = notesParts.getOrNull(2) ?: "General"
-                    val lastGiven = notesParts.getOrNull(3) ?: "Last given: N/A"
-                    val nextDue = notesParts.getOrNull(4) ?: "Next: N/A"
-
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.3f)),
-                        colors = CardDefaults.cardColors(containerColor = Color.White)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(36.dp)
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .background(Color(0xFFEFF4FF)),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Info,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Column {
-                                        Text(med.title, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                                        Text(category, fontSize = 11.sp, color = Color.Gray)
-                                    }
-                                }
-
-                                Card(
-                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFD1FAE5)),
-                                    shape = RoundedCornerShape(16.dp)
-                                ) {
-                                    Text(
-                                        text = "Active",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF065F46),
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(Color(0xFFF8F9FF), RoundedCornerShape(8.dp))
-                                    .border(0.5.dp, Color(0xFFC3C6D7).copy(alpha = 0.2f), RoundedCornerShape(8.dp))
-                                    .padding(8.dp)
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text("Dosage", fontSize = 11.sp, color = Color.Gray)
-                                    Text(dosage, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                                }
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text("Frequency", fontSize = 11.sp, color = Color.Gray)
-                                    Text(frequency, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = Icons.Default.Info,
-                                        contentDescription = null,
-                                        tint = Color.Gray,
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(lastGiven, fontSize = 11.sp, color = Color.Gray)
-                                }
-                                Text(nextDue, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                            }
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Past History List
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 20.dp)
-                    .alpha(0.8f)
-            ) {
-                Text(
-                    text = "Past History",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = Color.Gray
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.2f)),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        pastHistory.forEachIndexed { idx, med ->
-                            val notesParts = med.notes.split("|").map { it.trim() }
-                            val sub = notesParts.getOrNull(0) ?: "Completed"
-                            val dateText = notesParts.getOrNull(2) ?: ""
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = Icons.Default.CheckCircle,
-                                        contentDescription = "Completed",
-                                        tint = Color.Gray,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Column {
-                                        Text(med.title, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                        Text(
-                                            text = if (notesParts.size >= 2) "${notesParts[1]} • $sub" else sub,
-                                            fontSize = 11.sp,
-                                            color = Color.Gray
-                                        )
-                                    }
-                                }
-                                Text(dateText, fontSize = 12.sp, color = Color.Gray)
-                            }
-
-                            if (idx < pastHistory.size - 1) {
-                                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-                            }
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(100.dp))
-        }
-
-        FloatingActionButton(
-            onClick = { showAddMedDialog = true },
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = Color.White,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(24.dp)
-                .size(56.dp)
-        ) {
-            Icon(Icons.Default.Add, contentDescription = "Add Medication", modifier = Modifier.size(24.dp))
-        }
-    }
-
-    if (showAddMedDialog) {
-        var name by remember { mutableStateOf("") }
-        var dosage by remember { mutableStateOf("") }
-        var frequency by remember { mutableStateOf("") }
-        var category by remember { mutableStateOf("") }
-        var nextDue by remember { mutableStateOf("") }
-
-        AlertDialog(
-            onDismissRequest = { showAddMedDialog = false },
-            title = { Text("Add Medication Prescription") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    OutlinedTextField(
-                        value = name,
-                        onValueChange = { name = it },
-                        label = { Text("Medication Name (e.g. Heartgard Plus)") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    OutlinedTextField(
-                        value = dosage,
-                        onValueChange = { dosage = it },
-                        label = { Text("Dosage (e.g. 1 Chewable)") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    OutlinedTextField(
-                        value = frequency,
-                        onValueChange = { frequency = it },
-                        label = { Text("Frequency (e.g. Monthly)") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    OutlinedTextField(
-                        value = category,
-                        onValueChange = { category = it },
-                        label = { Text("Category (e.g. Flea & Tick)") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    OutlinedTextField(
-                        value = nextDue,
-                        onValueChange = { nextDue = it },
-                        label = { Text("Next Due Date (e.g. Nov 10)") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        if (name.isNotEmpty()) {
-                            val notesText = "$dosage | $frequency | $category | Last given: N/A | Next: $nextDue"
-                            viewModel.createReminder(
-                                title = name,
-                                petName = "Buddy",
-                                dateString = "2026-10-24",
-                                notes = notesText,
-                                type = "medication"
-                            )
-                            showAddMedDialog = false
-                            Toast.makeText(context, "Prescription added successfully!", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                ) {
-                    Text("Add")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showAddMedDialog = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
-    }
+    UnifiedVaccinationsTabletsScreen(viewModel = viewModel, defaultTab = 0)
 }
 
 // ==========================================
@@ -13257,67 +12796,6 @@ fun TabletsIssuedScreen(viewModel: PawsViewModel) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VaccinationsScreen(viewModel: PawsViewModel) {
-    val reminders by viewModel.activeReminders.collectAsState()
-    val context = LocalContext.current
-    var showAddVaccDialog by remember { mutableStateOf(false) }
-
-    val vaccinations = remember(reminders) {
-        reminders.filter { it.type == "vaccination" }
-    }
-
-    val petName = "Buddy"
-    val breed = "Golden Retriever"
-    val age = "3 Years Old"
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-    ) {
-        // Top Bar
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { viewModel.navigateBack() }) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Health & Vaccinations",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .border(1.5.dp, MaterialTheme.colorScheme.secondary, CircleShape)
-            ) {
-                Image(
-                    painter = rememberAsyncImagePainter(
-                        "https://images.unsplash.com/photo-1552053831-71594a27632d?w=100"
-                    ),
-                    contentDescription = "Profile",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            }
-        }
-
-        // Pet Profile Summary Card
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 8.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.3f)),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Row(
@@ -13706,117 +13184,214 @@ fun VaccinationsScreen(viewModel: PawsViewModel) {
 @Composable
 fun FavouritesScreen(viewModel: PawsViewModel) {
     val wishlists by viewModel.wishlists.collectAsState()
+    val wishlistProducts by viewModel.wishlistProducts.collectAsState()
     val shopsList by viewModel.shops.collectAsState()
-    var selectedTab by remember { mutableStateOf(0) }
+    var selectedFilter by remember { mutableStateOf("All") }
+    var searchQuery by remember { mutableStateOf("") }
+    val context = LocalContext.current
 
     val favShops = remember(wishlists, shopsList) {
         shopsList.filter { shop -> wishlists.any { it.shopId == shop.id } }
     }
 
+    val allProductsFlow by viewModel.products.collectAsState()
+    val favProducts = remember(wishlistProducts, allProductsFlow) {
+        allProductsFlow.filter { prod -> wishlistProducts.any { it.productId == prod.id } }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF7F8FA))
+            .background(Color(0xFFF8F9FF))
+            .statusBarsPadding()
     ) {
-        // Header
-        Box(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.White)
-                .padding(horizontal = 20.dp, vertical = 16.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column {
-                Text("Favourites", fontWeight = FontWeight.Black, fontSize = 24.sp)
-                Text("Your saved shops & products", fontSize = 13.sp, color = Color.Gray)
+            IconButton(onClick = { viewModel.navigateBack() }) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color(0xFF0B1C30))
+            }
+            Text(
+                text = "Favourites",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF0B1C30),
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center
+            )
+            IconButton(onClick = { /* Notifications */ }) {
+                Icon(Icons.Default.Notifications, contentDescription = "Notifications", tint = Color(0xFF0B1C30))
             }
         }
 
-        // Tabs
-        TabRow(
-            selectedTabIndex = selectedTab,
-            containerColor = Color.White,
-            contentColor = Color(0xFFFC8019),
-            indicator = { tabPositions ->
-                TabRowDefaults.Indicator(
-                    modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                    color = Color(0xFFFC8019),
-                    height = 3.dp
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 100.dp)
+        ) {
+            item {
+                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    Text(
+                        "Favourites",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color(0xFF0B1C30)
+                    )
+                    Text(
+                        "Your saved shops & products",
+                        fontSize = 13.sp,
+                        color = Color(0xFF434655)
+                    )
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text("Search saved items or shops...", color = Color(0xFF737686)) },
+                    leadingIcon = { Icon(Icons.Default.Search, null, tint = Color(0xFF737686)) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        containerColor = Color.White,
+                        focusedBorderColor = Color(0xFF004AC6),
+                        unfocusedBorderColor = Color(0xFFC3C6D7).copy(alpha = 0.5f)
+                    ),
+                    singleLine = true
                 )
             }
-        ) {
-            Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }) {
-                Text("Shops", modifier = Modifier.padding(vertical = 14.dp), fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Normal, fontSize = 14.sp)
-            }
-            Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }) {
-                Text("Products", modifier = Modifier.padding(vertical = 14.dp), fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal, fontSize = 14.sp)
-            }
-        }
 
-        when (selectedTab) {
-            0 -> {
-                if (favShops.isEmpty()) {
-                    Column(
-                        modifier = Modifier.fillMaxSize().padding(32.dp),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text("🐾", fontSize = 48.sp)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text("No saved shops yet", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                        Text("Tap ♥ on any shop to save it here", fontSize = 13.sp, color = Color.Gray, textAlign = TextAlign.Center)
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    val pills = listOf(
+                        "All" to "All Favourites",
+                        "Products" to "Products (${favProducts.size})",
+                        "Shops" to "Shops (${favShops.size})"
+                    )
+                    items(pills) { (key, label) ->
+                        val isSelected = selectedFilter == key
+                        val containerColor = if (isSelected) Color(0xFF004AC6) else Color.White
+                        val contentColor = if (isSelected) Color.White else Color(0xFF434655)
+                        val borderStroke = if (isSelected) null else BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.5f))
+                        
+                        Surface(
+                            shape = RoundedCornerShape(24.dp),
+                            color = containerColor,
+                            contentColor = contentColor,
+                            border = borderStroke,
+                            modifier = Modifier
+                                .clickable { selectedFilter = key }
+                        ) {
+                            Text(
+                                text = label,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (selectedFilter == "All" || selectedFilter == "Products") {
+                item {
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Text(
+                        text = "Saved Products",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF0B1C30),
+                        modifier = Modifier.padding(horizontal = 16.dp, bottom = 8.dp)
+                    )
+                }
+
+                if (favProducts.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("No saved products yet.", color = Color.Gray, fontSize = 13.sp)
+                        }
                     }
                 } else {
-                    LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        items(favShops) { shop ->
-                            Card(
-                                modifier = Modifier.fillMaxWidth().clickable { viewModel.navigateTo(Screen.ShopDetail(shop.id)) },
-                                shape = RoundedCornerShape(16.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
-                                elevation = CardDefaults.cardElevation(2.dp)
-                            ) {
-                                Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                                    Image(
-                                        painter = rememberAsyncImagePainter(shop.photos.firstOrNull()),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(60.dp).clip(RoundedCornerShape(12.dp)),
-                                        contentScale = ContentScale.Crop
-                                    )
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(shop.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                        Text(shop.description, fontSize = 12.sp, color = Color.Gray, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                            Surface(shape = RoundedCornerShape(6.dp), color = Color(0xFFFFF3E0)) {
-                                                Text("⭐ ${shop.rating}", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFC8019), modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
+                    val chunkedProds = favProducts.chunked(2)
+                    items(chunkedProds) { rowProds ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 6.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            for (product in rowProds) {
+                                Box(modifier = Modifier.weight(1f)) {
+                                    SavedProductCard(
+                                        product = product,
+                                        onRemove = { viewModel.toggleProductWishlist(product.id) },
+                                        onAddToCart = {
+                                            viewModel.viewModelScope.launch {
+                                                val shop = viewModel.getShopById(product.shopId)
+                                                if (shop != null) {
+                                                    viewModel.addToCart(product, shop)
+                                                    Toast.makeText(context, "Added to cart! 🛒", Toast.LENGTH_SHORT).show()
+                                                }
                                             }
-                                            Text(if (shop.deliveryAvailable) "Delivery available" else "Pickup only", fontSize = 11.sp, color = Color.Gray)
                                         }
-                                    }
-                                    Icon(Icons.Default.Favorite, null, tint = Color(0xFFFC8019), modifier = Modifier.size(20.dp))
+                                    )
                                 }
+                            }
+                            if (rowProds.size < 2) {
+                                Spacer(modifier = Modifier.weight(1f))
                             }
                         }
                     }
                 }
             }
-            1 -> {
-                Column(
-                    modifier = Modifier.fillMaxSize().padding(32.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text("🛒", fontSize = 48.sp)
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text("No saved products yet", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    Text("Browse shops and save products you love", fontSize = 13.sp, color = Color.Gray, textAlign = TextAlign.Center)
-                    Spacer(modifier = Modifier.height(20.dp))
-                    Button(
-                        onClick = { viewModel.clearHistoryAndNavigate(Screen.Home) },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFC8019)),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text("Browse Shops", fontWeight = FontWeight.Bold)
+
+            if (selectedFilter == "All" || selectedFilter == "Shops") {
+                item {
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Text(
+                        text = "Saved Shops",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF0B1C30),
+                        modifier = Modifier.padding(horizontal = 16.dp, bottom = 8.dp)
+                    )
+                }
+
+                if (favShops.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("No saved shops yet.", color = Color.Gray, fontSize = 13.sp)
+                        }
+                    }
+                } else {
+                    items(favShops) { shop ->
+                        SavedShopCard(
+                            shop = shop,
+                            onRemove = { viewModel.toggleWishlist(shop.id) },
+                            onClick = { viewModel.navigateTo(Screen.ShopDetail(shop.id)) }
+                        )
                     }
                 }
             }
@@ -13827,160 +13402,183 @@ fun FavouritesScreen(viewModel: PawsViewModel) {
 // ==========================================
 // SCREEN: ORDERS
 // ==========================================
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrdersScreen(viewModel: PawsViewModel) {
     var selectedTab by remember { mutableStateOf(0) }
+    var searchQuery by remember { mutableStateOf("") }
     val context = LocalContext.current
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF7F8FA))
+            .background(Color(0xFFF8F9FF))
+            .statusBarsPadding()
     ) {
-        Box(
-            modifier = Modifier.fillMaxWidth().background(Color.White).padding(horizontal = 20.dp, vertical = 16.dp)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column {
-                Text("My Orders", fontWeight = FontWeight.Black, fontSize = 24.sp)
-                Text("Track & manage your pet orders", fontSize = 13.sp, color = Color.Gray)
+            IconButton(onClick = { viewModel.navigateBack() }) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color(0xFF0B1C30))
+            }
+            Text(
+                text = "Orders",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF0B1C30),
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center
+            )
+            IconButton(onClick = { /* Notifications */ }) {
+                Icon(Icons.Default.Notifications, contentDescription = "Notifications", tint = Color(0xFF0B1C30))
             }
         }
+
+        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+            Text(
+                "Orders",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Black,
+                color = Color(0xFF0B1C30)
+            )
+            Text(
+                "Track, manage, and reorder your pet's favorites.",
+                fontSize = 13.sp,
+                color = Color(0xFF434655)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            placeholder = { Text("Search orders, items, or shops...", color = Color(0xFF737686)) },
+            leadingIcon = { Icon(Icons.Default.Search, null, tint = Color(0xFF737686)) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            shape = RoundedCornerShape(24.dp),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                containerColor = Color.White,
+                focusedBorderColor = Color(0xFF004AC6),
+                unfocusedBorderColor = Color(0xFFC3C6D7).copy(alpha = 0.5f)
+            ),
+            singleLine = true
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         TabRow(
             selectedTabIndex = selectedTab,
             containerColor = Color.White,
-            contentColor = Color(0xFFFC8019),
+            contentColor = Color(0xFF004AC6),
             indicator = { tabPositions ->
                 TabRowDefaults.Indicator(
                     modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                    color = Color(0xFFFC8019), height = 3.dp
+                    color = Color(0xFF004AC6),
+                    height = 3.dp
                 )
             }
         ) {
-            Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }) {
-                Text("Current", modifier = Modifier.padding(vertical = 14.dp), fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Normal, fontSize = 14.sp)
-            }
-            Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }) {
-                Text("Past Orders", modifier = Modifier.padding(vertical = 14.dp), fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal, fontSize = 14.sp)
+            val tabs = listOf("Active Orders (2)", "Past Orders", "Subscriptions")
+            tabs.forEachIndexed { index, label ->
+                Tab(
+                    selected = selectedTab == index,
+                    onClick = { selectedTab = index }
+                ) {
+                    Text(
+                        text = label,
+                        modifier = Modifier.padding(vertical = 14.dp),
+                        fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal,
+                        fontSize = 13.sp,
+                        color = if (selectedTab == index) Color(0xFF004AC6) else Color(0xFF434655)
+                    )
+                }
             }
         }
 
         when (selectedTab) {
             0 -> {
-                // Current orders - check cart first
-                Column(modifier = Modifier.fillMaxSize()) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    // Active order card
-                    Card(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        elevation = CardDefaults.cardElevation(2.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Surface(shape = CircleShape, color = Color(0xFFF0FFF4)) {
-                                    Icon(Icons.Default.ArrowForward, null, tint = Color(0xFF4CAF50), modifier = Modifier.size(36.dp).padding(8.dp))
-                                }
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text("PawsApp Order #2847", fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                                    Text("Royal Canin • Himalaya Dog Treats", fontSize = 12.sp, color = Color.Gray)
-                                }
-                                Surface(shape = RoundedCornerShape(8.dp), color = Color(0xFFF0FFF4)) {
-                                    Text("On the way", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF4CAF50), modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
-                                }
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    item {
+                        ActiveOrderCard(
+                            shopName = "Paws & Claws Premium",
+                            orderId = "#PC-8892",
+                            time = "Placed Today, 10:42 AM",
+                            status = "Out for Delivery",
+                            deliveryInfo = "Arriving in approx. 15 mins",
+                            itemsSummary = "1x Royal Canin Maxi Adult (15kg), 2x Dental Chew Sticks...",
+                            price = "$84.50",
+                            trackable = true,
+                            onAction = {
+                                Toast.makeText(context, "Tracking order PC-8892... 🛵", Toast.LENGTH_SHORT).show()
                             }
-                            Spacer(modifier = Modifier.height(12.dp))
-                            // Progress bar
-                            val steps = listOf("Placed", "Confirmed", "Packed", "Picked up", "Delivered")
-                            val currentStep = 3
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                steps.forEachIndexed { index, step ->
-                                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
-                                        Box(
-                                            modifier = Modifier.size(24.dp).background(
-                                                if (index <= currentStep) Color(0xFF4CAF50) else Color(0xFFE0E0E0),
-                                                CircleShape
-                                            ),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            if (index < currentStep) {
-                                                Icon(Icons.Default.Check, null, tint = Color.White, modifier = Modifier.size(14.dp))
-                                            } else if (index == currentStep) {
-                                                Box(modifier = Modifier.size(10.dp).background(Color.White, CircleShape))
-                                            }
-                                        }
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        Text(step, fontSize = 8.sp, textAlign = TextAlign.Center, color = if (index <= currentStep) Color(0xFF4CAF50) else Color.Gray, maxLines = 1)
-                                    }
-                                    if (index < steps.size - 1) {
-                                        Box(modifier = Modifier.height(2.dp).weight(0.5f).background(if (index < currentStep) Color(0xFF4CAF50) else Color(0xFFE0E0E0)).align(Alignment.CenterVertically))
-                                    }
-                                }
+                        )
+                    }
+                    item {
+                        ActiveOrderCard(
+                            shopName = "VetCare Pharmacy",
+                            orderId = "#VC-4410",
+                            time = "Placed Yesterday, 4:15 PM",
+                            status = "Processing",
+                            deliveryInfo = "Expected delivery by tomorrow, 2 PM",
+                            itemsSummary = "1x Flea & Tick Treatment (3 Pack), 1x Ear Cleaning Solution",
+                            price = "$42.00",
+                            trackable = false,
+                            onAction = {
+                                Toast.makeText(context, "Showing details for VC-4410...", Toast.LENGTH_SHORT).show()
                             }
-                            Spacer(modifier = Modifier.height(12.dp))
-                            HorizontalDivider()
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text("Estimated delivery:", fontSize = 12.sp, color = Color.Gray)
-                                Text("25–35 min", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Color(0xFFFC8019))
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            OutlinedButton(
-                                onClick = { viewModel.navigateTo(Screen.Cart) },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFFC8019)),
-                                border = BorderStroke(1.dp, Color(0xFFFC8019)),
-                                shape = RoundedCornerShape(10.dp)
-                            ) {
-                                Text("Track Order", fontWeight = FontWeight.SemiBold)
-                            }
-                        }
+                        )
                     }
                 }
             }
             1 -> {
-                LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    val pastOrders = listOf(
-                        Triple("Order #2841", "Royal Canin Adult Dog Food 3kg", "₹1,249"),
-                        Triple("Order #2829", "Himalaya Pet Care Shampoo + Treats", "₹589"),
-                        Triple("Order #2810", "Pedigree Chum 400g × 6 packs", "₹720"),
-                    )
-                    items(pastOrders) { (id, items, price) ->
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
-                            elevation = CardDefaults.cardElevation(1.dp)
-                        ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(id, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                        Text(items, fontSize = 12.sp, color = Color.Gray, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                    }
-                                    Text(price, fontWeight = FontWeight.Bold, color = Color(0xFFFC8019), fontSize = 14.sp)
-                                }
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Surface(shape = RoundedCornerShape(6.dp), color = Color(0xFFF0FFF4), modifier = Modifier.weight(1f)) {
-                                        Text("✅ Delivered", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF4CAF50), textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 6.dp))
-                                    }
-                                    OutlinedButton(
-                                        onClick = { Toast.makeText(context, "Reorder feature coming soon! 🛒", Toast.LENGTH_SHORT).show() },
-                                        modifier = Modifier.weight(1f).height(34.dp),
-                                        shape = RoundedCornerShape(8.dp),
-                                        contentPadding = PaddingValues(0.dp),
-                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFFC8019)),
-                                        border = BorderStroke(1.dp, Color(0xFFFC8019))
-                                    ) {
-                                        Text("Reorder", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
-                                    }
-                                }
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    item {
+                        PastOrderCard(
+                            shopName = "Urban Fetch Toys",
+                            date = "Delivered • Oct 12",
+                            itemsSummary = "2x Indestructible Chew Bone, 1x Squeaky Ball",
+                            price = "$28.90",
+                            onReorder = {
+                                Toast.makeText(context, "Reordered Urban Fetch Toys items! 🛒", Toast.LENGTH_SHORT).show()
                             }
-                        }
+                        )
                     }
+                    item {
+                        PastOrderCard(
+                            shopName = "Paws & Claws Premium",
+                            date = "Delivered • Sep 28",
+                            itemsSummary = "1x Royal Canin Maxi Adult (15kg)",
+                            price = "$75.00",
+                            onReorder = {
+                                Toast.makeText(context, "Reordered Paws & Claws items! 🛒", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    }
+                }
+            }
+            2 -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No active subscriptions yet.", color = Color.Gray)
                 }
             }
         }
@@ -14186,6 +13784,4570 @@ fun ReportsDashboardScreen(viewModel: PawsViewModel) {
         }
 
         Spacer(modifier = Modifier.height(32.dp))
+    }
+}
+
+
+// ==========================================
+// SCREEN: MERCHANT INVENTORY & PRICING MANAGER
+// Based on Stitch design: Product & Pricing Manager - Shop Owner
+// ==========================================
+@Composable
+fun MerchantInventoryScreen(viewModel: PawsViewModel) {
+    val products by viewModel.getMerchantProductsFlow().collectAsState(initial = emptyList())
+    val scope = rememberCoroutineScope()
+
+    var searchQuery by remember { mutableStateOf("") }
+    var selectedTab by remember { mutableStateOf(0) } // 0=In Stock, 1=Low Stock, 2=Out of Stock
+    var showEditDialog by remember { mutableStateOf(false) }
+    var editingProduct by remember { mutableStateOf<ProductEntity?>(null) }
+    var editStockText by remember { mutableStateOf("") }
+    var editPriceText by remember { mutableStateOf("") }
+
+    // Color tokens matching Stitch design system
+    val primary = Color(0xFF004AC6)
+    val primaryContainer = Color(0xFF2563EB)
+    val onPrimary = Color.White
+    val surface = Color(0xFFF8F9FF)
+    val surfaceContainer = Color(0xFFE5EEFF)
+    val surfaceContainerLowest = Color.White
+    val onSurface = Color(0xFF0B1C30)
+    val onSurfaceVariant = Color(0xFF434655)
+    val outlineVariant = Color(0xFFC3C6D7)
+    val tertiaryContainer = Color(0xFF007D55)
+    val secondaryContainer = Color(0xFFFEA619)
+    val errorColor = Color(0xFFBA1A1A)
+    val errorContainer = Color(0xFFFFDAD6)
+
+    val inStockProducts = remember(products) { products.filter { it.stockCount > 5 } }
+    val lowStockProducts = remember(products) { products.filter { it.stockCount in 1..5 } }
+    val outOfStockProducts = remember(products) { products.filter { it.stockCount == 0 } }
+
+    val displayedProducts = remember(products, searchQuery, selectedTab) {
+        val base = when (selectedTab) {
+            1 -> lowStockProducts
+            2 -> outOfStockProducts
+            else -> inStockProducts
+        }
+        if (searchQuery.isBlank()) base
+        else base.filter { it.name.contains(searchQuery, ignoreCase = true) || it.brand.contains(searchQuery, ignoreCase = true) }
+    }
+
+    if (showEditDialog && editingProduct != null) {
+        Dialog(onDismissRequest = { showEditDialog = false }) {
+            Card(
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = surfaceContainerLowest),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Text("Quick Edit", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = onSurface)
+                    Text(editingProduct!!.name, fontSize = 14.sp, color = onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    OutlinedTextField(
+                        value = editStockText,
+                        onValueChange = { editStockText = it.filter(Char::isDigit) },
+                        label = { Text("Stock Count") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = editPriceText,
+                        onValueChange = { editPriceText = it },
+                        label = { Text("Selling Price (₹)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        OutlinedButton(
+                            onClick = { showEditDialog = false },
+                            modifier = Modifier.weight(1f)
+                        ) { Text("Cancel") }
+                        Button(
+                            onClick = {
+                                val stock = editStockText.toIntOrNull() ?: editingProduct!!.stockCount
+                                scope.launch { viewModel.updateProductStock(editingProduct!!.id, stock) }
+                                showEditDialog = false
+                            },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(containerColor = primary)
+                        ) { Text("Save", color = onPrimary) }
+                    }
+                }
+            }
+        }
+    }
+
+    Scaffold(
+        containerColor = surface,
+        bottomBar = {
+            NavigationBar(containerColor = surfaceContainerLowest, tonalElevation = 4.dp) {
+                NavigationBarItem(
+                    selected = false,
+                    onClick = { viewModel.navigateTo(Screen.MerchantDashboard) },
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Dashboard") },
+                    label = { Text("Dashboard", fontSize = 10.sp) }
+                )
+                NavigationBarItem(
+                    selected = true,
+                    onClick = { },
+                    icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Inventory") },
+                    label = { Text("Inventory", fontSize = 10.sp) }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = { viewModel.navigateTo(Screen.MerchantOrders) },
+                    icon = { Icon(Icons.Default.DateRange, contentDescription = "Orders") },
+                    label = { Text("Orders", fontSize = 10.sp) }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = { viewModel.navigateTo(Screen.ChatList) },
+                    icon = { Icon(Icons.Default.MailOutline, contentDescription = "Messages") },
+                    label = { Text("Messages", fontSize = 10.sp) }
+                )
+            }
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
+        ) {
+            // ── Top App Bar ─────────────────────────────────────────────
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(surfaceContainerLowest)
+                    .padding(horizontal = 20.dp, vertical = 14.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    IconButton(onClick = { viewModel.navigateTo(Screen.MerchantDashboard) }, modifier = Modifier.size(36.dp)) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = primary)
+                    }
+                    Column {
+                        Text("Inventory & Pricing", fontWeight = FontWeight.Black, fontSize = 18.sp, color = primary)
+                        Text("Manage stock, prices & campaigns", fontSize = 11.sp, color = onSurfaceVariant)
+                    }
+                }
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .background(primaryContainer, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("SO", color = onPrimary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                }
+            }
+
+            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+
+                // ── Active Campaign Banner ───────────────────────────────
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(Color(0xFF004AC6), Color(0xFF2563EB))
+                            )
+                        )
+                        .padding(20.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Icon(Icons.Default.Notifications, contentDescription = null, tint = Color.White.copy(alpha = 0.8f), modifier = Modifier.size(16.dp))
+                                Text("ACTIVE CAMPAIGN", color = Color.White.copy(alpha = 0.85f), fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text("Summer Pet Fest: 20% Off All Toys", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text("Ends in 3 days • Applies to ${products.size} products", color = Color.White.copy(alpha = 0.75f), fontSize = 12.sp)
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        OutlinedButton(
+                            onClick = {},
+                            shape = RoundedCornerShape(10.dp),
+                            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.5f)),
+                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
+                        ) {
+                            Text("Edit", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // ── Search Bar ──────────────────────────────────────────
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text("Search products by name or brand...", fontSize = 13.sp) },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = onSurfaceVariant) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = outlineVariant,
+                        focusedBorderColor = primary
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // ── Stock Status Tabs ───────────────────────────────────
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(surfaceContainerLowest, RoundedCornerShape(12.dp))
+                        .border(1.dp, outlineVariant, RoundedCornerShape(12.dp))
+                        .padding(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    val tabs = listOf(
+                        "In Stock (${inStockProducts.size})",
+                        "Low Stock (${lowStockProducts.size})",
+                        "Out of Stock (${outOfStockProducts.size})"
+                    )
+                    tabs.forEachIndexed { idx, label ->
+                        val isSelected = selectedTab == idx
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (isSelected) primaryContainer else Color.Transparent)
+                                .clickable { selectedTab = idx }
+                                .padding(vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                label,
+                                fontSize = 11.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                color = if (isSelected) Color.White else onSurfaceVariant,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // ── Product Cards Grid ──────────────────────────────────
+                if (displayedProducts.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(Icons.Default.ShoppingCart, contentDescription = null, tint = outlineVariant, modifier = Modifier.size(48.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text("No products in this category", color = onSurfaceVariant, fontSize = 14.sp)
+                        }
+                    }
+                } else {
+                    displayedProducts.forEach { product ->
+                        ProductInventoryCard(
+                            product = product,
+                            onEditClick = {
+                                editingProduct = product
+                                editStockText = product.stockCount.toString()
+                                editPriceText = product.price.toString()
+                                showEditDialog = true
+                            },
+                            primary = primary,
+                            primaryContainer = primaryContainer,
+                            surfaceContainerLowest = surfaceContainerLowest,
+                            outlineVariant = outlineVariant,
+                            tertiaryContainer = tertiaryContainer,
+                            secondaryContainer = secondaryContainer,
+                            errorColor = errorColor
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProductInventoryCard(
+    product: ProductEntity,
+    onEditClick: () -> Unit,
+    primary: Color,
+    primaryContainer: Color,
+    surfaceContainerLowest: Color,
+    outlineVariant: Color,
+    tertiaryContainer: Color,
+    secondaryContainer: Color,
+    errorColor: Color
+) {
+    val stockStatus = when {
+        product.stockCount == 0 -> Triple("Out of Stock", errorColor, errorColor.copy(alpha = 0.1f))
+        product.stockCount <= 5 -> Triple("Low: ${product.stockCount} left", secondaryContainer, secondaryContainer.copy(alpha = 0.1f))
+        else -> Triple("${product.stockCount} in stock", tertiaryContainer, tertiaryContainer.copy(alpha = 0.1f))
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = surfaceContainerLowest),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(14.dp),
+                horizontalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                // Product image
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFE5EEFF)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (product.photos.isNotEmpty()) {
+                        androidx.compose.foundation.Image(
+                            painter = rememberAsyncImagePainter(
+                                ImageRequest.Builder(LocalContext.current)
+                                    .data(product.photos.first())
+                                    .crossfade(true)
+                                    .build()
+                            ),
+                            contentDescription = product.name,
+                            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(12.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Icon(Icons.Default.Favorite, contentDescription = null, tint = primary.copy(alpha = 0.5f), modifier = Modifier.size(32.dp))
+                    }
+                    // Best seller badge
+                    if (product.stockCount > 20) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .padding(4.dp)
+                                .background(secondaryContainer, RoundedCornerShape(4.dp))
+                                .padding(horizontal = 4.dp, vertical = 2.dp)
+                        ) {
+                            Text("Best", fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        }
+                    }
+                }
+                // Product info
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(product.name, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = Color(0xFF0B1C30), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(product.brand, fontSize = 11.sp, color = Color(0xFF434655))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("₹${product.price.toInt()}", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = primary)
+                        if (product.mrp > product.price) {
+                            Text("₹${product.mrp.toInt()}", fontSize = 13.sp, color = Color(0xFF737686), style = androidx.compose.ui.text.TextStyle(textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough))
+                        }
+                    }
+                }
+            }
+            // Footer with stock + edit button
+            HorizontalDivider(color = outlineVariant.copy(alpha = 0.5f))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFFF8F9FF))
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Box(modifier = Modifier.size(8.dp).background(stockStatus.first.let { if (product.stockCount == 0) errorColor else if (product.stockCount <= 5) secondaryContainer else tertiaryContainer }, CircleShape))
+                    Text(stockStatus.first, fontSize = 12.sp, color = stockStatus.second, fontWeight = FontWeight.SemiBold)
+                }
+                Button(
+                    onClick = onEditClick,
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDBE1FF)),
+                    modifier = Modifier.height(32.dp)
+                ) {
+                    Icon(Icons.Default.Edit, contentDescription = null, tint = primary, modifier = Modifier.size(14.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(if (product.stockCount == 0) "Restock" else "Quick Edit", fontSize = 12.sp, color = primary, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
+}
+
+
+// ==========================================
+// SCREEN: SUPER ADMIN USER MANAGEMENT
+// Based on Stitch design: User Management - Super Admin
+// ==========================================
+@Composable
+fun SuperAdminUsersScreen(viewModel: PawsViewModel) {
+    val shops by viewModel.shops.collectAsState()
+    val pendingShops by viewModel.pendingShops.collectAsState()
+    val pendingCaptains by viewModel.pendingCaptains.collectAsState()
+    val scope = rememberCoroutineScope()
+
+    var searchQuery by remember { mutableStateOf("") }
+    var selectedRole by remember { mutableStateOf(0) } // 0=All, 1=Consumers, 2=Merchants, 3=Captains
+    var selectedUser by remember { mutableStateOf<ShopEntity?>(null) }
+    var showSuspendDialog by remember { mutableStateOf(false) }
+
+    // Color tokens
+    val primary = Color(0xFF004AC6)
+    val primaryContainer = Color(0xFF2563EB)
+    val onPrimary = Color.White
+    val surface = Color(0xFFF8F9FF)
+    val surfaceContainerLowest = Color.White
+    val surfaceContainer = Color(0xFFE5EEFF)
+    val surfaceContainerLow = Color(0xFFEFF4FF)
+    val onSurface = Color(0xFF0B1C30)
+    val onSurfaceVariant = Color(0xFF434655)
+    val outlineVariant = Color(0xFFC3C6D7)
+    val tertiaryContainer = Color(0xFF007D55)
+    val secondaryContainer = Color(0xFFFEA619)
+    val errorColor = Color(0xFFBA1A1A)
+
+    // Build a combined user-like list from shops + captains for display
+    val merchantUsers = remember(shops) { shops }
+    val captainUsers = remember(pendingCaptains) { pendingCaptains }
+
+    val displayedShops = remember(merchantUsers, searchQuery) {
+        if (searchQuery.isBlank()) merchantUsers
+        else merchantUsers.filter { it.name.contains(searchQuery, ignoreCase = true) || it.address.contains(searchQuery, ignoreCase = true) }
+    }
+
+    if (showSuspendDialog && selectedUser != null) {
+        AlertDialog(
+            onDismissRequest = { showSuspendDialog = false },
+            icon = { Icon(Icons.Default.Warning, contentDescription = null, tint = errorColor) },
+            title = { Text("Suspend Account?", fontWeight = FontWeight.Bold) },
+            text = { Text("This will temporarily disable ${selectedUser!!.name}'s access to the PawsApp platform. They will not be able to accept orders or serve customers.") },
+            confirmButton = {
+                Button(
+                    onClick = { showSuspendDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = errorColor)
+                ) { Text("Suspend", color = Color.White) }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showSuspendDialog = false }) { Text("Cancel") }
+            }
+        )
+    }
+
+    Scaffold(
+        containerColor = surface,
+        bottomBar = {
+            NavigationBar(containerColor = surfaceContainerLowest, tonalElevation = 4.dp) {
+                NavigationBarItem(
+                    selected = false,
+                    onClick = { viewModel.navigateTo(Screen.SuperAdmin) },
+                    icon = { Icon(Icons.Default.LocationOn, contentDescription = "Governance") },
+                    label = { Text("Governance", fontSize = 10.sp) }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = { viewModel.navigateTo(Screen.SuperAdmin) },
+                    icon = { Icon(Icons.Default.Info, contentDescription = "Analytics") },
+                    label = { Text("Analytics", fontSize = 10.sp) }
+                )
+                NavigationBarItem(
+                    selected = true,
+                    onClick = { },
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Users") },
+                    label = { Text("Users", fontSize = 10.sp) }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = { viewModel.navigateTo(Screen.SuperAdmin) },
+                    icon = { Icon(Icons.Default.Menu, contentDescription = "Catalog") },
+                    label = { Text("Catalog", fontSize = 10.sp) }
+                )
+            }
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            // ── Top App Bar ─────────────────────────────────────────────
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(surfaceContainerLowest)
+                    .padding(horizontal = 20.dp, vertical = 14.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    IconButton(onClick = { viewModel.navigateTo(Screen.SuperAdmin) }, modifier = Modifier.size(36.dp)) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = primary)
+                    }
+                    Column {
+                        Text("PawsApp Central Governance", fontWeight = FontWeight.Black, fontSize = 16.sp, color = primary)
+                        Text("User Management", fontSize = 11.sp, color = onSurfaceVariant)
+                    }
+                }
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .background(primaryContainer, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("SA", color = onPrimary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                }
+            }
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // ── Page Header ─────────────────────────────────────────
+                item {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text("User Management", fontWeight = FontWeight.Black, fontSize = 22.sp, color = onSurface)
+                    Text("Manage Consumers, Merchants, and Captains across the platform.", fontSize = 13.sp, color = onSurfaceVariant)
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
+                // ── Search + Bulk Actions bar ────────────────────────────
+                item {
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        placeholder = { Text("Search by name, email, ID...", fontSize = 13.sp) },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = onSurfaceVariant) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedBorderColor = outlineVariant,
+                            focusedBorderColor = primary
+                        )
+                    )
+                }
+
+                // ── Role Filter Tabs ─────────────────────────────────────
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(surfaceContainerLowest, RoundedCornerShape(12.dp))
+                            .border(1.dp, outlineVariant, RoundedCornerShape(12.dp))
+                            .padding(4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        listOf("All Users", "Consumers", "Merchants", "Captains").forEachIndexed { idx, label ->
+                            val isSelected = selectedRole == idx
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (isSelected) surfaceContainerLowest else Color.Transparent)
+                                    .border(if (isSelected) 1.dp else 0.dp, if (isSelected) outlineVariant else Color.Transparent, RoundedCornerShape(8.dp))
+                                    .clickable { selectedRole = idx }
+                                    .padding(vertical = 8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    label,
+                                    fontSize = 11.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (isSelected) primary else onSurfaceVariant,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // ── Merchant Queue section header ─────────────────────────
+                item {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Merchant Approvals", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = onSurface)
+                        if (pendingShops.isNotEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .background(errorColor, CircleShape)
+                                    .padding(horizontal = 8.dp, vertical = 3.dp)
+                            ) {
+                                Text("${pendingShops.size} pending", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+
+                // Pending shops approval cards
+                if (pendingShops.isEmpty()) {
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = surfaceContainerLowest),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Box(modifier = Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+                                Text("No pending shop approvals ✅", color = onSurfaceVariant, fontSize = 13.sp, textAlign = TextAlign.Center)
+                            }
+                        }
+                    }
+                } else {
+                    items(pendingShops) { shop ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(14.dp),
+                            colors = CardDefaults.cardColors(containerColor = surfaceContainerLowest),
+                            border = BorderStroke(1.dp, outlineVariant),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(14.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.weight(1f)) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(48.dp)
+                                            .background(surfaceContainer, RoundedCornerShape(10.dp)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(Icons.Default.Home, contentDescription = null, tint = primary, modifier = Modifier.size(24.dp))
+                                    }
+                                    Column {
+                                        Text(shop.name, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = onSurface)
+                                        Text("${shop.locality} • ${shop.address}", fontSize = 11.sp, color = onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                    }
+                                }
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    OutlinedButton(
+                                        onClick = {},
+                                        shape = RoundedCornerShape(8.dp),
+                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                                        modifier = Modifier.height(34.dp)
+                                    ) { Text("Review", fontSize = 12.sp) }
+                                    Button(
+                                        onClick = { scope.launch { viewModel.approveShop(shop.id) } },
+                                        shape = RoundedCornerShape(8.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = primary),
+                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                                        modifier = Modifier.height(34.dp)
+                                    ) { Text("Approve", fontSize = 12.sp, color = onPrimary) }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // ── Active Merchant Accounts ──────────────────────────────
+                item {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Text("Active Merchants", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = onSurface)
+                        Text("${displayedShops.size} total", fontSize = 12.sp, color = onSurfaceVariant)
+                    }
+                }
+
+                // User list table
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = CardDefaults.cardColors(containerColor = surfaceContainerLowest),
+                        border = BorderStroke(1.dp, outlineVariant),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                    ) {
+                        Column {
+                            // Table header
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(surfaceContainer)
+                                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Merchant Info", fontSize = 11.sp, color = onSurfaceVariant, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1.5f))
+                                Text("City", fontSize = 11.sp, color = onSurfaceVariant, fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.8f))
+                                Text("Status", fontSize = 11.sp, color = onSurfaceVariant, fontWeight = FontWeight.Bold, textAlign = TextAlign.End, modifier = Modifier.weight(0.8f))
+                            }
+                            HorizontalDivider(color = outlineVariant.copy(alpha = 0.5f))
+
+                            if (displayedShops.isEmpty()) {
+                                Box(modifier = Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+                                    Text("No merchants found", color = onSurfaceVariant, fontSize = 13.sp)
+                                }
+                            } else {
+                                displayedShops.forEach { shop ->
+                                    val isSelected = selectedUser?.id == shop.id
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .background(if (isSelected) primary.copy(alpha = 0.06f) else Color.Transparent)
+                                            .clickable { selectedUser = if (isSelected) null else shop }
+                                            .padding(horizontal = 14.dp, vertical = 12.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.weight(1.5f)) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(36.dp)
+                                                    .background(secondaryContainer.copy(alpha = 0.2f), CircleShape)
+                                                    .border(1.dp, outlineVariant, CircleShape),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    shop.name.take(2).uppercase(),
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 11.sp,
+                                                    color = Color(0xFF855300)
+                                                )
+                                            }
+                                            Column {
+                                                Text(shop.name, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                                Text(shop.address, fontSize = 11.sp, color = onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                            }
+                                        }
+                                        Text(shop.locality, fontSize = 11.sp, color = onSurfaceVariant, modifier = Modifier.weight(0.8f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                        Box(
+                                            modifier = Modifier.weight(0.8f),
+                                            contentAlignment = Alignment.CenterEnd
+                                        ) {
+                                            val statusColor = if (shop.isActive) tertiaryContainer else errorColor
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                                modifier = Modifier
+                                                    .background(statusColor.copy(alpha = 0.1f), RoundedCornerShape(6.dp))
+                                                    .border(1.dp, statusColor.copy(alpha = 0.2f), RoundedCornerShape(6.dp))
+                                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                            ) {
+                                                Box(modifier = Modifier.size(6.dp).background(statusColor, CircleShape))
+                                                Text(if (shop.isActive) "Active" else "Inactive", fontSize = 10.sp, color = statusColor, fontWeight = FontWeight.Bold)
+                                            }
+                                        }
+                                    }
+                                    if (shop.id != displayedShops.last().id) {
+                                        HorizontalDivider(color = outlineVariant.copy(alpha = 0.4f), modifier = Modifier.padding(horizontal = 14.dp))
+                                    }
+                                }
+                            }
+
+                            // Pagination footer
+                            HorizontalDivider(color = outlineVariant.copy(alpha = 0.5f))
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("Showing ${displayedShops.size} of ${displayedShops.size} merchants", fontSize = 11.sp, color = onSurfaceVariant)
+                                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    OutlinedButton(onClick = {}, enabled = false, contentPadding = PaddingValues(all = 6.dp), modifier = Modifier.size(30.dp)) {
+                                        Icon(Icons.Default.ArrowBack, contentDescription = "Prev", modifier = Modifier.size(16.dp))
+                                    }
+                                    OutlinedButton(onClick = {}, contentPadding = PaddingValues(all = 6.dp), modifier = Modifier.size(30.dp)) {
+                                        Icon(Icons.Default.ArrowForward, contentDescription = "Next", modifier = Modifier.size(16.dp))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // ── Selected User Detail Panel ────────────────────────────
+                if (selectedUser != null) {
+                    item {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text("Account Details", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = onSurface)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = surfaceContainerLowest),
+                            border = BorderStroke(1.dp, outlineVariant),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                        ) {
+                            Column {
+                                // Banner
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(80.dp)
+                                        .background(
+                                            Brush.horizontalGradient(listOf(Color(0xFF2563EB).copy(alpha = 0.3f), Color(0xFFE5EEFF)))
+                                        )
+                                ) {
+                                    IconButton(onClick = {}, modifier = Modifier.align(Alignment.TopEnd).padding(8.dp).size(30.dp)) {
+                                        Icon(Icons.Default.MoreVert, contentDescription = "More", tint = onSurfaceVariant, modifier = Modifier.size(18.dp))
+                                    }
+                                }
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 20.dp)
+                                        .offset(y = (-28).dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(56.dp)
+                                            .background(secondaryContainer.copy(alpha = 0.2f), CircleShape)
+                                            .border(3.dp, Color.White, CircleShape),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(selectedUser!!.name.take(2).uppercase(), fontWeight = FontWeight.Black, fontSize = 18.sp, color = Color(0xFF855300))
+                                    }
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    Text(selectedUser!!.name, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = onSurface)
+                                    Text(selectedUser!!.address, fontSize = 12.sp, color = onSurfaceVariant, textAlign = TextAlign.Center, maxLines = 2)
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        Box(
+                                            modifier = Modifier
+                                                .background(surfaceContainer, RoundedCornerShape(20.dp))
+                                                .border(1.dp, outlineVariant, RoundedCornerShape(20.dp))
+                                                .padding(horizontal = 12.dp, vertical = 4.dp)
+                                        ) { Text("Merchant", fontSize = 11.sp, color = onSurfaceVariant, fontWeight = FontWeight.Bold) }
+                                        Box(
+                                            modifier = Modifier
+                                                .background(tertiaryContainer.copy(alpha = 0.12f), RoundedCornerShape(20.dp))
+                                                .border(1.dp, tertiaryContainer.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
+                                                .padding(horizontal = 12.dp, vertical = 4.dp)
+                                        ) { Text(if (selectedUser!!.isActive) "Active" else "Inactive", fontSize = 11.sp, color = tertiaryContainer, fontWeight = FontWeight.Bold) }
+                                    }
+
+                                    // Mini stats grid
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                        Card(
+                                            modifier = Modifier.weight(1f),
+                                            colors = CardDefaults.cardColors(containerColor = surfaceContainerLow),
+                                            shape = RoundedCornerShape(12.dp)
+                                        ) {
+                                            Column(modifier = Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                                Icon(Icons.Default.Home, contentDescription = null, tint = primary, modifier = Modifier.size(20.dp))
+                                                Spacer(modifier = Modifier.height(4.dp))
+                                                Text(if (selectedUser!!.isOpen) "Open" else "Closed", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = onSurface)
+                                                Text("Shop Status", fontSize = 10.sp, color = onSurfaceVariant)
+                                            }
+                                        }
+                                        Card(
+                                            modifier = Modifier.weight(1f),
+                                            colors = CardDefaults.cardColors(containerColor = surfaceContainerLow),
+                                            shape = RoundedCornerShape(12.dp)
+                                        ) {
+                                            Column(modifier = Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                                Icon(Icons.Default.Star, contentDescription = null, tint = secondaryContainer, modifier = Modifier.size(20.dp))
+                                                Spacer(modifier = Modifier.height(4.dp))
+                                                Text("${selectedUser!!.rating}", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = onSurface)
+                                                Text("Rating", fontSize = 10.sp, color = onSurfaceVariant)
+                                            }
+                                        }
+                                    }
+
+                                    // Account details
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    HorizontalDivider(color = outlineVariant.copy(alpha = 0.5f), modifier = Modifier.padding(horizontal = 4.dp))
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                            Text("Phone", color = onSurfaceVariant, fontSize = 13.sp)
+                                            Text(selectedUser!!.phone.ifBlank { "—" }, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = onSurface)
+                                        }
+                                        HorizontalDivider(color = outlineVariant.copy(alpha = 0.3f))
+                                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                            Text("Locality", color = onSurfaceVariant, fontSize = 13.sp)
+                                            Text(selectedUser!!.locality, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = onSurface)
+                                        }
+                                        HorizontalDivider(color = outlineVariant.copy(alpha = 0.3f))
+                                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                            Text("Verified", color = onSurfaceVariant, fontSize = 13.sp)
+                                            Text(if (selectedUser!!.isVerified) "✅ Yes" else "❌ No", fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = onSurface)
+                                        }
+                                    }
+
+                                    // Suspend toggle
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    HorizontalDivider(color = outlineVariant.copy(alpha = 0.5f), modifier = Modifier.padding(horizontal = 4.dp))
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .background(errorColor.copy(alpha = 0.04f), RoundedCornerShape(12.dp))
+                                            .border(1.dp, errorColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
+                                            .padding(14.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text("Suspend Account", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = errorColor)
+                                            Text("Temporarily disable platform access.", fontSize = 11.sp, color = onSurfaceVariant)
+                                        }
+                                        Switch(
+                                            checked = !selectedUser!!.isActive,
+                                            onCheckedChange = { showSuspendDialog = it },
+                                            colors = SwitchDefaults.colors(
+                                                checkedThumbColor = Color.White,
+                                                checkedTrackColor = errorColor,
+                                                uncheckedThumbColor = Color.White,
+                                                uncheckedTrackColor = Color(0xFFC3C6D7)
+                                            )
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Captain queue section
+                if (pendingCaptains.isNotEmpty()) {
+                    item {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                            Text("Captain Approvals", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = onSurface)
+                            Box(modifier = Modifier.background(secondaryContainer, CircleShape).padding(horizontal = 8.dp, vertical = 3.dp)) {
+                                Text("${pendingCaptains.size} pending", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                    items(pendingCaptains) { captain ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(14.dp),
+                            colors = CardDefaults.cardColors(containerColor = surfaceContainerLowest),
+                            border = BorderStroke(1.dp, outlineVariant)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(14.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.weight(1f)) {
+                                    Box(
+                                        modifier = Modifier.size(44.dp).background(primary.copy(alpha = 0.1f), CircleShape).border(1.dp, outlineVariant, CircleShape),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(Icons.Default.ShoppingCart, contentDescription = null, tint = primary, modifier = Modifier.size(22.dp))
+                                    }
+                                    Column {
+                                        Text(captain.fullName, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = onSurface)
+                                        Text("🛵 ${captain.vehicleNumber}", fontSize = 11.sp, color = onSurfaceVariant)
+                                    }
+                                }
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    OutlinedButton(onClick = {}, shape = RoundedCornerShape(8.dp), contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp), modifier = Modifier.height(34.dp)) {
+                                        Text("Review", fontSize = 12.sp)
+                                    }
+                                    Button(
+                                        onClick = { scope.launch { viewModel.approveCaptain(captain.id) } },
+                                        shape = RoundedCornerShape(8.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = primary),
+                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                                        modifier = Modifier.height(34.dp)
+                                    ) { Text("Approve", fontSize = 12.sp, color = Color.White) }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                item { Spacer(modifier = Modifier.height(16.dp)) }
+            }
+        }
+    }
+}
+
+fun getMockProductsForCategory(categoryId: String): List<ProductEntity> {
+    return when (categoryId) {
+        "cat_food" -> listOf(
+            ProductEntity(
+                id = "p_rc_mini_adult",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_food",
+                name = "Mini Adult Dry Dog Food",
+                description = "Complete feed for adult small breed dogs (weight between 1 and 10 kg) - Over 10 months old.",
+                price = 299.0,
+                mrp = 365.0,
+                photos = listOf("https://images.unsplash.com/photo-1589924691106-073b1381cb35?w=300"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Dry Food", "Dog", "18% OFF"),
+                brand = "Royal Canin",
+                lifeStage = "Adult",
+                stockCount = 15
+            ),
+            ProductEntity(
+                id = "p_pedigree_chicken_veg",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_food",
+                name = "Adult Dry Dog Food, Chicken & Veg",
+                description = "Pedigree complete and balanced dog food for adult dogs, with the goodness of chicken and vegetables.",
+                price = 650.0,
+                mrp = 650.0,
+                photos = listOf("https://images.unsplash.com/photo-1589924691106-073b1381cb35?w=300"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Dry Food", "Dog", "BEST SELLER"),
+                brand = "Pedigree",
+                lifeStage = "Adult",
+                stockCount = 20
+            ),
+            ProductEntity(
+                id = "p_drools_chicken_egg",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_food",
+                name = "Chicken and Egg Puppy Dry Food",
+                description = "Drools Chicken and Egg Puppy Dry Dog Food is loaded with essential nutrients to support growth.",
+                price = 320.0,
+                mrp = 320.0,
+                photos = listOf("https://images.unsplash.com/photo-1589924691106-073b1381cb35?w=300"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Dry Food", "Dog"),
+                brand = "Drools",
+                lifeStage = "Puppy",
+                stockCount = 12
+            ),
+            ProductEntity(
+                id = "p_orijen_grain_free",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_food",
+                name = "Original Grain-Free Dry Dog Food",
+                description = "Orijen Original features grain-free kibble prepared with fresh whole chicken, turkey, and wild-caught fish.",
+                price = 1899.0,
+                mrp = 2110.0,
+                photos = listOf("https://images.unsplash.com/photo-1589924691106-073b1381cb35?w=300"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Dry Food", "Dog", "10% OFF"),
+                brand = "Orijen",
+                lifeStage = "Adult",
+                stockCount = 8
+            ),
+            ProductEntity(
+                id = "p_whiskas_dry",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_food",
+                name = "Whiskas Premium Cat Kibble (Mackerel)",
+                description = "Crunchy pockets filled with mackerel and premium sea protein, customized for adult cats.",
+                price = 399.0,
+                mrp = 490.0,
+                photos = listOf("https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Dry Food", "Cat"),
+                brand = "Royal Canin",
+                lifeStage = "Adult",
+                stockCount = 30
+            ),
+            ProductEntity(
+                id = "p_rc_wet_cat",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_food",
+                name = "Royal Canin Kitten Wet Gravy Food",
+                description = "Easy chewing chunks in delicious gravy sauce formulated for kittens.",
+                price = 90.0,
+                mrp = 100.0,
+                photos = listOf("https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Wet Food", "Cat"),
+                brand = "Royal Canin",
+                lifeStage = "Puppy",
+                stockCount = 25
+            ),
+            ProductEntity(
+                id = "p_oxbow_rabbit",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_food",
+                name = "Timothy Gold Premium Rabbit Feed",
+                description = "Premium high-fiber Timothy hay pellets specifically designed for active adult rabbits.",
+                price = 450.0,
+                mrp = 550.0,
+                photos = listOf("https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=300"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Dry Food", "Small Pet"),
+                brand = "Orijen",
+                lifeStage = "Adult",
+                stockCount = 18
+            ),
+            ProductEntity(
+                id = "p_tetra_fish",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_food",
+                name = "TetraBits Complete Fish Food",
+                description = "Nutritially complete slow-sinking granules designed for optimal digestion and health in aquarium fish.",
+                price = 250.0,
+                mrp = 300.0,
+                photos = listOf("https://images.unsplash.com/photo-1522850959076-58d7c244737a?w=300"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Dry Food", "Fish"),
+                brand = "Drools",
+                lifeStage = "All Ages",
+                stockCount = 40
+            )
+        )
+        "cat_treats" -> listOf(
+            ProductEntity(
+                id = "p_orijen_regional_red_biscuits",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_treats",
+                name = "Orijen High-Protein Regional Red Biscuits",
+                description = "High-protein regional red baked dog biscuits made with beef, wild boar, and lamb.",
+                price = 450.0,
+                mrp = 550.0,
+                photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuBH7YeUXJ96VO2zzK5bp1QXpwRu7YNTyiRCVVT0-e83V1rLkfGijcJE3web3Ogc1WU6iBJZtXAkuAL8k4Bm9uGcleOi9M-fH1VMzQSxIJsqSZTrDxe9v97xyUhq_MgJnTbbElcO3LQ4DfUzcQiTyCCrEaJk0r6B9IadZLsmgBmpbgKrNTil1Zkbp3yEvYyj-DI6xS8aZBhoLIldS6WKkLXZGvRVnIiUnisirs3llTO8796kRpVGdOX0iORj5iTiV18g0n0m5RHqWMs"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Biscuits", "Dog", "18% OFF", "Bestseller"),
+                brand = "Orijen",
+                lifeStage = "Adult",
+                stockCount = 20
+            ),
+            ProductEntity(
+                id = "p_pedigree_dentastix",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_treats",
+                name = "Pedigree Dentastix Daily Oral Care Chews",
+                description = "Daily oral care chews clinically proven to reduce tartar build-up in dogs.",
+                price = 180.0,
+                mrp = 200.0,
+                photos = listOf("https://lh3.googleusercontent.com/aida/AP1WRLu2j9XUv_Re8vRJWJIq3otI7IoX2NgLk7u6dz-Q8YcKZM56ZhlEEG2hhVjR_8a8TLk1hk-4Tl9pMOlZyJGEzTBYJn_bkhNE9uLeijZ6EWFbm_jLi4gI6TBl8Gw26ZsyNvJfA59F0JWB29hKlzMIleF_-IFt7EarCxyfY7nXTlogfRnnfkUY63uBoXugR7m67gBg3tiS5d5irmOdJvPRSbNWfAdde8rkOop9HKp5a_RfrM4tCAPcR1ICVDY"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Dental", "Dog", "10% OFF", "Sale"),
+                brand = "Pedigree",
+                lifeStage = "Adult",
+                stockCount = 35
+            ),
+            ProductEntity(
+                id = "p_hills_mobility_treats",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_treats",
+                name = "Healthy Mobility Baked Dog Treats",
+                description = "Healthy mobility dog treats formulated for active dogs supporting joint care.",
+                price = 350.0,
+                mrp = 400.0,
+                photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuBSBZQjs5eKzrCGdFsmvuYlxWl5wP38L9RoLUNkdYcLxeYcPQhw9xhzDCgy8eNSxczcabhKSFAxAwghevpBto4jhGekPFtFllV4AjoH8cRZ1qzH12MOi9keSmXEpKzBSlLuz-plmZZAAj5zem-3KwA2WqyvmB33AIXo_Ap7H8LrjKVYN0Y1sfXEBBZlDQ0ewf4kRJMQ6EZtA9uH2JSCUcoKtG4sb3hKuaxx5W9n1Vljae2g4qoyNYEGMCL7FXlHqffddxqNv1OW2QA"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Natural", "Dog", "12% OFF"),
+                brand = "Hill's Science Diet",
+                lifeStage = "All Ages",
+                stockCount = 18
+            ),
+            ProductEntity(
+                id = "p_barking_heads_treats",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_treats",
+                name = "Meaty Treats Chicken & Herb",
+                description = "Tasty grain-free dog treats made with 100% natural ingredients.",
+                price = 299.0,
+                mrp = 299.0,
+                photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuD6heK9zKhK9CQnrHlcVs0nsFrVcG4dVag5Q3qWWSQjpzX3FxCe2Ku5sDJKbVa0oAmNOIoQqDrtm59DRTjM_tSof16oJkLH09oeS3EZFm3jUl8no1S3gPGM281DYtdwtCfXDhoH29dOf4FQXco69KowvXGlq-rByr1aq9iyV5xEPjtdlrOY0w0Qbb5_Mj1ONvaA7FQ-AUDznmnUJRpr5zna1C6AGoCiQfxrMU05fLa5kgTefywfLpxkezwylHDK6inWnigkEG0dfYc"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Natural", "Dog"),
+                brand = "Barking Heads",
+                lifeStage = "Adult",
+                stockCount = 25
+            )
+        )
+        "cat_toys" -> listOf(
+            ProductEntity(
+                id = "p_kong_classic",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_toys",
+                name = "Classic Rubber Toy",
+                description = "Ultra-durable natural rubber dog toy for mental stimulation and chewing.",
+                price = 899.0,
+                mrp = 1100.0,
+                photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuAR1ny6pOdEO4AE9-38Cdg9tkkxG-q-nWRhlK8Zl8s8Vy266yKxwmpxGQc_z55xpYW-wnCeJbQhI2rSYWOq38XfQh2AoAHJ13neVHdUg-Ta8PdQZ2XgDVdpzSsx3XtguKLcIlxaxW3VGYCyzD3jL2grKMWrzrAjIndKP2wpWBuViPApnzk96o5EveidjmZysnCVN-1yNpqvw18LalZLXT3LMu8M2xkgZP0uI-Xz8ydKsCRXFnbx7DibVEQTO32OpEFfnWgznNQAe80"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Chew", "Dog", "10% OFF"),
+                brand = "Kong",
+                lifeStage = "All Ages",
+                stockCount = 30
+            ),
+            ProductEntity(
+                id = "p_outward_hound_brick",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_toys",
+                name = "Nina Ottosson Dog Brick Puzzle",
+                description = "Level 2 interactive dog puzzle toy designed for mental enrichment and play.",
+                price = 2450.0,
+                mrp = 2450.0,
+                photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuCrI6IU4jfFLEkB-dE1GVpX9pd6jA6Wa7f9R6OIPtc1qu2jmvi9HGA5LzjBIFoHL4clmQoNeQwtlY1jhObRMzj-J2dl4A52mC8V_k1YNpV74NWCd8fVrDhjrb5N9klLry1m4NpsDqi510mB1T0kAt_XmTFuCTOil7oJ-cOdYWKOU4J13n6M4I7t9ihiZNAb02D7c1tNCU2vsb4QabPWe1U910LpWPlBTqpMcwEjQ-QUsdE9qlQUOl2tyV_OuqCNtPMRTe4Y1Z8ytPo"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Interactive", "Dog"),
+                brand = "Outward Hound",
+                lifeStage = "All Ages",
+                stockCount = 10
+            ),
+            ProductEntity(
+                id = "p_chuckit_ultra_ball",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_toys",
+                name = "Ultra Ball Dog Toy",
+                description = "Chuckit! high-bounce durable rubber ball for fetch and active outdoor play.",
+                price = 650.0,
+                mrp = 650.0,
+                photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuA-uJ6kCnWNSEz9inTIeo-DaO7_QJZroCBWtIv_4GHZ5MTwoVLIwVb2opWaSfRjqBV4yDpPXb3AZb5ZltALZNQNPe4drmxoj-NE1nktRdf6LR-QrEPkRjqQpn4IpzldkE-CVj0ZYgtstN0hCelB0Pm2yMKO4HbFWuRnrBLfMRbltqmW8cLP13r61EFsfTqJgZSvQ0S05m0_JyiaQtHu-hRoHpyUtCioASRjY1xjE6ojR6QqvOaZMIo7aIOQHL8vqrYvBn_lzqrcw_k"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Fetch", "Dog"),
+                brand = "Chuckit!",
+                lifeStage = "All Ages",
+                stockCount = 24
+            ),
+            ProductEntity(
+                id = "p_heavy_duty_rope",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_toys",
+                name = "Heavy Duty Tug Rope",
+                description = "Premium thick braided multi-color cotton rope with double knots for tug-of-war.",
+                price = 499.0,
+                mrp = 499.0,
+                photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuA1PsRjnPY40VYykkQcgfyYWkek5kEYR_kn22iVdoNTrOHJYk-jSD0YxPW9zzxO3LpQTla9MdVgFI-MpWoTwMnB_w3Yx2Dh9U7zQd4I__cxx-B2z3vkmTfzzPwWIRaG_SJ6cgE6sQXaW-iHyIuDQ3BgfKJJXnXDZ-NLJgkWmOjaMtiiSSpLmMtdH_BV-Po1EAngH31x4CtiXI2H1DWdgVC6oUi5nP6fZyXvWIDSIZEh_C4pwCMvb4-S9_tAr35rrNhBvXxy0-HEUNI"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Tug", "Dog", "Best Seller"),
+                brand = "Pawsome",
+                lifeStage = "Adult",
+                stockCount = 15
+            )
+        )
+        "cat_travel" -> listOf(
+            ProductEntity(
+                id = "p_denim_harness",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_travel",
+                name = "Denim Blue Comfort Harness & Leash Set",
+                description = "Luxury styled woven denim blue harness with sturdy brass hardware and soft padded structure.",
+                price = 48.0,
+                mrp = 48.0,
+                photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuBqVfcoxARGwW9gaA7nx42d8FbDxWiCujm8_KKCckeRwBJyxAjoOZqQ3lJDuigUvz1EK56DrPoPLjbNoYvAUHEuLqv0aBLRKGD5bx6lX7Zwiwjd9OEv5XBHTgGBvS8Dq7O24CKxcUcTUEtbPhKyaDvXhZH26IXUsARdoOvP4JhO0hIz_2iR1GUHyJfueCMIa6ZYumUupFfnaMVzAfChSzE55_Qtxvk49WTaXUCQU0FpJv8gFkRfK850NMMnqbOufieHfe6TDzfpS0Q"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Harness", "Dog", "Best Seller"),
+                brand = "Luxury Pet Boutique",
+                lifeStage = "All Ages",
+                stockCount = 10
+            ),
+            ProductEntity(
+                id = "p_tactical_harness",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_travel",
+                name = "K9 Tactical Adventure Harness - Olive",
+                description = "Heavy-duty tactical vest with multiple accessory pockets and adjustment points for active dogs.",
+                price = 65.0,
+                mrp = 65.0,
+                photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuD-QHWp4QCk1VNmJdIzmfZ-85TGg8bbGE1NCCh4LsUdk7NkLsUfHuzv3XG0onZyoxqBSHd8MasEiQSG8moM6-Ose0FSf_m2Na6TgqJpDPuZJO18k4l_LWSfQ_33JR8Yi3UtxDZr0khnao8cXp8qB2ct-O161M5lFDRqU2oQPzN5yKT3YptErWZW0JnjsQQnnTzVds63EzQOBpEgEIpwquXR-UiLlqNd_l_NGDAi3h5_CEe0gf0s-vTyhS26_GkYbRLx4J6HCt_3PiE"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Harness", "Dog"),
+                brand = "Barking Heads Store",
+                lifeStage = "Adult",
+                stockCount = 12
+            ),
+            ProductEntity(
+                id = "p_leather_lead",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_travel",
+                name = "Classic Rolled Leather City Lead",
+                description = "Genuine rolled leather city lead with premium mahogany brown tint and solid brass hook.",
+                price = 32.0,
+                mrp = 32.0,
+                photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuBstmBxcbiDYtks9mq4NixOW-4D3L9VcAfquJWjfv1N0bCdho7p0KKgykp_qBcyTD0ENSGCyfIDfHQQH-gLSY8Kv-0v2MaS87Cs83aU9F4el_pyARk80ra1n2N_KxNkfpXizkatturIIYh8XSS28oOFnV4ePt4jX_kYYukkKH01CBX7aMlHG5MF_ddHTXG6wKRAVDyDvOfIh8ABrjnm0W_4SeeJcoKal0ugJu3MGoH5fSpdWNVoTPnc0aC4"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Leash", "Dog"),
+                brand = "LeatherCraft Pets",
+                lifeStage = "All Ages",
+                stockCount = 20
+            ),
+            ProductEntity(
+                id = "p_airline_carrier",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_travel",
+                name = "Airline Approved Comfort Carrier",
+                description = "Premium lightweight breathable mesh travel carrier with soft-sided frame.",
+                price = 89.0,
+                mrp = 110.0,
+                photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuC0ipHQmI817cbTajzccC0_zvXkOdt6EOuMCl0fb7FFbUUGuMiQw86twslM8WkqKkflWYagr5MNIOdxfCl4YbF_w03ZqK9wkbBh2W3v4lfLCt6l58UJQQoE_qcVNCn41DozEiDKPL43F6j4cybIp-dcVmVLjygtybnMIl1VUPRaWkEn2K5FquFRv7SRqwk7O0o48a7njmhUMbjH60v_gWsuDUjQ_UVzikekYi8R4qENil-hX7ZV4IwzYAKbCB4LOCYYtIpp-eRXdpA"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Carrier", "Cat", "Sale"),
+                brand = "JetSet Pets",
+                lifeStage = "All Ages",
+                stockCount = 8
+            )
+        )
+        "cat_furniture" -> listOf(
+            ProductEntity(
+                id = "p_ortho_lounger",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_furniture",
+                name = "Cloud Nine Orthopedic Lounger",
+                description = "Luxury orthopedic memory foam pet bed with removable cream sherpa top and grey base.",
+                price = 129.99,
+                mrp = 129.99,
+                photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuAyB22rbZoXa_TMwG1PEQTebwvY15P0IxP7v6TdhTCytfwZMgahnIef-ltbzHyLc_859V8B5Psd23oz7A9s8bSBmvfCPqBasyHBffdOkRPAxP9NvPH_pu4BzKT13fsIdR33FIlcOoXrfZ7cdUEMPQdN6rYxYtvXd9xBISfzj2aZ5-mVQ_WpQh7eb4G-GZwg-4swSJJf-HKfoZk7aXifTG1h6p-b0c3r3LMv3WzClpsDJGOEeVhCIqHh_FTY8RhpbCtjZMXZ41lMicM"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Beds", "Dog", "Best Seller"),
+                brand = "Pawsome Furniture",
+                lifeStage = "All Ages",
+                stockCount = 6
+            ),
+            ProductEntity(
+                id = "p_modern_crate",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_furniture",
+                name = "Mid-Century Modern Crate",
+                description = "Sophisticated indoor dog crate designed as furniture, with walnut wood top and black metal bars.",
+                price = 245.0,
+                mrp = 245.0,
+                photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuCXTaMdebKGAKtAnT0cEV4gXbtJVxJp-x0WhP9EZpn46KATHlUE_gQjtwHH121xm7uc_f1tso3uPRX7woaDW4HcgQ7wgyrhmR1iXytIx-b_lUu_diRbY1ae0huSkyCCUcWZEaFLEXWJm07kdOBAaANZ3K25fOARhpTLgiRWXP2IBObfzKtZQh0SMC2Y-4dWVbFzgjLB9wSnHBkyRhoCHI7L6GUr98L4eTfbMUcvGPziVUHRrxUsK5bvkOO6fPIyag_K45MK81ZZYe0"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Crates", "Dog"),
+                brand = "The Cozy Den",
+                lifeStage = "All Ages",
+                stockCount = 4
+            ),
+            ProductEntity(
+                id = "p_cat_tree",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_furniture",
+                name = "Scandi Minimalist Cat Tree",
+                description = "Birch wood architecturally clean 3-tier cat tree scratching post with felt pads.",
+                price = 189.0,
+                mrp = 220.0,
+                photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuDANZpzNndPE-rVda5l7w0EsRG9jdriO-kyH0RPe7HkiUuey3JzoINi3hZRsCiHBcRj05fSgtSah8ZTVwGxdhq4soYi2lJBTgbJLljinFCcZnJJGLVZSlo7CxiFhf-G2Ao7fYoYhfSGrurBcKYIDOCdiaw2Xmv2ryKNxUQ7X6YP3Fvdl62f_lbQZnKBsbXzYnfjZVvSTX-EB1UPCPURcdRqMSmqcjvdH9oX27krCGvl4bfZbkblpFvIql0dgeCSBobZ6IrEJ3aAtns"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Trees", "Cat", "Sale"),
+                brand = "Feline Fine Designs",
+                lifeStage = "All Ages",
+                stockCount = 7
+            ),
+            ProductEntity(
+                id = "p_velvet_donut",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_furniture",
+                name = "Royal Velvet Donut Bed",
+                description = "Upholstered round navy blue velvet pet donut lounger for royal sleep comfort.",
+                price = 75.50,
+                mrp = 75.50,
+                photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuCXnG9j1AnSA_q_kS_rzvrieaz-Tz0Bv5rvZ62mbtFF6j2ZfioOavFXmWUxEOtjCEiW0U823DiGseN9AS_14rdV8bBeCPBI2_EP75EOorHW0bZ8IileRfjvX3q3k-7rWTPhxldqgfldGzvHZZsOUk_UanXurbpU8_twp3rhl1wS7_NCb-ag2_UjTfjpKok60uuuqpmv0c04Fet2BvDCry4xFwL3w6pic3i29ZdaodjxuabsWI3oLrtAczVKQPvQJ0zq9esgLAf1_lg"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Loungers", "Dog"),
+                brand = "Pawsome Furniture",
+                lifeStage = "All Ages",
+                stockCount = 14
+            )
+        )
+        "cat_waste" -> listOf(
+            ProductEntity(
+                id = "p_earth_rated_bags",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_waste",
+                name = "Earth Rated Lavender Scented Poop Bags",
+                description = "Lavender scented degradable thick green dog poop bags with standard roll size.",
+                price = 12.99,
+                mrp = 12.99,
+                photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuAmWBhmnG8zVtMYSmDr9dsFp9M7d1fBUVpE8ZEjOJ4m8XFzJhctZztGQTo8qVeRZGlWTb2YIBkudkgUIAJ7SWTOCvdeMdQxT39gexF1mQQ9gDJDRUJE8LF1w5uFEvySdRCQyS7DHvbfBQDfIWBFPOkcWqL0ZT5HgH5ODLKS9plD86cz3v-9dm0TbdyMVHX7osl0yYnR4Sowdf6KX_VhjOWm21YceyrPq7cnjPvPtWy2bbZAPCUJqIa-7ZMO70KlqDuWcqXjkR8Kzew"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Bags", "Dog", "Best Seller"),
+                brand = "EcoPet Supplies",
+                lifeStage = "All Ages",
+                stockCount = 50
+            ),
+            ProductEntity(
+                id = "p_tofu_litter",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_waste",
+                name = "Premium Clumping Tofu Litter - 10lbs",
+                description = "Fast-clumping natural biodegradable eco-friendly clumping tofu cat litter.",
+                price = 24.50,
+                mrp = 24.50,
+                photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuBTzIR8bpIFcWjR2Lh0gfMechDQI_jhSsTBDnIospTf0-ab09IKr7cGiStYy9DiawVBEq16ADbH_RyF_2Dgbg8Dua9HyaH863mJWQ-AoKvyOK-DgauseXhTdeu4XRZO0ahfnsXsJMaB8RcwwIAG3nZLGoRW-SIr9TMH68eSe4FDMkav0vL2onMVJDclebkMZltVYYUdL78CqQU3fqyMlzChHafWTjiIYQ6kbDaRu6YPBWgTbSgdEoBMYQn1PKXW6s6K_iz0jluliHM"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Litter", "Cat"),
+                brand = "CleanPaws Hub",
+                lifeStage = "All Ages",
+                stockCount = 30
+            ),
+            ProductEntity(
+                id = "p_moderna_litterbox",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_waste",
+                name = "Moderna Top-Entry Litter Box",
+                description = "Spacious top entry litter box to prevent litter tracking and scattering.",
+                price = 45.0,
+                mrp = 52.99,
+                photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuAN4zDQO5H87AhGgUZyUTdyG2akkOm67ZzN0iMOCVTB-O91UY7BTd9BHkzq8G1oNps8NN8Pb9PTAUMAK30gQTZKiomZNjZiBzUqTdyJmtcgV6Fo04c1ZRBA3vi7vpG2jW9_VZQNRoLGAUMRI4z_gMFnQRGFsdUUtD62bO5VRLU3PdDiv1qeW_Lhq2C2hgkqsM4opEtKDytvmCt_YeTbUj97rzIpAJ-nXRThD9YHnIBMey3f1c-w7jGDcLO9XV-xGRtcRtN1K-MjZwQ"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Litter Box", "Cat", "Sale 15%"),
+                brand = "Feline Furnishings",
+                lifeStage = "All Ages",
+                stockCount = 5
+            ),
+            ProductEntity(
+                id = "p_enzyme_spray",
+                shopId = "shop_hyd_1",
+                categoryId = "cat_waste",
+                name = "Enzymatic Stain & Odour Eliminator Spray",
+                description = "High-efficiency natural enzymatic cleaning spray targeting organic pet stains and odour.",
+                price = 16.50,
+                mrp = 16.50,
+                photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuBE08T9Hz6NTH5n-IyVZv-EjObVVjdsoenmoIPbeSIWwdeUXNl2BJh_8fnHnGr6dDXdjotC4_S1_nNwuMPPwmLC05eWAmcPNDPOR8F_UjKrz_cDTuhM_zZ6P4cVNp0_um5Y8pKzjPEvZohN_X44gZPina_w1njKvhr5Vg7S52JzAPgsgEI2lSU_S9xK2ezNPTgOOkk0hEncpk-GRBCcO2a2q5gQj6mtpAH5CereunCfIK2uB55v7VuVX75G9_iexKID3qjcC0415XQ"),
+                inStock = true,
+                isActive = true,
+                tags = listOf("Cleaning", "Dog"),
+                brand = "FreshHome Pets",
+                lifeStage = "All Ages",
+                stockCount = 25
+            )
+        )
+        else -> emptyList()
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CatalogScreen(categoryId: String, viewModel: PawsViewModel) {
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val shops by viewModel.shops.collectAsState()
+    
+    // Dynamic settings based on categoryId
+    val isDollar = categoryId == "cat_travel" || categoryId == "cat_furniture" || categoryId == "cat_waste"
+    val currencySym = if (isDollar) "$" else "₹"
+    val catalogTitle = when (categoryId) {
+        "cat_food" -> "Food & Nutrition"
+        "cat_treats" -> "Treats & Chews"
+        "cat_toys" -> "Toys & Mental Enrichment"
+        "cat_travel" -> "Travel, Leashes & Apparel"
+        "cat_furniture" -> "Furniture & Sleep"
+        "cat_waste" -> "Waste Management & Litter"
+        else -> "Catalog"
+    }
+    val catalogSubtitle = when (categoryId) {
+        "cat_food" -> "Complete nutritional care."
+        "cat_treats" -> "Delicious chews."
+        "cat_toys" -> "Keep them active."
+        "cat_travel" -> "Premium gear for your next adventure."
+        "cat_furniture" -> "Create the perfect resting spot."
+        "cat_waste" -> "Keep it clean and fresh with premium supplies."
+        else -> "Premium products for your pets."
+    }
+    val searchPlaceholder = when (categoryId) {
+        "cat_food" -> "Search foods..."
+        "cat_treats" -> "Search treats..."
+        "cat_toys" -> "Search toys..."
+        "cat_travel" -> "Search travel gear..."
+        "cat_furniture" -> "Search furniture, beds, and more..."
+        "cat_waste" -> "Search products..."
+        else -> "Search catalog..."
+    }
+    val defaultChip = when (categoryId) {
+        "cat_food" -> "Dry Food"
+        "cat_treats" -> "All Treats"
+        "cat_toys" -> "All Toys"
+        "cat_travel" -> "All Gear"
+        "cat_furniture" -> "All"
+        else -> "All Supplies"
+    }
+    val defaultMaxPrice = if (isDollar) 500f else 5000f
+
+    // Filters State
+    var selectedCategoryChip by remember(categoryId) { mutableStateOf(defaultChip) }
+    var showFiltersSheet by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
+    
+    // Bottom Sheet filter selections
+    var selectedPetType by remember { mutableStateOf("Dog") }
+    var selectedLifeStage by remember { mutableStateOf("Puppy") }
+    val selectedFoodTypes = remember { mutableStateListOf<String>() }
+    val selectedBrands = remember { mutableStateListOf<String>() }
+    var priceRange by remember(categoryId) { mutableStateOf(0f..defaultMaxPrice) }
+    
+    // Available products list
+    val mockProducts = remember(categoryId) { getMockProductsForCategory(categoryId) }
+
+    // Filter Logic
+    val filteredProducts = remember(
+        selectedCategoryChip,
+        selectedPetType,
+        selectedLifeStage,
+        selectedFoodTypes.toList(),
+        selectedBrands.toList(),
+        priceRange,
+        searchQuery,
+        categoryId
+    ) {
+        mockProducts.filter { product ->
+            // Match category chip
+            val matchesCategoryChip = if (selectedCategoryChip.startsWith("All")) true else {
+                product.tags.contains(selectedCategoryChip) || product.name.contains(selectedCategoryChip, ignoreCase = true)
+            }
+
+            // Match search query
+            val matchesSearch = if (searchQuery.isEmpty()) true else {
+                product.name.contains(searchQuery, ignoreCase = true) || product.brand.contains(searchQuery, ignoreCase = true)
+            }
+
+            // Match Pet Type from bottom sheet
+            val matchesPetType = when (selectedPetType) {
+                "Dog" -> product.tags.contains("Dog")
+                "Cat" -> product.tags.contains("Cat")
+                "Small Pet" -> product.tags.contains("Small Pet")
+                "Fish" -> product.tags.contains("Fish")
+                else -> true
+            }
+
+            // Match Life Stage from bottom sheet
+            val matchesLifeStage = when (selectedLifeStage) {
+                "Puppy" -> product.lifeStage.equals("Puppy", ignoreCase = true)
+                "Adult" -> product.lifeStage.equals("Adult", ignoreCase = true)
+                "Senior" -> product.lifeStage.equals("Senior", ignoreCase = true)
+                "All Ages" -> true
+                else -> true
+            }
+
+            // Match Brand from bottom sheet
+            val matchesBrand = if (selectedBrands.isEmpty()) true else {
+                selectedBrands.contains(product.brand)
+            }
+
+            // Match Price Range from bottom sheet
+            val matchesPrice = product.price >= priceRange.start && product.price <= priceRange.endInclusive
+
+            matchesCategoryChip && matchesSearch && matchesPetType && matchesLifeStage && matchesBrand && matchesPrice
+        }
+    }
+
+    // Custom Bottom Sheet Layout using a Box Overlay
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFF8F9FF))
+        ) {
+            // Header Top Bar
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp)
+                    .background(Color.White)
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                IconButton(onClick = { viewModel.navigateBack() }) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color(0xFF434655)
+                    )
+                }
+
+                Text(
+                    text = catalogTitle,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF004AC6),
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center
+                )
+
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    IconButton(onClick = { viewModel.navigateTo(Screen.Search) }) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search",
+                            tint = Color(0xFF434655)
+                        )
+                    }
+                    IconButton(onClick = { viewModel.navigateTo(Screen.Cart) }) {
+                        Icon(
+                            imageVector = Icons.Default.ShoppingCart,
+                            contentDescription = "Cart",
+                            tint = Color(0xFF434655)
+                        )
+                    }
+                }
+            }
+
+            HorizontalDivider(color = Color(0xFFC3C6D7).copy(alpha = 0.5f))
+
+            // Main Scrollable Area
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f),
+                contentPadding = PaddingValues(bottom = 24.dp)
+            ) {
+                // Section Title and Subtitle
+                item {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
+                        Text(
+                            text = catalogTitle,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF0B1C30)
+                        )
+                        Text(
+                            text = catalogSubtitle,
+                            fontSize = 12.sp,
+                            color = Color(0xFF434655),
+                            modifier = Modifier.padding(top = 2.dp)
+                        )
+                    }
+                }
+
+                // Search Bar Input
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            placeholder = { Text(searchPlaceholder, fontSize = 13.sp, color = Color(0xFF737686)) },
+                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color(0xFF737686)) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(52.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor = Color(0xFFEFF4FF),
+                                unfocusedContainerColor = Color(0xFFEFF4FF),
+                                focusedBorderColor = Color(0xFF004AC6),
+                                unfocusedBorderColor = Color.Transparent
+                            ),
+                            singleLine = true
+                        )
+                    }
+                }
+
+                // Horizontal Image/Icon Chips
+                item {
+                    val chips = when (categoryId) {
+                        "cat_food" -> listOf(
+                            "Dry Food" to "https://images.unsplash.com/photo-1589924691106-073b1381cb35?w=100",
+                            "Wet Food" to "https://images.unsplash.com/photo-1537151608828-ea2b117b6281?w=100",
+                            "Raw" to "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?w=100",
+                            "Freeze-Dried" to "https://images.unsplash.com/photo-1541599540903-216a46ca1da0?w=100"
+                        )
+                        "cat_treats" -> listOf(
+                            "All Treats" to "",
+                            "Biscuits" to "https://lh3.googleusercontent.com/aida-public/AB6AXuDOps8AnyTzPPSpLxzJCtksHUhj9JO8eOziN2D8_mGGPm2WJ_hKMFmVRP-KRm_MweqPRrBNv8M_n7ucAvYYPcZ3yf8HyPC9KUh5kX-1RiCcrnv7IdBVZ0wZDlAaFEDIT-PzJbo1pHaJTBw2SFEa4VkSlkb6xdBi-xKZ77nbIulP9jtkwHht8cQNZbd4hwB0Cq1i7b_NJT3v-T74y8sMorNvtFJu1CfxBuOsulUL80EufSwX36ZfDJkyLdKrSw9ZUvhXyPOkKWhUrnQ",
+                            "Dental" to "https://lh3.googleusercontent.com/aida/AP1WRLu2j9XUv_Re8vRJWJIq3otI7IoX2NgLk7u6dz-Q8YcKZM56ZhlEEG2hhVjR_8a8TLk1hk-4Tl9pMOlZyJGEzTBYJn_bkhNE9uLeijZ6EWFbm_jLi4gI6TBl8Gw26ZsyNvJfA59F0JWB29hKlzMIleF_-IFt7EarCxyfY7nXTlogfRnnfkUY63uBoXugR7m67gBg3tiS5d5irmOdJvPRSbNWfAdde8rkOop9HKp5a_RfrM4tCAPcR1ICVDY",
+                            "Jerky" to "https://lh3.googleusercontent.com/aida-public/AB6AXuD1LsCqZae6WHZ_DyMPocb2L4zhbz8oNQSN2_TR8LsSedLCx22EDma5pJFMX1zgQGpQiYNgLXF2SUAF91QxXNXHdXiY0Qr6fYFUxwxWR8MXXTDIoQNe-f62c8iddyX9b4uCcf2VVkgWnDb7ljyuWNybt-vbC0FjtdAylfmtJs75jHZgc7q1mGpn-neoOttbXEZ72979RE5PIy1uX_QMhG_v8a2bWWYtT6Nw6hMe3g7X_siHHx82ikst98FRgzAzX33l0DWFdYnOuu8",
+                            "Rawhide" to "https://lh3.googleusercontent.com/aida-public/AB6AXuCzN-4DOjRYqTG1cAeYDmWD2-If0-zgUQfwY44b0IrWu23o1_kbzqMdW48OKBqO3QSIhYlwxFDrhBDyd5qBH4B7Jo39Xa_a-mmt-Boi4QjQ-nmsxRiN9Ajdg9yYfqOjC8tHUePJhpSwnWsU3vKnh7DfDSfQvW5pcLL3PA2eMQX4AWq7L-9d11qOifS5fiTAsyb7cQILpKSPu0q74JG3ngl9EzJYIljLuHiW7TodILNn8MTnxM7_II3GoNj0JU4M-z_j63G2eLP2L6A",
+                            "Natural" to "https://lh3.googleusercontent.com/aida-public/AB6AXuCTVOz5bM-_A1YoHGzWiOWlxaNNh3u49iK6bdqr8U7TJpWDksdPyL4NzX0rcL9EgJNGIY5QF5kU8w0jBB3Yaa02GTSNO_aYmcH8mH2BaujkeAWRgbUqfzbG_ITXFn0vbRDWeXRozlwkUI9ki1kC4FClm-iwKtQA55iu4gM5uO3M3HfdZkaPCyC_M1Jsfnvzsag3-u1rP1wqZOp9qL8Mc3S4xfnjOjG-gsbCG4p4cxuFTYHPSFOv5pdOz-JLFUjKbKzgxzW8I7GOUn0"
+                        )
+                        "cat_toys" -> listOf(
+                            "All Toys" to "",
+                            "Chew" to "https://lh3.googleusercontent.com/aida-public/AB6AXuAR1ny6pOdEO4AE9-38Cdg9tkkxG-q-nWRhlK8Zl8s8Vy266yKxwmpxGQc_z55xpYW-wnCeJbQhI2rSYWOq38XfQh2AoAHJ13neVHdUg-Ta8PdQZ2XgDVdpzSsx3XtguKLcIlxaxW3VGYCyzD3jL2grKMWrzrAjIndKP2wpWBuViPApnzk96o5EveidjmZysnCVN-1yNpqvw18LalZLXT3LMu8M2xkgZP0uI-Xz8ydKsCRXFnbx7DibVEQTO32OpEFfnWgznNQAe80",
+                            "Interactive" to "https://lh3.googleusercontent.com/aida-public/AB6AXuCrI6IU4jfFLEkB-dE1GVpX9pd6jA6Wa7f9R6OIPtc1qu2jmvi9HGA5LzjBIFoHL4clmQoNeQwtlY1jhObRMzj-J2dl4A52mC8V_k1YNpV74NWCd8fVrDhjrb5N9klLry1m4NpsDqi510mB1T0kAt_XmTFuCTOil7oJ-cOdYWKOU4J13n6M4I7t9ihiZNAb02D7c1tNCU2vsb4QabPWe1U910LpWPlBTqpMcwEjQ-QUsdE9qlQUOl2tyV_OuqCNtPMRTe4Y1Z8ytPo",
+                            "Fetch" to "https://lh3.googleusercontent.com/aida-public/AB6AXuA-uJ6kCnWNSEz9inTIeo-DaO7_QJZroCBWtIv_4GHZ5MTwoVLIwVb2opWaSfRjqBV4yDpPXb3AZb5ZltALZNQNPe4drmxoj-NE1nktRdf6LR-QrEPkRjqQpn4IpzldkE-CVj0ZYgtstN0hCelB0Pm2yMKO4HbFWuRnrBLfMRbltqmW8cLP13r61EFsfTqJgZSvQ0S05m0_JyiaQtHu-hRoHpyUtCioASRjY1xjE6ojR6QqvOaZMIo7aIOQHL8vqrYvBn_lzqrcw_k",
+                            "Tug" to "https://lh3.googleusercontent.com/aida-public/AB6AXuA1PsRjnPY40VYykkQcgfyYWkek5kEYR_kn22iVdoNTrOHJYk-jSD0YxPW9zzxO3LpQTla9MdVgFI-MpWoTwMnB_w3Yx2Dh9U7zQd4I__cxx-B2z3vkmTfzzPwWIRaG_SJ6cgE6sQXaW-iHyIuDQ3BgfKJJXnXDZ-NLJgkWmOjaMtiiSSpLmMtdH_BV-Po1EAngH31x4CtiXI2H1DWdgVC6oUi5nP6fZyXvWIDSIZEh_C4pwCMvb4-S9_tAr35rrNhBvXxy0-HEUNI"
+                        )
+                        "cat_travel" -> listOf(
+                            "All Gear" to "",
+                            "Harness" to "https://lh3.googleusercontent.com/aida-public/AB6AXuBqVfcoxARGwW9gaA7nx42d8FbDxWiCujm8_KKCckeRwBJyxAjoOZqQ3lJDuigUvz1EK56DrPoPLjbNoYvAUHEuLqv0aBLRKGD5bx6lX7Zwiwjd9OEv5XBHTgGBvS8Dq7O24CKxcUcTUEtbPhKyaDvXhZH26IXUsARdoOvP4JhO0hIz_2iR1GUHyJfueCMIa6ZYumUupFfnaMVzAfChSzE55_Qtxvk49WTaXUCQU0FpJv8gFkRfK850NMMnqbOufieHfe6TDzfpS0Q",
+                            "Leash" to "https://lh3.googleusercontent.com/aida-public/AB6AXuBstmBxcbiDYtks9mq4NixOW-4D3L9VcAfquJWjfv1N0bCdho7p0KKgykp_qBcyTD0ENSGCyfIDfHQQH-gLSY8Kv-0v2MaS87Cs83aU9F4el_pyARk80ra1n2N_KxNkfpXizkatturIIYh8XSS28oOFnV4ePt4jX_kYYukkKH01CBX7aMlHG5MF_ddHTXG6wKRAVDyDvOfIh8ABrjnm0W_4SeeJcoKal0ugJu3MGoH5fSpdWNVoTPnc0aC4",
+                            "Carrier" to "https://lh3.googleusercontent.com/aida-public/AB6AXuC0ipHQmI817cbTajzccC0_zvXkOdt6EOuMCl0fb7FFbUUGuMiQw86twslM8WkqKkflWYagr5MNIOdxfCl4YbF_w03ZqK9wkbBh2W3v4lfLCt6l58UJQQoE_qcVNCn41DozEiDKPL43F6j4cybIp-dcVmVLjygtybnMIl1VUPRaWkEn2K5FquFRv7SRqwk7O0o48a7njmhUMbjH60v_gWsuDUjQ_UVzikekYi8R4qENil-hX7ZV4IwzYAKbCB4LOCYYtIpp-eRXdpA"
+                        )
+                        "cat_furniture" -> listOf(
+                            "All" to "",
+                            "Beds" to "https://lh3.googleusercontent.com/aida-public/AB6AXuAyB22rbZoXa_TMwG1PEQTebwvY15P0IxP7v6TdhTCytfwZMgahnIef-ltbzHyLc_859V8B5Psd23oz7A9s8bSBmvfCPqBasyHBffdOkRPAxP9NvPH_pu4BzKT13fsIdR33FIlcOoXrfZ7cdUEMPQdN6rYxYtvXd9xBISfzj2aZ5-mVQ_WpQh7eb4G-GZwg-4swSJJf-HKfoZk7aXifTG1h6p-b0c3r3LMv3WzClpsDJGOEeVhCIqHh_FTY8RhpbCtjZMXZ41lMicM",
+                            "Crates" to "https://lh3.googleusercontent.com/aida-public/AB6AXuCXTaMdebKGAKtAnT0cEV4gXbtJVxJp-x0WhP9EZpn46KATHlUE_gQjtwHH121xm7uc_f1tso3uPRX7woaDW4HcgQ7wgyrhmR1iXytIx-b_lUu_diRbY1ae0huSkyCCUcWZEaFLEXWJm07kdOBAaANZ3K25fOARhpTLgiRWXP2IBObfzKtZQh0SMC2Y-4dWVbFzgjLB9wSnHBkyRhoCHI7L6GUr98L4eTfbMUcvGPziVUHRrxUsK5bvkOO6fPIyag_K45MK81ZZYe0",
+                            "Trees" to "https://lh3.googleusercontent.com/aida-public/AB6AXuDANZpzNndPE-rVda5l7w0EsRG9jdriO-kyH0RPe7HkiUuey3JzoINi3hZRsCiHBcRj05fSgtSah8ZTVwGxdhq4soYi2lJBTgbJLljinFCcZnJJGLVZSlo7CxiFhf-G2Ao7fYoYhfSGrurBcKYIDOCdiaw2Xmv2ryKNxUQ7X6YP3Fvdl62f_lbQZnKBsbXzYnfjZVvSTX-EB1UPCPURcdRqMSmqcjvdH9oX27krCGvl4bfZbkblpFvIql0dgeCSBobZ6IrEJ3aAtns",
+                            "Loungers" to "https://lh3.googleusercontent.com/aida-public/AB6AXuCXnG9j1AnSA_q_kS_rzvrieaz-Tz0Bv5rvZ62mbtFF6j2ZfioOavFXmWUxEOtjCEiW0U823DiGseN9AS/14rdV8bBeCPBI2_EP75EOorHW0bZ8IileRfjvX3q3k-7rWTPhxldqgfldGzvHZZsOUk_UanXurbpU8_twp3rhl1wS7_NCb-ag2_UjTfjpKok60uuuqpmv0c04Fet2BvDCry4xFwL3w6pic3i29ZdaodjxuabsWI3oLrtAczVKQPvQJ0zq9esgLAf1_lg"
+                        )
+                        "cat_waste" -> listOf(
+                            "All Supplies" to "",
+                            "Bags" to "https://lh3.googleusercontent.com/aida-public/AB6AXuAmWBhmnG8zVtMYSmDr9dsFp9M7d1fBUVpE8ZEjOJ4m8XFzJhctZztGQTo8qVeRZGlWTb2YIBkudkgUIAJ7SWTOCvdeMdQxT39gexF1mQQ9gDJDRUJE8LF1w5uFEvySdRCQyS7DHvbfBQDfIWBFPOkcWqL0ZT5HgH5ODLKS9plD86cz3v-9dm0TbdyMVHX7osl0yYnR4Sowdf6KX_VhjOWm21YceyrPq7cnjPvPtWy2bbZAPCUJqIa-7ZMO70KlqDuWcqXjkR8Kzew",
+                            "Litter" to "https://lh3.googleusercontent.com/aida-public/AB6AXuBTzIR8bpIFcWjR2Lh0gfMechDQI_jhSsTBDnIospTf0-ab09IKr7cGiStYy9DiawVBEq16ADbH_RyF_2Dgbg8Dua9HyaH863mJWQ-AoKvyOK-DgauseXhTdeu4XRZO0ahfnsXsJMaB8RcwwIAG3nZLGoRW-SIr9TMH68eSe4FDMkav0vL2onMVJDclebkMZltVYYUdL78CqQU3fqyMlzChHafWTjiIYQ6kbDaRu6YPBWgTbSgdEoBMYQn1PKXW6s6K_iz0jluliHM",
+                            "Litter Box" to "https://lh3.googleusercontent.com/aida-public/AB6AXuAN4zDQO5H87AhGgUZyUTdyG2akkOm67ZzN0iMOCVTB-O91UY7BTd9BHkzq8G1oNps8NN8Pb9PTAUMAK30gQTZKiomZNjZiBzUqTdyJmtcgV6Fo04c1ZRBA3vi7vpG2jW9_VZQNRoLGAUMRI4z_gMFnQRGFsdUUtD62bO5VRLU3PdDiv1qeW_Lhq2C2hgkqsM4opEtKDytvmCt_YeTbUj97rzIpAJ-nXRThD9YHnIBMey3f1c-w7jGDcLO9XV-xGRtcRtN1K-MjZwQ",
+                            "Cleaning" to "https://lh3.googleusercontent.com/aida-public/AB6AXuBE08T9Hz6NTH5n-IyVZv-EjObVVjdsoenmoIPbeSIWwdeUXNl2BJh_8fnHnGr6dDXdjotC4_S1_nNwuMPPwmLC05eWAmcPNDPOR8F_UjKrz_cDTuhM_zZ6P4cVNp0_um5Y8pKzjPEvZohN_X44gZPina_w1njKvhr5Vg7S52JzAPgsgEI2lSU_S9xK2ezNPTgOOkk0hEncpk-GRBCcO2a2q5gQj6mtpAH5CereunCfIK2uB55v7VuVX75G9_iexKID3qjcC0415XQ"
+                        )
+                        else -> emptyList()
+                    }
+
+                    LazyRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 12.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        items(chips) { (label, imageUrl) ->
+                            val isSelected = selectedCategoryChip == label
+                            Row(
+                                modifier = Modifier
+                                    .height(40.dp)
+                                    .background(Color.White, CircleShape)
+                                    .border(
+                                        width = if (isSelected) 2.dp else 1.dp,
+                                        color = if (isSelected) Color(0xFF004AC6) else Color(0xFFC3C6D7),
+                                        shape = CircleShape
+                                    )
+                                    .clickable { selectedCategoryChip = label }
+                                    .padding(start = 4.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Card(
+                                    shape = CircleShape,
+                                    modifier = Modifier.size(32.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFEFF4FF))
+                                ) {
+                                    if (imageUrl.isEmpty()) {
+                                        Box(
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = "All",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF004AC6)
+                                            )
+                                        }
+                                    } else {
+                                        Image(
+                                            painter = rememberAsyncImagePainter(imageUrl),
+                                            contentDescription = null,
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentScale = ContentScale.Crop
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = label,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isSelected) Color(0xFF004AC6) else Color(0xFF0B1C30)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Action Row (Sort & Filter button)
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "${filteredProducts.size} products",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF434655)
+                        )
+
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            // Sort pill
+                            Row(
+                                modifier = Modifier
+                                    .background(Color.White, RoundedCornerShape(20.dp))
+                                    .border(1.dp, Color(0xFFC3C6D7), RoundedCornerShape(20.dp))
+                                    .clickable {
+                                        Toast.makeText(context, "Sort selected", Toast.LENGTH_SHORT).show()
+                                    }
+                                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = Color(0xFF0B1C30), modifier = Modifier.size(16.dp))
+                                Text("Sort", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B1C30))
+                            }
+
+                            // Filter pill
+                            Row(
+                                modifier = Modifier
+                                    .background(Color.White, RoundedCornerShape(20.dp))
+                                    .border(1.dp, Color(0xFFC3C6D7), RoundedCornerShape(20.dp))
+                                    .clickable { showFiltersSheet = true }
+                                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(Icons.Default.Settings, contentDescription = null, tint = Color(0xFF0B1C30), modifier = Modifier.size(14.dp))
+                                Text("Filters", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B1C30))
+                                Box(
+                                    modifier = Modifier
+                                        .size(16.dp)
+                                        .background(Color(0xFFFEA619), CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("2", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color(0xFF684000))
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Grid of products
+                item {
+                    val defaultShop = shops.firstOrNull() ?: ShopEntity(
+                        id = "shop_hyd_1",
+                        ownerId = "merchant_hyd_1",
+                        cityId = "hyd",
+                        name = "Pawsome General Store",
+                        description = "Mock general pet accessories & care hub",
+                        address = "Mock general address",
+                        locality = "Banjara Hills",
+                        phone = "9876543210",
+                        email = "pawsome@store.com"
+                    )
+                    
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        val rowCount = (filteredProducts.size + 1) / 2
+                        for (i in 0 until rowCount) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                val item1Index = i * 2
+                                val item2Index = i * 2 + 1
+                                
+                                if (item1Index < filteredProducts.size) {
+                                    val prod = filteredProducts[item1Index]
+                                    ProductGridCard(
+                                        product = prod.copy(price = prod.price, mrp = prod.mrp),
+                                        shop = defaultShop,
+                                        isPrimaryStyle = true,
+                                        viewModel = viewModel,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                                
+                                if (item2Index < filteredProducts.size) {
+                                    val prod = filteredProducts[item2Index]
+                                    ProductGridCard(
+                                        product = prod.copy(price = prod.price, mrp = prod.mrp),
+                                        shop = defaultShop,
+                                        isPrimaryStyle = true,
+                                        viewModel = viewModel,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                } else {
+                                    Spacer(modifier = Modifier.weight(1f))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Sliding Filters Bottom Sheet Overlay (Box inside same view)
+        AnimatedVisibility(
+            visible = showFiltersSheet,
+            enter = slideInVertically(initialOffsetY = { it }),
+            exit = slideOutVertically(targetOffsetY = { it }),
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.85f),
+                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 16.dp)
+            ) {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    // Sheet Header
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            IconButton(onClick = { showFiltersSheet = false }) {
+                                Icon(Icons.Default.Close, contentDescription = "Close", tint = Color(0xFF0B1C30))
+                            }
+                            Text("Filters", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B1C30))
+                        }
+                        Text(
+                            text = "Reset All",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFBA1A1A),
+                            modifier = Modifier.clickable {
+                                selectedPetType = "Dog"
+                                selectedLifeStage = "Puppy"
+                                selectedBrands.clear()
+                                priceRange = 0f..defaultMaxPrice
+                            }
+                        )
+                    }
+
+                    HorizontalDivider(color = Color(0xFFC3C6D7).copy(alpha = 0.5f))
+
+                    // Sheet Body
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 20.dp, vertical = 16.dp)
+                    ) {
+                        // 1. Pet Type Group
+                        Text("Pet Type", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B1C30))
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            val petTypes = listOf("Dog", "Cat", "Small Pet", "Fish")
+                            petTypes.forEach { type ->
+                                val isSelected = selectedPetType == type
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(44.dp)
+                                        .background(
+                                            color = if (isSelected) Color(0xFFE5EEFF) else Color(0xFFF8F9FF),
+                                            shape = RoundedCornerShape(10.dp)
+                                        )
+                                        .border(
+                                            width = if (isSelected) 2.dp else 1.dp,
+                                            color = if (isSelected) Color(0xFF004AC6) else Color(0xFFC3C6D7),
+                                            shape = RoundedCornerShape(10.dp)
+                                        )
+                                        .clickable { selectedPetType = type },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = type,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isSelected) Color(0xFF004AC6) else Color(0xFF0B1C30)
+                                    )
+                                }
+                            }
+                        }
+
+                        // 2. Life Stage Group
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text("Life Stage", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B1C30))
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            val stages = listOf("Puppy", "Adult", "Senior", "All Ages")
+                            stages.forEach { stage ->
+                                val isSelected = selectedLifeStage == stage
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(44.dp)
+                                        .background(
+                                            color = if (isSelected) Color(0xFF004AC6) else Color(0xFFF8F9FF),
+                                            shape = RoundedCornerShape(10.dp)
+                                        )
+                                        .border(
+                                            width = if (isSelected) 0.dp else 1.dp,
+                                            color = Color(0xFFC3C6D7),
+                                            shape = RoundedCornerShape(10.dp)
+                                        )
+                                        .clickable { selectedLifeStage = stage },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = stage,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isSelected) Color.White else Color(0xFF0B1C30)
+                                    )
+                                }
+                            }
+                        }
+
+                        // 3. Brands Group
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text("Brands", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B1C30))
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            val brands = when (categoryId) {
+                                "cat_food" -> listOf("Pedigree", "Royal Canin", "Drools", "Orijen")
+                                "cat_treats" -> listOf("Pedigree", "Orijen", "Drools", "Hill's Science Diet")
+                                "cat_toys" -> listOf("Kong", "Outward Hound", "Chuckit!", "Pawsome")
+                                "cat_travel" -> listOf("Luxury Pet Boutique", "Barking Heads Store", "LeatherCraft Pets", "JetSet Pets")
+                                "cat_furniture" -> listOf("Pawsome Furniture", "The Cozy Den", "Feline Fine Designs", "Orijen")
+                                else -> listOf("EcoPet Supplies", "CleanPaws Hub", "Feline Furnishings", "FreshHome Pets")
+                            }
+                            brands.forEach { brand ->
+                                val isSelected = selectedBrands.contains(brand)
+                                Box(
+                                    modifier = Modifier
+                                        .size(width = 84.dp, height = 56.dp)
+                                        .background(
+                                            color = if (isSelected) Color(0xFFE5EEFF) else Color(0xFFF8F9FF),
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .border(
+                                            width = if (isSelected) 2.dp else 1.dp,
+                                            color = if (isSelected) Color(0xFF004AC6) else Color(0xFFC3C6D7),
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .clickable {
+                                            if (isSelected) selectedBrands.remove(brand)
+                                            else selectedBrands.add(brand)
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = brand,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF0B1C30),
+                                        textAlign = TextAlign.Center,
+                                        lineHeight = 12.sp
+                                    )
+
+                                    if (isSelected) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(16.dp)
+                                                .background(Color(0xFF004AC6), CircleShape)
+                                                .align(Alignment.TopEnd)
+                                                .offset(x = 4.dp, y = (-4).dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(10.dp))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // 4. Price Range Group
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text("Price Range", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B1C30))
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "${currencySym}${priceRange.start.toInt()} - ${currencySym}${priceRange.endInclusive.toInt()}",
+                            fontSize = 12.sp,
+                            color = Color(0xFF434655)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        RangeSlider(
+                            value = priceRange,
+                            onValueChange = { priceRange = it },
+                            valueRange = 0f..5000f,
+                            colors = SliderDefaults.colors(
+                                activeTrackColor = Color(0xFF004AC6),
+                                inactiveTrackColor = Color(0xFFE5EEFF),
+                                thumbColor = Color(0xFF004AC6)
+                            )
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("₹0", fontSize = 11.sp, color = Color(0xFF737686))
+                            Text("₹5000+", fontSize = 11.sp, color = Color(0xFF737686))
+                        }
+                        Spacer(modifier = Modifier.height(32.dp))
+                    }
+
+                    // Sticky Action Button at bottom
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.White)
+                            .padding(16.dp)
+                            .border(width = 0.5.dp, color = Color(0xFFC3C6D7).copy(alpha = 0.5f))
+                    ) {
+                        Button(
+                            onClick = { showFiltersSheet = false },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(52.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004AC6))
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Show ${filteredProducts.size} Products",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Icon(
+                                    imageVector = Icons.Default.ArrowForward,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ProductGridCard(
+    product: ProductEntity,
+    shop: ShopEntity,
+    isPrimaryStyle: Boolean,
+    viewModel: PawsViewModel,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { /* Detail view optionally */ },
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.4f))
+    ) {
+        Column(modifier = Modifier.padding(10.dp)) {
+            // Image Area
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1.2f)
+                    .background(Color(0xFFEFF4FF), RoundedCornerShape(8.dp))
+                    .padding(8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = rememberAsyncImagePainter(product.photos.firstOrNull() ?: ""),
+                    contentDescription = product.name,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Fit
+                )
+
+                // Discount Badges
+                val discountTag = product.tags.firstOrNull { it.contains("OFF") || it.contains("SELLER") }
+                if (discountTag != null) {
+                    val isBestSeller = discountTag.contains("SELLER")
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .background(
+                                color = if (isBestSeller) Color(0xFFFEA619) else Color(0xFFBA1A1A),
+                                shape = RoundedCornerShape(topStart = 8.dp, bottomEnd = 8.dp)
+                            )
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = discountTag,
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = if (isBestSeller) Color(0xFF684000) else Color.White
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Brand
+            Text(
+                text = product.brand.uppercase(),
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF434655)
+            )
+
+            // Name
+            Text(
+                text = product.name,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF0B1C30),
+                maxLines = 2,
+                minLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                lineHeight = 14.sp
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // Weight tag
+            val weightText = when (product.id) {
+                "p_rc_mini_adult" -> "3kg"
+                "p_pedigree_chicken_veg" -> "3kg"
+                "p_drools_chicken_egg" -> "1.2kg"
+                "p_orijen_grain_free" -> "2kg"
+                "p_whiskas_dry" -> "3kg"
+                "p_rc_wet_cat" -> "85g"
+                "p_oxbow_rabbit" -> "1.5kg"
+                else -> "1kg"
+            }
+            Box(
+                modifier = Modifier
+                    .background(Color(0xFFE5EEFF), RoundedCornerShape(4.dp))
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    text = weightText,
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF434655)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Price and Add Button Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "₹${product.price.toInt()}",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color(0xFF0B1C30)
+                    )
+                    if (product.mrp > product.price) {
+                        Text(
+                            text = "₹${product.mrp.toInt()}",
+                            fontSize = 10.sp,
+                            color = Color(0xFF737686),
+                            textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough
+                        )
+                    }
+                }
+
+                // Add button FAB
+                IconButton(
+                    onClick = {
+                        viewModel.addToCart(product, shop)
+                        Toast.makeText(context, "${product.name} added to cart!", Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier
+                        .size(32.dp)
+                        .background(
+                            color = if (isPrimaryStyle) Color(0xFF004AC6) else Color(0xFFE5EEFF),
+                            shape = CircleShape
+                        )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add to cart",
+                        tint = if (isPrimaryStyle) Color.White else Color(0xFF004AC6),
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+// GROOMING SERVICES EXTENSIONS AND COMPOSABLES
+data class GroomingService(
+    val id: String,
+    val name: String,
+    val price: Double,
+    val mrp: Double = 0.0,
+    val durationText: String,
+    val durationMin: Int,
+    val photo: String,
+    val tag: String? = null,
+    val packageType: String
+)
+
+fun getMockGroomingServices(): List<GroomingService> {
+    return listOf(
+        GroomingService(
+            id = "gs_luxury_bath",
+            name = "Luxury Bath & Dry",
+            price = 1200.0,
+            durationText = "60 mins",
+            durationMin = 60,
+            photo = "https://lh3.googleusercontent.com/aida-public/AB6AXuBiNmbvF7knPi8jL6qfiXrcU8BtI2b5OWDfn7WqOdIua6D0lzYYmTYwLr3_iwadr87TwYHDe6bOpqeT7N6wEyGeB0UX7BsgaCBeaubT6ABbCKuZFicvkeQYMOEnXr10iKkTZqi8qCnaF-d7BxPXdyYXn_bJkqT3Bu-M4TjK-5GlH5pxv1jQViJlRX96PC3F5dipPylSiy2aS5vvr0A9XIL6B2o8MeR_GuMZJZFZ72EFn6gt34vPjxWIsKq0ax-XiplXARepvkGe--I",
+            tag = "Best Seller",
+            packageType = "Bathing"
+        ),
+        GroomingService(
+            id = "gs_breed_specific",
+            name = "Breed Specific Styling",
+            price = 2500.0,
+            durationText = "90 mins",
+            durationMin = 90,
+            photo = "https://lh3.googleusercontent.com/aida-public/AB6AXuD_t9N_TOhIYRvUUuoElxLQZi88cBZNzybQ0qStP6P8WKDRRdpFnU3z_Bp2IYxFZXBTItdf1tuFnfNeA2bBbtX4PSXhbYvNNCTP1sLUymQn1vBKLyIYUWv0gUmB_1n3_8VdS1JU824SUtKS4j1I4Rx2JitSEuufoRpANJl58zCQdjMv_p_bNAPd7X1PTT1LA7mnH00lKxX7luM-CHw0iF2-uay8_Q4NaaVprdv90qNR-aOS4GIccT6uZcv2kFK-FRPgJtrUqq8Ki6Y",
+            packageType = "Haircut"
+        ),
+        GroomingService(
+            id = "gs_full_spa",
+            name = "Full Spa Package",
+            price = 3500.0,
+            mrp = 4000.0,
+            durationText = "120 mins",
+            durationMin = 120,
+            photo = "https://lh3.googleusercontent.com/aida/AP1WRLsL_yS_k1qapC94pr73cFCLge8Egim_5CZuxM7w9OVrUKioOzkKkrL7trXeqjCLLqz7sOTv6dd9WZAnqL9eQyyxiznQBvrM0_kO3xyhy6VxHaYq9KIzSYSx0w0cK2iCbZuQm4shpiqTgB55poMAG_cgSzdS469BWnOmn3V7VWS0HA4vbQlgb4h3_l_fwWm0Zq265QVXqpBdyrEf3wUI8L_aOHjYkH0OcxXNIpPEr0KDJ80cUqAgYDUiU48",
+            tag = "Sale",
+            packageType = "Full Grooming"
+        ),
+        GroomingService(
+            id = "gs_medicated_wash",
+            name = "Medicated Tick Wash",
+            price = 900.0,
+            durationText = "45 mins",
+            durationMin = 45,
+            photo = "https://lh3.googleusercontent.com/aida-public/AB6AXuBrKpd0N_HPeJRBHuYSq0xn2aNNr8vNv3rKJ9iViz82d6YH9tf3PMfLu7Zkmy2rAsy7M_OUMNuUMPmErSxoAnBOWiDeuxkhssEfm4AdTtSoU2o3cMiPRT7994dTPKiJSQ6W2HZuImYP0jo8akMnDoI5QRIBX7__HN3c1G29sEuxXYZG-6wbbuepWbB9QeP9ouUiCA3THD_5gl4xlZpMLQzLLffTADDg7L39mJk--Za96FHcKsa8iQClcbYxvU03f7OMFcgGa_kEp3U",
+            packageType = "Bathing"
+        )
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GroomingServicesScreen(viewModel: PawsViewModel) {
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    
+    // Filters State
+    var selectedCategoryChip by remember { mutableStateOf("All") }
+    var showFiltersSheet by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
+    
+    // Bottom Sheet filter selections
+    var selectedDurationFilter by remember { mutableStateOf("All Durations") }
+    val selectedPackageTypes = remember { mutableStateListOf<String>() }
+    var priceRange by remember { mutableStateOf(0f..5000f) }
+    
+    val mockServices = remember { getMockGroomingServices() }
+    
+    // Filter Logic
+    val filteredServices = remember(
+        selectedCategoryChip,
+        selectedDurationFilter,
+        selectedPackageTypes.toList(),
+        priceRange,
+        searchQuery
+    ) {
+        mockServices.filter { service ->
+            // Match category chip
+            val matchesCategoryChip = if (selectedCategoryChip == "All") true else {
+                service.packageType == selectedCategoryChip
+            }
+            
+            // Match search query
+            val matchesSearch = if (searchQuery.isEmpty()) true else {
+                service.name.contains(searchQuery, ignoreCase = true)
+            }
+            
+            // Match Duration Filter
+            val matchesDuration = when (selectedDurationFilter) {
+                "Under 60 mins" -> service.durationMin < 60
+                "60 - 90 mins" -> service.durationMin in 60..90
+                "Over 90 mins" -> service.durationMin > 90
+                else -> true
+            }
+            
+            // Match Package Types
+            val matchesPackageType = if (selectedPackageTypes.isEmpty()) true else {
+                selectedPackageTypes.contains(service.packageType)
+            }
+            
+            // Match Price Range
+            val matchesPrice = service.price >= priceRange.start && service.price <= priceRange.endInclusive
+            
+            matchesCategoryChip && matchesSearch && matchesDuration && matchesPackageType && matchesPrice
+        }
+    }
+    
+    Box(modifier = Modifier.fillMaxSize().background(Color(0xFFF8F9FF))) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Header Bar
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp)
+                    .background(Color.White)
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = { viewModel.navigateBack() }) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color(0xFF004AC6)
+                    )
+                }
+                
+                Text(
+                    text = "Grooming Services",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF0B1C30),
+                    modifier = Modifier.weight(1f).padding(start = 8.dp)
+                )
+                
+                IconButton(onClick = { viewModel.navigateTo(Screen.Cart) }) {
+                    Box(contentAlignment = Alignment.TopEnd) {
+                        Icon(
+                            imageVector = Icons.Default.ShoppingCart,
+                            contentDescription = "Cart",
+                            tint = Color(0xFF434655)
+                        )
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .background(Color(0xFFBA1A1A), CircleShape)
+                        )
+                    }
+                }
+            }
+            
+            HorizontalDivider(color = Color(0xFFC3C6D7).copy(alpha = 0.5f))
+            
+            // Main Scrollable Area
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f),
+                contentPadding = PaddingValues(bottom = 24.dp)
+            ) {
+                // Title & Subtitle
+                item {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
+                        Text(
+                            text = "Professional Grooming",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF0B1C30)
+                        )
+                        Text(
+                            text = "Pamper your pets with certified groomers.",
+                            fontSize = 12.sp,
+                            color = Color(0xFF434655),
+                            modifier = Modifier.padding(top = 2.dp)
+                        )
+                    }
+                }
+                
+                // Search Bar
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            placeholder = { Text("Search services...", fontSize = 13.sp, color = Color(0xFF737686)) },
+                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color(0xFF737686)) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(52.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor = Color(0xFFEFF4FF),
+                                unfocusedContainerColor = Color(0xFFEFF4FF),
+                                focusedBorderColor = Color(0xFF004AC6),
+                                unfocusedBorderColor = Color.Transparent
+                            ),
+                            singleLine = true
+                        )
+                    }
+                }
+                
+                // Top categories (circular images)
+                item {
+                    val categoriesList = listOf(
+                        "All" to "",
+                        "Bathing" to "https://lh3.googleusercontent.com/aida-public/AB6AXuChmGZBcMSVBA6dCs9-thohlMGJ87CAP4IpP7Jmt8biR_P7RdrZKXjvdg0YIbqN0pOUiAnNEBEFAcB3JyJz8l--CEo8di4c3Gixg-c3VryWQIAbxZbCOLGZ4L32VzazaZt-r6kMLlVQsgSNExRiwJ-cXrMsMlrEc1PBU5PHS6ssREQIJkMZLjTkp0mwkDxOUsqp5P32ALl3UzFePgjrhmTdZgt9J4VAAhd9hoW-NrVg2hte-GHsKeNip27A2DC4sq0Vxd8A8nXWIqg",
+                        "Haircut" to "https://lh3.googleusercontent.com/aida-public/AB6AXuA4g1rLGJfuUgH76sXydoMRmZGpJLDMntZCe9A65dWeOgW8sm4ea6RHgnVd6ArUw7dd7v6lIsPJ0KMcQskq3-JwQ8A2IjUhaV68b3pce2dEfm1_oX7j_eC-zyAO9cxgf99eRBuHazJCSUYYTOtLM3j_QOOK1AIFnBDKktbobZb1RME8sz4-wEHNR1baQYJm0t2kH-plrLNUISRZFj_3KFfparHqGVlj2axbp1vnDCrXDbe-sEi4cYrd0n9wJMl3sKCvyWvhgSr5paE",
+                        "Full Grooming" to "https://lh3.googleusercontent.com/aida/AP1WRLsL_yS_k1qapC94pr73cFCLge8Egim_5CZuxM7w9OVrUKioOzkKkrL7trXeqjCLLqz7sOTv6dd9WZAnqL9eQyyxiznQBvrM0_kO3xyhy6VxHaYq9KIzSYSx0w0cK2iCbZuQm4shpiqTgB55poMAG_cgSzdS469BWnOmn3V7VWS0HA4vbQlgb4h3_l_fwWm0Zq265QVXqpBdyrEf3wUI8L_aOHjYkH0OcxXNIpPEr0KDJ80cUqAgYDUiU48"
+                    )
+                    
+                    LazyRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 12.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        items(categoriesList) { (label, imageUrl) ->
+                            val isSelected = selectedCategoryChip == label
+                            Row(
+                                modifier = Modifier
+                                    .height(40.dp)
+                                    .background(Color.White, CircleShape)
+                                    .border(
+                                        width = if (isSelected) 2.dp else 1.dp,
+                                        color = if (isSelected) Color(0xFF004AC6) else Color(0xFFC3C6D7),
+                                        shape = CircleShape
+                                    )
+                                    .clickable { selectedCategoryChip = label }
+                                    .padding(start = 4.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Card(
+                                    shape = CircleShape,
+                                    modifier = Modifier.size(32.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFEFF4FF))
+                                ) {
+                                    if (imageUrl.isEmpty()) {
+                                        Box(
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = "All",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF004AC6)
+                                            )
+                                        }
+                                    } else {
+                                        Image(
+                                            painter = rememberAsyncImagePainter(imageUrl),
+                                            contentDescription = null,
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentScale = ContentScale.Crop
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = label,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isSelected) Color(0xFF004AC6) else Color(0xFF0B1C30)
+                                )
+                            }
+                        }
+                    }
+                }
+                
+                // Action Row
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "${filteredServices.size} services",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF434655)
+                        )
+                        
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            // Sort pill
+                            Row(
+                                modifier = Modifier
+                                    .background(Color.White, RoundedCornerShape(20.dp))
+                                    .border(1.dp, Color(0xFFC3C6D7), RoundedCornerShape(20.dp))
+                                    .clickable {
+                                        Toast.makeText(context, "Sort selected", Toast.LENGTH_SHORT).show()
+                                    }
+                                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = Color(0xFF0B1C30), modifier = Modifier.size(16.dp))
+                                Text("Sort", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B1C30))
+                            }
+                            
+                            // Filter pill
+                            Row(
+                                modifier = Modifier
+                                    .background(Color.White, RoundedCornerShape(20.dp))
+                                    .border(1.dp, Color(0xFFC3C6D7), RoundedCornerShape(20.dp))
+                                    .clickable { showFiltersSheet = true }
+                                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(Icons.Default.Settings, contentDescription = null, tint = Color(0xFF0B1C30), modifier = Modifier.size(14.dp))
+                                Text("Filters", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B1C30))
+                            }
+                        }
+                    }
+                }
+                
+                // Grid of Services
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        val rowCount = (filteredServices.size + 1) / 2
+                        for (i in 0 until rowCount) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                val item1Index = i * 2
+                                val item2Index = i * 2 + 1
+                                
+                                if (item1Index < filteredServices.size) {
+                                    GroomingServiceGridCard(
+                                        service = filteredServices[item1Index],
+                                        onClick = {
+                                            Toast.makeText(context, "${filteredServices[item1Index].name} booked successfully!", Toast.LENGTH_LONG).show()
+                                        },
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                                
+                                if (item2Index < filteredServices.size) {
+                                    GroomingServiceGridCard(
+                                        service = filteredServices[item2Index],
+                                        onClick = {
+                                            Toast.makeText(context, "${filteredServices[item2Index].name} booked successfully!", Toast.LENGTH_LONG).show()
+                                        },
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                } else {
+                                    Spacer(modifier = Modifier.weight(1f))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Sliding Filters Bottom Sheet Overlay (Simulated Box)
+        AnimatedVisibility(
+            visible = showFiltersSheet,
+            enter = slideInVertically(initialOffsetY = { it }),
+            exit = slideOutVertically(targetOffsetY = { it }),
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.85f),
+                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 16.dp)
+            ) {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    // Sheet Header
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            IconButton(onClick = { showFiltersSheet = false }) {
+                                Icon(Icons.Default.Close, contentDescription = "Close", tint = Color(0xFF0B1C30))
+                            }
+                            Text("Service Filters", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B1C30))
+                        }
+                        Text(
+                            text = "Reset All",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFBA1A1A),
+                            modifier = Modifier.clickable {
+                                selectedDurationFilter = "All Durations"
+                                selectedPackageTypes.clear()
+                                priceRange = 0f..5000f
+                            }
+                        )
+                    }
+                    
+                    HorizontalDivider(color = Color(0xFFC3C6D7).copy(alpha = 0.5f))
+                    
+                    // Sheet Body
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 20.dp, vertical = 16.dp)
+                    ) {
+                        // 1. Duration filter
+                        Text("Duration", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B1C30))
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            val durations = listOf("All Durations", "Under 60 mins", "60 - 90 mins", "Over 90 mins")
+                            durations.forEach { dur ->
+                                val isSelected = selectedDurationFilter == dur
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(44.dp)
+                                        .background(
+                                            color = if (isSelected) Color(0xFFE5EEFF) else Color(0xFFF8F9FF),
+                                            shape = RoundedCornerShape(10.dp)
+                                        )
+                                        .border(
+                                            width = if (isSelected) 2.dp else 1.dp,
+                                            color = if (isSelected) Color(0xFF004AC6) else Color(0xFFC3C6D7),
+                                            shape = RoundedCornerShape(10.dp)
+                                        )
+                                        .clickable { selectedDurationFilter = dur },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = dur,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isSelected) Color(0xFF004AC6) else Color(0xFF0B1C30),
+                                        textAlign = TextAlign.Center,
+                                        lineHeight = 12.sp
+                                    )
+                                }
+                            }
+                        }
+                        
+                        // 2. Package Type
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text("Package Type", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B1C30))
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            val pkgTypes = listOf("Bathing", "Haircut", "Full Grooming")
+                            pkgTypes.forEach { pkg ->
+                                val isSelected = selectedPackageTypes.contains(pkg)
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(44.dp)
+                                        .background(
+                                            color = if (isSelected) Color(0xFF004AC6) else Color(0xFFF8F9FF),
+                                            shape = RoundedCornerShape(10.dp)
+                                        )
+                                        .border(
+                                            width = if (isSelected) 0.dp else 1.dp,
+                                            color = Color(0xFFC3C6D7),
+                                            shape = RoundedCornerShape(10.dp)
+                                        )
+                                        .clickable {
+                                            if (isSelected) selectedPackageTypes.remove(pkg)
+                                            else selectedPackageTypes.add(pkg)
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = pkg,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isSelected) Color.White else Color(0xFF0B1C30)
+                                    )
+                                }
+                            }
+                        }
+                        
+                        // 3. Price Range
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text("Price Range", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B1C30))
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "₹${priceRange.start.toInt()} - ₹${priceRange.endInclusive.toInt()}",
+                            fontSize = 12.sp,
+                            color = Color(0xFF434655)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        RangeSlider(
+                            value = priceRange,
+                            onValueChange = { priceRange = it },
+                            valueRange = 0f..5000f,
+                            colors = SliderDefaults.colors(
+                                activeTrackColor = Color(0xFF004AC6),
+                                inactiveTrackColor = Color(0xFFE5EEFF),
+                                thumbColor = Color(0xFF004AC6)
+                            )
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("₹0", fontSize = 11.sp, color = Color(0xFF737686))
+                            Text("₹5000+", fontSize = 11.sp, color = Color(0xFF737686))
+                        }
+                        Spacer(modifier = Modifier.height(32.dp))
+                    }
+                    
+                    // Action button
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.White)
+                            .padding(16.dp)
+                            .border(width = 0.5.dp, color = Color(0xFFC3C6D7).copy(alpha = 0.5f))
+                    ) {
+                        Button(
+                            onClick = { showFiltersSheet = false },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(52.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004AC6))
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Show ${filteredServices.size} Services",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Icon(
+                                    imageVector = Icons.Default.ArrowForward,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun GroomingServiceGridCard(
+    service: GroomingService,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { /* Details optionally */ },
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.4f))
+    ) {
+        Column(modifier = Modifier.padding(10.dp)) {
+            // Image Box
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1.1f)
+                    .background(Color(0xFFEFF4FF), RoundedCornerShape(8.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = rememberAsyncImagePainter(service.photo),
+                    contentDescription = service.name,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+                
+                // Tag badge
+                if (service.tag != null) {
+                    val isBestSeller = service.tag == "Best Seller"
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .background(
+                                color = if (isBestSeller) Color(0xFFFEA619) else Color(0xFFBA1A1A),
+                                shape = RoundedCornerShape(topStart = 8.dp, bottomEnd = 8.dp)
+                            )
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = service.tag,
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = if (isBestSeller) Color(0xFF684000) else Color.White
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Service Name
+            Text(
+                text = service.name,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF0B1C30),
+                maxLines = 2,
+                minLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                lineHeight = 15.sp
+            )
+            
+            Spacer(modifier = Modifier.height(4.dp))
+            
+            // Duration Text Row
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = "🕒",
+                    fontSize = 12.sp
+                )
+                Text(
+                    text = service.durationText,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF434655)
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(10.dp))
+            
+            // Price & Book Button
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "₹${service.price.toInt()}",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color(0xFF0B1C30)
+                    )
+                    if (service.mrp > service.price) {
+                        Text(
+                            text = "₹${service.mrp.toInt()}",
+                            fontSize = 10.sp,
+                            color = Color(0xFF737686),
+                            textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Button(
+                onClick = onClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(36.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004AC6)),
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Text(
+                    text = "Book Now",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+        }
+    }
+}
+
+// =========================================================================
+// STITCH SCREENS ADDITIONAL HIGH FIDELITY LAYOUTS & HELPERS
+// =========================================================================
+
+@Composable
+fun PoshPawsShopDetailScreen(
+    shop: ShopEntity,
+    viewModel: PawsViewModel,
+    productsList: List<ProductEntity>,
+    filteredProductsList: List<ProductEntity>,
+    selectedCategoryId: String?,
+    onCategorySelected: (String?) -> Unit,
+    wishlists: List<WishlistEntity>,
+    cartItems: Map<String, Int>
+) {
+    val context = LocalContext.current
+    val isFavorite = wishlists.any { it.shopId == shop.id }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF8F9FF)),
+        contentPadding = PaddingValues(bottom = 100.dp)
+    ) {
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(260.dp)
+            ) {
+                Image(
+                    painter = rememberAsyncImagePainter(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data("https://lh3.googleusercontent.com/aida-public/AB6AXuDO-FLWT7iQKhtxei9MNj4zRn2Giyn_JLl-A7mFm14gNsSAeh5ZQIPsRHCcYiDaBMgn4OvvvYNsn2hJAGB4NJqgsCZLmfZXT1t_I0OW5B9ERTOzyv9XW-sKjBz4N3uEweZFAIoMUmBW-aTLY6bu1WNxdHdZNuJ0kS8SEc2OEVnf0y6K56nEFOuyvzkPwL3dy743debiOCvJJvce4R8i5PUGfzN8BrQkGHuTEzwSZzEtL7zRhZEPQ54M-79FGR3NHN58I-ApJ8m6BlA")
+                            .crossfade(true)
+                            .build()
+                    ),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+                
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.8f))
+                            )
+                        )
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = { viewModel.navigateBack() },
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(Color.White.copy(alpha = 0.8f), CircleShape)
+                    ) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color(0xFF0B1C30))
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        IconButton(
+                            onClick = { /* Search */ },
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(Color.White.copy(alpha = 0.8f), CircleShape)
+                        ) {
+                            Icon(Icons.Default.Search, contentDescription = "Search", tint = Color(0xFF0B1C30))
+                        }
+                        IconButton(
+                            onClick = { /* More options */ },
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(Color.White.copy(alpha = 0.8f), CircleShape)
+                        ) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "More", tint = Color(0xFF0B1C30))
+                        }
+                    }
+                }
+            }
+        }
+
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .offset(y = (-30).dp)
+            ) {
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                    border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.2f))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "The Posh Paws",
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF0B1C30)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Premium Pet Supplies & Accessories",
+                                fontSize = 13.sp,
+                                color = Color(0xFF434655)
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .background(Color(0xFF007D55), RoundedCornerShape(6.dp))
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Star,
+                                        null,
+                                        tint = Color(0xFFBDFFDB),
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        "4.8",
+                                        color = Color(0xFFBDFFDB),
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .background(Color(0xFFEFF4FF), RoundedCornerShape(6.dp))
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.DateRange,
+                                        null,
+                                        tint = Color(0xFF434655),
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        "20-30 mins",
+                                        color = Color(0xFF434655),
+                                        fontSize = 11.sp
+                                    )
+                                }
+
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .background(Color(0xFFEFF4FF), RoundedCornerShape(6.dp))
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.LocationOn,
+                                        null,
+                                        tint = Color(0xFF434655),
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        "1.2 km away",
+                                        color = Color(0xFF434655),
+                                        fontSize = 11.sp
+                                    )
+                                }
+                            }
+                        }
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { viewModel.toggleWishlist(shop.id) }
+                                .padding(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                contentDescription = "Follow",
+                                tint = Color(0xFF004AC6),
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = if (isFavorite) "Followed" else "Follow",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF004AC6)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .offset(y = (-10).dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    val categories = listOf(
+                        Triple(null, "All", Icons.Default.Star),
+                        Triple("cat_food", "Food", Icons.Default.Restaurant),
+                        Triple("cat_toys", "Toys", Icons.Default.PlayArrow),
+                        Triple("cat_treats", "Treats", Icons.Default.Favorite),
+                        Triple("cat_travel", "Apparel", Icons.Default.Person)
+                    )
+                    items(categories) { (catId, label, icon) ->
+                        val isSelected = selectedCategoryId == catId
+                        val containerColor = if (isSelected) Color(0xFF004AC6) else Color(0xFFEFF4FF)
+                        val contentColor = if (isSelected) Color.White else Color(0xFF0B1C30)
+                        
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(24.dp))
+                                .background(containerColor)
+                                .clickable { onCategorySelected(catId) }
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                        ) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = null,
+                                tint = contentColor,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = label,
+                                color = contentColor,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Trending Highlights",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF0B1C30),
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(
+                    imageVector = Icons.Default.Star,
+                    contentDescription = null,
+                    tint = Color(0xFFFFD700)
+                )
+            }
+        }
+
+        val chunkedProducts = filteredProductsList.chunked(2)
+        if (chunkedProducts.isEmpty()) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(48.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No products in this category.", color = Color.Gray)
+                }
+            }
+        } else {
+            items(chunkedProducts) { rowItems ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    for (product in rowItems) {
+                        val quantity = cartItems[product.id] ?: 0
+                        Box(modifier = Modifier.weight(1f)) {
+                            BoutiqueProductCard(
+                                product = product,
+                                quantity = quantity,
+                                onAdd = { viewModel.addToCart(product, shop) },
+                                onRemove = { viewModel.removeFromCart(product.id) }
+                            )
+                        }
+                    }
+                    if (rowItems.size < 2) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
+            }
+        }
+
+        item {
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 24.dp, horizontal = 16.dp),
+                color = Color(0xFFC3C6D7).copy(alpha = 0.2f)
+            )
+        }
+
+        item {
+            StoreInfoSection(shop = shop)
+        }
+    }
+}
+
+@Composable
+fun BoutiqueProductCard(
+    product: ProductEntity,
+    quantity: Int,
+    onAdd: () -> Unit,
+    onRemove: () -> Unit
+) {
+    val context = LocalContext.current
+    val isSale = product.id == "p_posh_1"
+    val isBestseller = product.id == "p_posh_2"
+    val isOutOfStock = !product.inStock || product.stockCount == 0
+
+    Card(
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.2f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(260.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(130.dp)
+                    .background(Color(0xFFEFF4FF))
+            ) {
+                Image(
+                    painter = rememberAsyncImagePainter(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(product.photos.firstOrNull())
+                            .crossfade(true)
+                            .build()
+                    ),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+
+                if (isOutOfStock) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(8.dp)
+                            .background(Color(0xFF737686), RoundedCornerShape(4.dp))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = "OUT OF STOCK",
+                            color = Color.White,
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                } else if (isSale) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(8.dp)
+                            .background(Color(0xFFBA1A1A), RoundedCornerShape(4.dp))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = "SALE",
+                            color = Color.White,
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                } else if (isBestseller) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(8.dp)
+                            .background(Color(0xFFFEA619), RoundedCornerShape(4.dp))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = "BESTSELLER",
+                            color = Color(0xFF2A1700),
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .weight(1f),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    val catLabel = when (product.categoryId) {
+                        "cat_food" -> "Premium Nutrition"
+                        "cat_toys" -> "Durable Toys"
+                        "cat_treats" -> "Gourmet Treats"
+                        "cat_furniture" -> "Sleep & Comfort"
+                        else -> "Pet Supplies"
+                    }
+                    Text(
+                        text = catLabel,
+                        fontSize = 10.sp,
+                        color = Color(0xFF434655),
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = product.name,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF0B1C30),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        lineHeight = 14.sp
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "$${String.format("%.2f", product.price)}",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF0B1C30)
+                        )
+                        if (product.mrp > product.price) {
+                            Text(
+                                text = "$${String.format("%.2f", product.mrp)}",
+                                fontSize = 10.sp,
+                                color = Color(0xFF737686),
+                                textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough
+                            )
+                        }
+                    }
+
+                    if (isOutOfStock) {
+                        Box(
+                            modifier = Modifier
+                                .background(Color(0xFFEFF4FF), RoundedCornerShape(6.dp))
+                                .padding(horizontal = 8.dp, vertical = 6.dp)
+                        ) {
+                            Text(
+                                text = "ADD",
+                                color = Color(0xFF737686),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    } else if (quantity > 0) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .background(Color(0xFF004AC6), RoundedCornerShape(6.dp))
+                                .padding(horizontal = 4.dp, vertical = 2.dp)
+                        ) {
+                            IconButton(onClick = onRemove, modifier = Modifier.size(24.dp)) {
+                                Text("-", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            }
+                            Text(
+                                quantity.toString(),
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(horizontal = 4.dp)
+                            )
+                            IconButton(onClick = onAdd, modifier = Modifier.size(24.dp)) {
+                                Icon(Icons.Default.Add, null, tint = Color.White, modifier = Modifier.size(12.dp))
+                            }
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .border(1.dp, Color(0xFF004AC6).copy(alpha = 0.3f), RoundedCornerShape(6.dp))
+                                .background(Color(0xFF004AC6).copy(alpha = 0.1f), RoundedCornerShape(6.dp))
+                                .clickable { onAdd() }
+                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                        ) {
+                            Text(
+                                text = "ADD",
+                                color = Color(0xFF004AC6),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun StoreInfoSection(shop: ShopEntity) {
+    val context = LocalContext.current
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.2f)),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "Store Information",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF0B1C30)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.Top,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.LocationOn,
+                            null,
+                            tint = Color(0xFF004AC6),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Column {
+                            Text(
+                                text = "123 Pet Avenue, Suite 4B",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF0B1C30)
+                            )
+                            Text(
+                                text = "Metropolis, NY 10001",
+                                fontSize = 12.sp,
+                                color = Color(0xFF434655)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Get Directions",
+                                fontSize = 11.sp,
+                                color = Color(0xFF004AC6),
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.clickable {
+                                    val uri = Uri.parse("google.navigation:q=${shop.lat},${shop.lng}")
+                                    val intent = Intent(Intent.ACTION_VIEW, uri)
+                                    context.startActivity(intent)
+                                }
+                            )
+                        }
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.Top,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Call,
+                            null,
+                            tint = Color(0xFF004AC6),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Column {
+                            Text(
+                                text = "(555) 123-4567",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF0B1C30)
+                            )
+                            Text(
+                                text = "Tap to call",
+                                fontSize = 12.sp,
+                                color = Color(0xFF434655),
+                                modifier = Modifier.clickable {
+                                    val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${shop.phone}"))
+                                    context.startActivity(intent)
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Card(
+                    modifier = Modifier.weight(1f),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFEFF4FF)),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.DateRange,
+                                null,
+                                tint = Color(0xFF004AC6),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = "Opening Hours",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF0B1C30)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Today", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B1C30))
+                                Text("Open until 8:00 PM", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF007D55))
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Mon - Fri", fontSize = 11.sp, color = Color(0xFF434655))
+                                Text("9:00 AM - 8:00 PM", fontSize = 11.sp, color = Color(0xFF434655))
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Saturday", fontSize = 11.sp, color = Color(0xFF434655))
+                                Text("10:00 AM - 6:00 PM", fontSize = 11.sp, color = Color(0xFF434655))
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Sunday", fontSize = 11.sp, color = Color(0xFF434655))
+                                Text("Closed", fontSize = 11.sp, color = Color(0xFF434655))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun UnifiedVaccinationsTabletsScreen(viewModel: PawsViewModel, defaultTab: Int) {
+    val reminders by viewModel.activeReminders.collectAsState()
+    val currentUser by viewModel.currentUser.collectAsState()
+    val context = LocalContext.current
+    var selectedTab by remember { mutableStateOf(defaultTab) }
+
+    val upcomingReminders = remember(reminders) {
+        reminders.filter { !it.isCompleted }
+    }
+    val completedReminders = remember(reminders) {
+        reminders.filter { it.isCompleted }
+    }
+
+    val completionPercentage = remember(reminders) {
+        val total = reminders.size
+        if (total == 0) 80 else (completedReminders.size * 100 / total)
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF8FAFC))
+            .statusBarsPadding()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            IconButton(onClick = { viewModel.navigateBack() }) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color(0xFF0B1C30))
+            }
+            Text(
+                text = "Vaccinations & Tablets",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF0B1C30),
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center
+            )
+            IconButton(onClick = { /* Notifications */ }) {
+                Icon(Icons.Default.Notifications, contentDescription = "Notifications", tint = Color(0xFF0B1C30))
+            }
+        }
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 100.dp)
+        ) {
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    border = BorderStroke(1.dp, Color(0xFFEFF4FF)),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(72.dp)
+                                    .clip(CircleShape)
+                                    .border(2.dp, Color(0xFFEFF4FF), CircleShape)
+                            ) {
+                                Image(
+                                    painter = rememberAsyncImagePainter(
+                                        model = ImageRequest.Builder(LocalContext.current)
+                                            .data("https://lh3.googleusercontent.com/aida-public/AB6AXuD4KdBQ6-mf1VyED8-6SACRuiyBSxrtR7EgrDXp3_t5OzzRwwX5ABy1McNAnNV35WjVzIe3TqCbtziE_1wsD0jpuA0NFiCnvvneMCp2LFPwv3Lvag7dvFjq2Pw2pTXdPAAugUOyaCQI2Xt-c-smX2jlSMSzxvBjIYhL0rhTiDvClEAHhKxGXAHgRHZYbmDOLQlQaK5SUoMEMmKW31D23Nelb67GHPwCOH6BuO8aDS6UDPhVcYRFh44LzwduRyvQOeFhxA80f0xg7jQ")
+                                            .crossfade(true)
+                                            .build()
+                                    ),
+                                    contentDescription = "Pet Profile",
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                            Column(modifier = Modifier.weight(1f)) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        "Buddy",
+                                        fontSize = 22.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF0B1C30)
+                                    )
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier
+                                            .background(Color(0xFFEFF4FF), RoundedCornerShape(12.dp))
+                                            .border(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.2f), RoundedCornerShape(12.dp))
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(6.dp)
+                                                .background(Color(0xFF007D55), CircleShape)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text("Healthy", fontSize = 11.sp, color = Color(0xFF007D55), fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text("Golden Retriever • 2 Years, 3 Mos", fontSize = 13.sp, color = Color(0xFF434655))
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+                        HorizontalDivider(color = Color(0xFFEFF4FF))
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("NEXT DUE", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color(0xFF737686))
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        Icons.Default.DateRange,
+                                        null,
+                                        tint = Color(0xFFBA1A1A),
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("In 3 Days", fontSize = 12.sp, color = Color(0xFFBA1A1A), fontWeight = FontWeight.Bold)
+                                }
+                            }
+
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("COMPLETION", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color(0xFF737686))
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    LinearProgressIndicator(
+                                        progress = completionPercentage / 100f,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .height(8.dp)
+                                            .clip(RoundedCornerShape(4.dp)),
+                                        color = Color(0xFF007D55),
+                                        trackColor = Color(0xFFEFF4FF)
+                                    )
+                                    Text("${completionPercentage}%", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B1C30))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .background(Color(0xFFEFF4FF), RoundedCornerShape(24.dp))
+                        .padding(4.dp)
+                ) {
+                    listOf("Upcoming", "History").forEachIndexed { index, label ->
+                        val isSelected = selectedTab == index
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(if (isSelected) Color.White else Color.Transparent)
+                                .clickable { selectedTab = index }
+                                .padding(vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = label,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isSelected) Color(0xFF0B1C30) else Color(0xFF434655)
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (selectedTab == 0) {
+                item {
+                    Text(
+                        "Action Required",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF0B1C30),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                }
+
+                if (upcomingReminders.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("No action items required! 🎉", color = Color.Gray)
+                        }
+                    }
+                } else {
+                    items(upcomingReminders) { item ->
+                        val isMed = item.type == "medication"
+                        val isOverdue = item.id == "rem_med_1" || item.id == "rem_med_2" || item.notes.contains("Due")
+                        val statusText = if (isOverdue) "Overdue" else "In 3 Days"
+                        val badgeBg = if (isOverdue) Color(0xFFFFDAD6) else Color(0xFFFEA619).copy(alpha = 0.2f)
+                        val badgeTextColor = if (isOverdue) Color(0xFFBA1A1A) else Color(0xFF855300)
+                        val accentColor = if (isOverdue) Color(0xFFBA1A1A) else Color(0xFFFEA619)
+
+                        val title = when (item.id) {
+                            "rem_med_2" -> "NexGard Spectra Tablet"
+                            "rem_vacc_1" -> "Annual C5 Booster"
+                            "rem_med_1" -> "Heartworm Tablet"
+                            "rem_vacc_2" -> "Rabies Vaccine"
+                            else -> item.title
+                        }
+                        val notes = when (item.id) {
+                            "rem_med_2" -> "Monthly flea, tick & worming treatment."
+                            "rem_vacc_1" -> "Protects against Parvovirus, Distemper, Hepatitis."
+                            else -> item.notes.substringBefore("|").trim()
+                        }
+
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 6.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            border = BorderStroke(1.dp, Color(0xFFEFF4FF)),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(IntrinsicSize.Min)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .width(4.dp)
+                                        .background(accentColor)
+                                )
+
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(40.dp)
+                                            .clip(CircleShape)
+                                            .background(accentColor.copy(alpha = 0.15f)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = if (isMed) Icons.Default.Info else Icons.Default.Star,
+                                            contentDescription = null,
+                                            tint = accentColor,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Text(
+                                                text = title,
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF0B1C30)
+                                            )
+                                            Box(
+                                                modifier = Modifier
+                                                    .background(badgeBg, RoundedCornerShape(12.dp))
+                                                    .padding(horizontal = 8.dp, vertical = 2.dp)
+                                            ) {
+                                                Text(statusText, fontSize = 9.sp, fontWeight = FontWeight.Bold, color = badgeTextColor)
+                                            }
+                                        }
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(notes, fontSize = 11.sp, color = Color(0xFF434655))
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(Icons.Default.DateRange, null, tint = Color(0xFF737686), modifier = Modifier.size(12.dp))
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text("Due: ${item.dateString}", fontSize = 10.sp, color = Color(0xFF737686))
+                                        }
+                                    }
+
+                                    if (isMed) {
+                                        Button(
+                                            onClick = {
+                                                viewModel.toggleReminderCompletion(item.id, true)
+                                                Toast.makeText(context, "${title} marked as done! 💊", Toast.LENGTH_SHORT).show()
+                                            },
+                                            shape = RoundedCornerShape(8.dp),
+                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFBA1A1A)),
+                                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                                        ) {
+                                            Text("Mark as Done", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                        }
+                                    } else {
+                                        Button(
+                                            onClick = {
+                                                Toast.makeText(context, "Redirecting to book vet... 🏥", Toast.LENGTH_SHORT).show()
+                                            },
+                                            shape = RoundedCornerShape(8.dp),
+                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004AC6)),
+                                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                                        ) {
+                                            Text("Book Vet", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                item {
+                    Text(
+                        "Recent Records",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF0B1C30),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                }
+
+                if (completedReminders.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("No completed records yet.", color = Color.Gray)
+                        }
+                    }
+                } else {
+                    items(completedReminders) { item ->
+                        val isMed = item.type == "medication"
+                        val title = when (item.id) {
+                            "rem_med_2" -> "NexGard Spectra Tablet"
+                            "rem_vacc_1" -> "Annual C5 Booster"
+                            "rem_med_1" -> "Heartworm Tablet"
+                            "rem_vacc_2" -> "Rabies Vaccine"
+                            else -> item.title
+                        }
+                        
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 6.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFF8F9FF)),
+                            border = BorderStroke(1.dp, Color(0xFFEFF4FF))
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFF007D55).copy(alpha = 0.15f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = if (isMed) Icons.Default.Info else Icons.Default.Star,
+                                        contentDescription = null,
+                                        tint = Color(0xFF007D55),
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text(
+                                            text = title,
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFF0B1C30)
+                                        )
+                                        Icon(
+                                            Icons.Default.CheckCircle,
+                                            null,
+                                            tint = Color(0xFF007D55),
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text("Given on ${item.dateString}", fontSize = 11.sp, color = Color(0xFF737686))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ActiveOrderCard(
+    shopName: String,
+    orderId: String,
+    time: String,
+    status: String,
+    deliveryInfo: String,
+    itemsSummary: String,
+    price: String,
+    trackable: Boolean,
+    onAction: () -> Unit
+) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.2f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFFEFF4FF))
+                ) {
+                    Icon(
+                        Icons.Default.ShoppingCart,
+                        null,
+                        tint = Color(0xFF004AC6),
+                        modifier = Modifier.size(24.dp).align(Alignment.Center)
+                    )
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(shopName, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B1C30))
+                    Text("Order $orderId • $time", fontSize = 11.sp, color = Color(0xFF737686))
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Card(
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFEFF4FF)),
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.1f)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .background(Color(0xFFFEA619), CircleShape)
+                        )
+                        Text(status, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF653E00))
+                    }
+                    Text(deliveryInfo, fontSize = 11.sp, color = Color(0xFF434655))
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(itemsSummary, fontSize = 13.sp, color = Color(0xFF434655))
+            Spacer(modifier = Modifier.height(12.dp))
+            HorizontalDivider(color = Color(0xFFC3C6D7).copy(alpha = 0.1f))
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(price, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B1C30))
+                Button(
+                    onClick = onAction,
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004AC6)),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    if (trackable) {
+                        Icon(Icons.Default.LocationOn, null, tint = Color.White, modifier = Modifier.size(14.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Track", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    } else {
+                        Text("Details", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun PastOrderCard(
+    shopName: String,
+    date: String,
+    itemsSummary: String,
+    price: String,
+    onReorder: () -> Unit
+) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.2f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFEFF4FF))
+                ) {
+                    Icon(
+                        Icons.Default.ShoppingCart,
+                        null,
+                        tint = Color(0xFF004AC6),
+                        modifier = Modifier.size(20.dp).align(Alignment.Center)
+                    )
+                }
+                Column {
+                    Text(shopName, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B1C30))
+                    Text(date, fontSize = 11.sp, color = Color(0xFF737686))
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(itemsSummary, fontSize = 12.sp, color = Color(0xFF434655))
+            Spacer(modifier = Modifier.height(12.dp))
+            HorizontalDivider(color = Color(0xFFC3C6D7).copy(alpha = 0.1f))
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(price, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B1C30))
+                OutlinedButton(
+                    onClick = onReorder,
+                    shape = RoundedCornerShape(8.dp),
+                    border = BorderStroke(1.dp, Color(0xFF004AC6)),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    Icon(Icons.Default.Refresh, null, tint = Color(0xFF004AC6), modifier = Modifier.size(12.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Reorder", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF004AC6))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SavedProductCard(
+    product: ProductEntity,
+    onRemove: () -> Unit,
+    onAddToCart: () -> Unit
+) {
+    val context = LocalContext.current
+    Card(
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.2f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(240.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+            ) {
+                Image(
+                    painter = rememberAsyncImagePainter(product.photos.firstOrNull()),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+
+                IconButton(
+                    onClick = onRemove,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(6.dp)
+                        .size(28.dp)
+                        .background(Color.White.copy(alpha = 0.8f), CircleShape)
+                ) {
+                    Icon(
+                        Icons.Default.Favorite,
+                        contentDescription = "Remove",
+                        tint = Color.Red,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .weight(1f),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        text = product.name,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF0B1C30),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        lineHeight = 14.sp
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Star,
+                            null,
+                            tint = Color(0xFFFFB95F),
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Text(
+                            text = "4.9",
+                            fontSize = 10.sp,
+                            color = Color(0xFF737686)
+                        )
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "$${String.format("%.2f", product.price)}",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF004AC6)
+                    )
+
+                    IconButton(
+                        onClick = onAddToCart,
+                        modifier = Modifier
+                            .size(28.dp)
+                            .background(Color(0xFFEFF4FF), CircleShape)
+                    ) {
+                        Icon(
+                            Icons.Default.ShoppingCart,
+                            contentDescription = "Add to Cart",
+                            tint = Color(0xFF004AC6),
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SavedShopCard(
+    shop: ShopEntity,
+    onRemove: () -> Unit,
+    onClick: () -> Unit
+) {
+    val context = LocalContext.current
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.2f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .clickable { onClick() }
+    ) {
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+            ) {
+                Image(
+                    painter = rememberAsyncImagePainter(shop.photos.firstOrNull()),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.2f))
+                )
+
+                IconButton(
+                    onClick = onRemove,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                        .size(32.dp)
+                        .background(Color.Black.copy(alpha = 0.4f), CircleShape)
+                ) {
+                    Icon(
+                        Icons.Default.Favorite,
+                        contentDescription = "Remove",
+                        tint = Color.Red,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier.padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFF007D55)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = shop.name.take(2).uppercase(),
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
+                }
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(shop.name, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B1C30))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Star, null, tint = Color(0xFFFEA619), modifier = Modifier.size(14.dp))
+                            Spacer(modifier = Modifier.width(2.dp))
+                            Text(shop.rating.toString(), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B1C30))
+                        }
+                    }
+                    Text(shop.description, fontSize = 11.sp, color = Color(0xFF434655), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("30-45 min", fontSize = 10.sp, color = Color(0xFF737686))
+                        Box(modifier = Modifier.size(3.dp).background(Color(0xFFC3C6D7), CircleShape))
+                        Text("2.4 km", fontSize = 10.sp, color = Color(0xFF737686))
+                    }
+                }
+            }
+        }
     }
 }
 
