@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PawsApp Central Governance - User Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-container": "#fea619",
+                        "outline-variant": "#c3c6d7",
+                        "primary-container": "#2563eb",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#ffddb8",
+                        "outline": "#737686",
+                        "error": "#ba1a1a",
+                        "on-primary-container": "#eeefff",
+                        "surface-dim": "#cbdbf5",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "error-container": "#ffdad6",
+                        "surface-variant": "#d3e4fe",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "surface": "#f8f9ff",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#eaf1ff",
+                        "primary-fixed": "#dbe1ff",
+                        "on-secondary-fixed": "#2a1700",
+                        "on-tertiary": "#ffffff",
+                        "surface-container": "#e5eeff",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "on-primary-fixed": "#00174b",
+                        "tertiary-container": "#007d55",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "tertiary": "#006242",
+                        "on-tertiary-fixed": "#002113",
+                        "on-secondary-container": "#684000",
+                        "tertiary-fixed": "#6ffbbe",
+                        "surface-container-high": "#dce9ff",
+                        "surface-container-low": "#eff4ff",
+                        "on-surface-variant": "#434655",
+                        "on-background": "#0b1c30",
+                        "surface-bright": "#f8f9ff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "surface-container-lowest": "#ffffff",
+                        "background": "#f8f9ff",
+                        "inverse-surface": "#213145",
+                        "secondary": "#855300",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "surface-tint": "#0053db",
+                        "on-surface": "#0b1c30",
+                        "primary": "#004ac6",
+                        "on-error": "#ffffff",
+                        "on-tertiary-container": "#bdffdb",
+                        "inverse-primary": "#b4c5ff",
+                        "surface-container-highest": "#d3e4fe"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "48px",
+                        "gutter": "16px",
+                        "base": "4px",
+                        "xs": "8px",
+                        "sm": "12px",
+                        "md": "16px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "display-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1;
+        }
+        
+        /* Subtle scrollbar for lists */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col md:flex-row antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar (Web) / Navigation Drawer (Placeholder structure for potential hybrid approach) -->
+<!-- For this view, we focus on the requested TopAppBar and BottomNavBar from JSON -->
+<!-- TopAppBar -->
+<header class="bg-surface-container shadow-sm docked full-width top-0 sticky z-40 hidden md:flex justify-between items-center px-margin-desktop py-md w-full">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-primary text-[28px]" data-icon="admin_panel_settings">admin_panel_settings</span>
+<h1 class="text-headline-md font-headline-md font-black text-primary">PawsApp Central Governance</h1>
+</div>
+<!-- Web Nav Cluster -->
+<nav class="flex items-center gap-lg">
+<a class="text-on-surface-variant hover:text-primary transition-all text-label-md font-label-md" href="#">Cities</a>
+<a class="text-on-surface-variant hover:text-primary transition-all text-label-md font-label-md" href="#">Analytics</a>
+<a class="text-primary font-bold border-b-2 border-primary text-label-md font-label-md pb-xs" href="#">User Management</a>
+<a class="text-on-surface-variant hover:text-primary transition-all text-label-md font-label-md" href="#">Catalog</a>
+</nav>
+<div class="flex items-center gap-md">
+<div class="h-10 w-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-label-md shadow-sm border border-outline-variant/30">
+                SA
+            </div>
+<div class="hidden lg:block">
+<p class="text-label-md font-label-md text-on-surface">Super Admin User</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Central Command</p>
+</div>
+</div>
+</header>
+<!-- Mobile Header Fallback -->
+<header class="md:hidden bg-surface-container shadow-sm docked full-width top-0 sticky z-40 flex justify-between items-center px-margin-mobile py-sm w-full">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary text-[24px]" data-icon="admin_panel_settings">admin_panel_settings</span>
+<h1 class="text-headline-md font-headline-md font-black text-primary truncate max-w-[200px]">PawsApp Central Governance</h1>
+</div>
+<div class="h-8 w-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-label-sm">
+            SA
+        </div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 w-full max-w-[1600px] mx-auto p-margin-mobile md:p-margin-desktop pb-[100px] md:pb-margin-desktop flex flex-col lg:flex-row gap-lg">
+<!-- Left Column: User List & Controls -->
+<div class="flex-1 flex flex-col gap-md">
+<!-- Header & Search Bar -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-md mb-xs">
+<div>
+<h2 class="text-headline-lg-mobile md:text-headline-lg font-headline-lg-mobile md:font-headline-lg text-on-surface">User Management</h2>
+<p class="text-body-md font-body-md text-on-surface-variant mt-base">Manage Consumers, Merchants, and Captains across the platform.</p>
+</div>
+<div class="flex gap-sm w-full md:w-auto">
+<div class="relative w-full md:w-72">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
+<input class="w-full pl-[40px] pr-sm py-sm bg-surface-container-lowest border border-outline-variant rounded-lg text-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-outline shadow-sm" placeholder="Search by name, email, ID..." type="text"/>
+</div>
+</div>
+</div>
+<!-- Filters & Bulk Actions -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-sm bg-surface-container-lowest p-sm rounded-xl border border-outline-variant shadow-sm">
+<!-- Role Filters (Bento style toggle) -->
+<div class="flex gap-xs p-base bg-surface-container-low rounded-lg overflow-x-auto custom-scrollbar">
+<button class="px-md py-xs rounded-md bg-surface-container-lowest text-primary font-label-md text-label-md shadow-sm border border-outline-variant whitespace-nowrap transition-all">All Users</button>
+<button class="px-md py-xs rounded-md text-on-surface-variant hover:bg-surface-container-lowest hover:text-on-surface font-label-md text-label-md transition-all whitespace-nowrap">Consumers</button>
+<button class="px-md py-xs rounded-md text-on-surface-variant hover:bg-surface-container-lowest hover:text-on-surface font-label-md text-label-md transition-all whitespace-nowrap">Merchants</button>
+<button class="px-md py-xs rounded-md text-on-surface-variant hover:bg-surface-container-lowest hover:text-on-surface font-label-md text-label-md transition-all whitespace-nowrap">Captains</button>
+</div>
+<!-- Bulk Actions -->
+<div class="flex items-center gap-sm mt-sm sm:mt-0">
+<span class="text-label-sm font-label-sm text-on-surface-variant hidden md:inline-block">Bulk Actions:</span>
+<button class="flex items-center justify-center gap-xs px-sm py-xs bg-surface-container-highest hover:bg-surface-dim text-on-surface rounded-lg transition-colors border border-outline-variant text-label-md font-label-md flex-1 sm:flex-none">
+<span class="material-symbols-outlined text-[18px]" data-icon="mail">mail</span>
+                        Message
+                    </button>
+<button class="flex items-center justify-center gap-xs px-sm py-xs bg-surface-container-highest hover:bg-surface-dim text-on-surface rounded-lg transition-colors border border-outline-variant text-label-md font-label-md flex-1 sm:flex-none">
+<span class="material-symbols-outlined text-[18px]" data-icon="download">download</span>
+                        Export
+                    </button>
+</div>
+</div>
+<!-- User List Canvas (Glassmorphism inspired clean list) -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden flex flex-col flex-1 min-h-[400px]">
+<!-- Table Header -->
+<div class="grid grid-cols-[auto_1fr_1fr_1fr_auto] gap-sm px-md py-sm bg-surface-container border-b border-outline-variant text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider items-center hidden md:grid">
+<div class="w-8 flex justify-center"><input class="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer" type="checkbox"/></div>
+<div>User Info</div>
+<div>Role &amp; Segment</div>
+<div>Join Date</div>
+<div class="text-right">Status</div>
+</div>
+<!-- List Items Container -->
+<div class="flex-1 overflow-y-auto custom-scrollbar flex flex-col divide-y divide-outline-variant/50">
+<!-- Selected Item Example -->
+<div class="grid grid-cols-1 md:grid-cols-[auto_1fr_1fr_1fr_auto] gap-sm px-md py-sm items-center hover:bg-surface-container-low transition-colors cursor-pointer bg-primary-container/10 border-l-4 border-l-primary group">
+<div class="w-8 flex justify-center hidden md:flex"><input checked="" class="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer" type="checkbox"/></div>
+<div class="flex items-center gap-sm">
+<img alt="Profile" class="w-10 h-10 rounded-full object-cover border border-outline-variant shadow-sm" data-alt="A close-up portrait of a young professional woman with light skin, dark hair, and a slight smile, set against a soft, blurred modern office background. The lighting is bright and even, fitting a clean, corporate light-mode UI aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3Bb90paUSwsfnJ6Duhe_axwNmgIdQLlXyx2ZrM9O0bq1kE2UAm0H1n-j4_G7J-BQmXXE9oyfy8hkCxCPTrnBxRX5TZFOING3L6c4aWgad1d4_o1DNWhpmSGimDH-jyIOOaNwbKVROHNXkvnBmhXmfNM2k_fRezvKKBNEuw4f2jwdOtDrvfimgtD4r-EfUiSrlbozwNQ6eowYG-seXEQC6YFrUtw4Fhx5wia2Tt6Bd87yT0fCs2dOR9je6Vl4Ir_YrqmXRyt0EsoM"/>
+<div>
+<p class="text-label-md font-label-md text-on-surface group-hover:text-primary transition-colors">Sarah Jenkins</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant">sarah.j@example.com</p>
+</div>
+</div>
+<div class="hidden md:flex items-center gap-xs">
+<span class="px-2 py-1 rounded-full bg-surface-dim text-on-surface text-[10px] font-bold uppercase tracking-wider">Consumer</span>
+<span class="px-2 py-1 rounded-full bg-tertiary-container/20 text-tertiary text-[10px] font-bold uppercase tracking-wider">Premium</span>
+</div>
+<div class="hidden md:block text-body-md text-on-surface-variant text-sm">
+                            Oct 12, 2023
+                        </div>
+<div class="flex justify-between md:justify-end items-center mt-sm md:mt-0">
+<!-- Mobile only role display -->
+<div class="md:hidden flex items-center gap-xs">
+<span class="px-2 py-1 rounded-full bg-surface-dim text-on-surface text-[10px] font-bold uppercase tracking-wider">Consumer</span>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-tertiary-container/10 text-tertiary text-label-sm font-label-sm border border-tertiary-container/20">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                                Active
+                            </span>
+</div>
+</div>
+<!-- Regular Item 1 -->
+<div class="grid grid-cols-1 md:grid-cols-[auto_1fr_1fr_1fr_auto] gap-sm px-md py-sm items-center hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="w-8 flex justify-center hidden md:flex"><input class="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer" type="checkbox"/></div>
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center text-label-md font-bold border border-outline-variant shadow-sm">
+                                MP
+                            </div>
+<div>
+<p class="text-label-md font-label-md text-on-surface group-hover:text-primary transition-colors">Marcus Paws (Store)</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant">marcus@pawsboutique.com</p>
+</div>
+</div>
+<div class="hidden md:flex items-center gap-xs">
+<span class="px-2 py-1 rounded-full bg-secondary-container/20 text-secondary text-[10px] font-bold uppercase tracking-wider">Merchant</span>
+</div>
+<div class="hidden md:block text-body-md text-on-surface-variant text-sm">
+                            Nov 05, 2023
+                        </div>
+<div class="flex justify-between md:justify-end items-center mt-sm md:mt-0">
+<div class="md:hidden flex items-center gap-xs">
+<span class="px-2 py-1 rounded-full bg-secondary-container/20 text-secondary text-[10px] font-bold uppercase tracking-wider">Merchant</span>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-tertiary-container/10 text-tertiary text-label-sm font-label-sm border border-tertiary-container/20">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                                Active
+                            </span>
+</div>
+</div>
+<!-- Regular Item 2 (Suspended) -->
+<div class="grid grid-cols-1 md:grid-cols-[auto_1fr_1fr_1fr_auto] gap-sm px-md py-sm items-center hover:bg-surface-container-low transition-colors cursor-pointer opacity-75 group">
+<div class="w-8 flex justify-center hidden md:flex"><input class="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer" type="checkbox"/></div>
+<div class="flex items-center gap-sm">
+<img alt="Profile" class="w-10 h-10 rounded-full object-cover border border-outline-variant shadow-sm grayscale" data-alt="A portrait of a middle-aged man with short hair and glasses, looking serious. The background is a stark, slightly desaturated concrete wall, implying a strict or formal setting suitable for a corporate light-mode UI focusing on user status." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7hVwW82VEy9pJ-FDTc8ajrRnMFNcqD0eXgHIse5sRMCi2YP2WPweYGMPl10AI9tK_HVn8tT7tk3oxLk-SYtimGscfwVKofFgVs-1Db4C_K_qpAYji2PeA8sIQZ51zKTy7PHkWvFPBYLyJQnth2yKHrSogcvtNvfqVhkyOf6aPzBBmgqzJ9F5-B8aYwblfQNHLyackxCls2EWmJiefQNp5i9qjmy6P7bs77TiPm2YoxzdR1sfE-IH6_drMDtjkaL8SwM6QQp-t5t4"/>
+<div>
+<p class="text-label-md font-label-md text-on-surface group-hover:text-primary transition-colors">David Walker</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant">david.w@transit.com</p>
+</div>
+</div>
+<div class="hidden md:flex items-center gap-xs">
+<span class="px-2 py-1 rounded-full bg-primary-container/20 text-primary text-[10px] font-bold uppercase tracking-wider">Captain</span>
+</div>
+<div class="hidden md:block text-body-md text-on-surface-variant text-sm">
+                            Sep 22, 2023
+                        </div>
+<div class="flex justify-between md:justify-end items-center mt-sm md:mt-0">
+<div class="md:hidden flex items-center gap-xs">
+<span class="px-2 py-1 rounded-full bg-primary-container/20 text-primary text-[10px] font-bold uppercase tracking-wider">Captain</span>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-error-container/30 text-error text-label-sm font-label-sm border border-error-container/50">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                                Suspended
+                            </span>
+</div>
+</div>
+<!-- Regular Item 3 -->
+<div class="grid grid-cols-1 md:grid-cols-[auto_1fr_1fr_1fr_auto] gap-sm px-md py-sm items-center hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="w-8 flex justify-center hidden md:flex"><input class="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer" type="checkbox"/></div>
+<div class="flex items-center gap-sm">
+<img alt="Profile" class="w-10 h-10 rounded-full object-cover border border-outline-variant shadow-sm" data-alt="A portrait of a cheerful young woman with blonde hair, outdoors against a slightly blurred green foliage background. The lighting is warm and natural, evoking a friendly, approachable vibe suitable for a consumer profile in a modern light-mode UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2LAzu9dgkNrWaKklr4zz_aK2bfq041HrnTLR0X7AuO1urEdDjal1gh_ZPeXMli-ZV-UYv9BZ7URC9PiMh1xBJQ2MnkJrIeYGnS2F18r2bpKN4q-94NWbaaH_x9WDvLBE9DpY8xcIDPyu7QRncSY838kpbUYi6pc6YkhBpXKQR-1D1Cqy13QJ1x8c_Ua-E6j9xX7T4zGjDwocfCyXWpQWTt8WG9yRyRbp8RYgr__AgPvVnHuGCV8lXiHs1cs01vpvwAUcT7QUaNgY"/>
+<div>
+<p class="text-label-md font-label-md text-on-surface group-hover:text-primary transition-colors">Emma Davis</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant">emma.d@example.com</p>
+</div>
+</div>
+<div class="hidden md:flex items-center gap-xs">
+<span class="px-2 py-1 rounded-full bg-surface-dim text-on-surface text-[10px] font-bold uppercase tracking-wider">Consumer</span>
+</div>
+<div class="hidden md:block text-body-md text-on-surface-variant text-sm">
+                            Jan 15, 2024
+                        </div>
+<div class="flex justify-between md:justify-end items-center mt-sm md:mt-0">
+<div class="md:hidden flex items-center gap-xs">
+<span class="px-2 py-1 rounded-full bg-surface-dim text-on-surface text-[10px] font-bold uppercase tracking-wider">Consumer</span>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-tertiary-container/10 text-tertiary text-label-sm font-label-sm border border-tertiary-container/20">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                                Active
+                            </span>
+</div>
+</div>
+</div>
+<!-- Pagination Footer -->
+<div class="px-md py-sm bg-surface-container-lowest border-t border-outline-variant flex items-center justify-between">
+<span class="text-label-sm text-on-surface-variant">Showing 1 to 4 of 248 users</span>
+<div class="flex gap-xs">
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-[18px]" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container">
+<span class="material-symbols-outlined text-[18px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Detail View (Asymmetric layout) -->
+<aside class="w-full lg:w-[400px] flex flex-col gap-md">
+<!-- Detail Card -->
+<div class="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm overflow-hidden flex flex-col h-full relative">
+<!-- Decorative Banner -->
+<div class="h-24 bg-gradient-to-r from-primary-container to-surface-dim relative">
+<!-- Banner Action -->
+<button class="absolute top-sm right-sm w-8 h-8 rounded-full bg-surface-container-lowest/80 backdrop-blur flex items-center justify-center text-on-surface hover:bg-surface-container-lowest transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+<!-- Profile Identity -->
+<div class="px-lg pb-md relative flex flex-col items-center text-center mt-[-40px]">
+<img alt="Sarah Jenkins Detailed Profile" class="w-20 h-20 rounded-full object-cover border-4 border-surface-container-lowest shadow-md bg-surface-container-lowest" data-alt="A medium close-up portrait of a young professional woman with light skin, dark hair, and a slight smile, set against a soft, blurred modern office background. The lighting is bright and even, fitting a clean, corporate light-mode UI aesthetic. The image is circular and prominent." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAS4iKmJmpbCbkCwAE8jDv3Ek-nmSLNwKmXUZ1GltiKopNhpbp5U5Z0X_JsiOt-JvvkSPtGja7VDq6hPcTChFBTIWu0K8005w98aVt8hA881C-cEZk-dM2zgqdfmD--AM5eXX6XGTrelAjEL9_dzYr7TKkjedoEGnWna15oxJu1_nXbzqM9c7nzmKnxNk8ZVdR73fiAxT180CDfUSFwmXWdp34KkYcJPqChDvr0jn_NFOGqXZ4bU2-gii3NFKNMOBZYSbk1pp99HOE"/>
+<h3 class="text-headline-md font-headline-md text-on-surface mt-sm">Sarah Jenkins</h3>
+<p class="text-body-md text-on-surface-variant">sarah.j@example.com</p>
+<p class="text-label-sm text-outline mt-xs">+1 (555) 123-4567</p>
+<div class="flex gap-xs mt-sm">
+<span class="px-3 py-1 rounded-full bg-surface-dim text-on-surface text-label-sm font-label-sm border border-outline-variant/30">Consumer</span>
+<span class="px-3 py-1 rounded-full bg-tertiary-container/20 text-tertiary text-label-sm font-label-sm border border-tertiary-container/30">Premium User</span>
+</div>
+</div>
+<hr class="border-outline-variant/50 mx-lg"/>
+<!-- Stats / Bento Grid Mini -->
+<div class="p-lg grid grid-cols-2 gap-sm">
+<div class="bg-surface-container-low p-sm rounded-xl border border-outline-variant/50 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-primary mb-xs text-[20px]" data-icon="shopping_bag">shopping_bag</span>
+<span class="text-headline-md font-headline-md text-on-surface">42</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Total Orders</span>
+</div>
+<div class="bg-surface-container-low p-sm rounded-xl border border-outline-variant/50 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-secondary-container mb-xs text-[20px]" data-icon="pets">pets</span>
+<span class="text-headline-md font-headline-md text-on-surface">2</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Registered Pets</span>
+</div>
+</div>
+<hr class="border-outline-variant/50 mx-lg"/>
+<!-- Account Info -->
+<div class="p-lg flex-1">
+<h4 class="text-label-md font-label-md text-on-surface uppercase tracking-wide mb-sm">Account Details</h4>
+<div class="space-y-sm">
+<div class="flex justify-between items-center py-xs border-b border-outline-variant/30">
+<span class="text-body-md text-on-surface-variant">Member Since</span>
+<span class="text-label-md font-label-md text-on-surface">Oct 12, 2023</span>
+</div>
+<div class="flex justify-between items-center py-xs border-b border-outline-variant/30">
+<span class="text-body-md text-on-surface-variant">Last Active</span>
+<span class="text-label-md font-label-md text-on-surface">2 hours ago</span>
+</div>
+<div class="flex justify-between items-center py-xs border-b border-outline-variant/30">
+<span class="text-body-md text-on-surface-variant">Location</span>
+<span class="text-label-md font-label-md text-on-surface">Seattle, WA</span>
+</div>
+</div>
+</div>
+<!-- Critical Actions (Suspension) -->
+<div class="p-lg bg-surface-container mt-auto border-t border-outline-variant rounded-b-2xl">
+<div class="flex items-center justify-between">
+<div>
+<h4 class="text-label-md font-label-md text-error">Suspend Account</h4>
+<p class="text-label-sm text-on-surface-variant mt-1 max-w-[200px]">Temporarily disable access to the platform.</p>
+</div>
+<!-- Toggle Switch -->
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-outline-variant rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-error"></div>
+</label>
+</div>
+</div>
+</div>
+</aside>
+</main>
+<!-- BottomNavBar (Mobile) -->
+<nav class="md:hidden fixed bottom-0 w-full flex justify-around items-center px-md pb-safe bg-surface shadow-lg z-50">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-lg py-xs" href="#">
+<span class="material-symbols-outlined" data-icon="location_city">location_city</span>
+<span class="text-label-sm font-label-sm">Cities</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-lg py-xs" href="#">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
+<span class="text-label-sm font-label-sm">Analytics</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-lg py-xs transform scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="group" data-weight="fill">group</span>
+<span class="text-label-sm font-label-sm font-bold mt-1">Users</span> <!-- Truncated label for bottom nav fit if needed, keeping intent -->
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-lg py-xs" href="#">
+<span class="material-symbols-outlined" data-icon="category">category</span>
+<span class="text-label-sm font-label-sm">Catalog</span>
+</a>
+</nav>
+<script>
+        // Simple script to toggle active state on the bento filter pills for visual feedback
+        document.addEventListener('DOMContentLoaded', () => {
+            const filterBtns = document.querySelectorAll('.custom-scrollbar button');
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Reset all
+                    filterBtns.forEach(b => {
+                        b.className = 'px-md py-xs rounded-md text-on-surface-variant hover:bg-surface-container-lowest hover:text-on-surface font-label-md text-label-md transition-all whitespace-nowrap';
+                    });
+                    // Set active
+                    btn.className = 'px-md py-xs rounded-md bg-surface-container-lowest text-primary font-label-md text-label-md shadow-sm border border-outline-variant whitespace-nowrap transition-all';
+                });
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Platform Analytics &amp; Governance</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-container": "#fea619",
+                        "outline-variant": "#c3c6d7",
+                        "primary-container": "#2563eb",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#ffddb8",
+                        "outline": "#737686",
+                        "error": "#ba1a1a",
+                        "on-primary-container": "#eeefff",
+                        "surface-dim": "#cbdbf5",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "error-container": "#ffdad6",
+                        "surface-variant": "#d3e4fe",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "surface": "#f8f9ff",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#eaf1ff",
+                        "primary-fixed": "#dbe1ff",
+                        "on-secondary-fixed": "#2a1700",
+                        "on-tertiary": "#ffffff",
+                        "surface-container": "#e5eeff",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "on-primary-fixed": "#00174b",
+                        "tertiary-container": "#007d55",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "tertiary": "#006242",
+                        "on-tertiary-fixed": "#002113",
+                        "on-secondary-container": "#684000",
+                        "tertiary-fixed": "#6ffbbe",
+                        "surface-container-high": "#dce9ff",
+                        "surface-container-low": "#eff4ff",
+                        "on-surface-variant": "#434655",
+                        "on-background": "#0b1c30",
+                        "surface-bright": "#f8f9ff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "surface-container-lowest": "#ffffff",
+                        "background": "#f8f9ff",
+                        "inverse-surface": "#213145",
+                        "secondary": "#855300",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "surface-tint": "#0053db",
+                        "on-surface": "#0b1c30",
+                        "primary": "#004ac6",
+                        "on-error": "#ffffff",
+                        "on-tertiary-container": "#bdffdb",
+                        "inverse-primary": "#b4c5ff",
+                        "surface-container-highest": "#d3e4fe"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "48px",
+                        "gutter": "16px",
+                        "base": "4px",
+                        "xs": "8px",
+                        "sm": "12px",
+                        "md": "16px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "display-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.6);
+        }
+        /* Mobile safe area padding for bottom nav */
+        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 80px); }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen antialiased flex flex-col md:flex-row font-body-md">
+<!-- Desktop Navigation Drawer (Hidden on Mobile) -->
+<aside class="hidden md:flex flex-col h-screen w-72 fixed left-0 top-0 bg-surface shadow-sm border-r border-outline-variant py-lg z-50">
+<div class="px-md mb-lg flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-headline-md">
+                P
+            </div>
+<div>
+<h2 class="text-headline-md font-headline-md font-extrabold text-primary">PawsApp Partner</h2>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Grooming &amp; Supplies</p>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-xs mt-md">
+<a class="flex items-center gap-md text-on-surface-variant px-md py-sm mx-sm hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-label-md font-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-md bg-primary-container text-on-primary-container rounded-lg px-md py-sm mx-sm opacity-90 scale-98 transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">monitoring</span>
+<span class="text-label-md font-label-md font-bold">Analytics</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant px-md py-sm mx-sm hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">location_city</span>
+<span class="text-label-md font-label-md">Cities</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant px-md py-sm mx-sm hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-label-md font-label-md">User Management</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant px-md py-sm mx-sm hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">category</span>
+<span class="text-label-md font-label-md">Catalog</span>
+</a>
+</nav>
+<div class="px-md mt-auto">
+<a class="flex items-center gap-md text-on-surface-variant px-md py-sm hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-label-md font-label-md">Settings</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col md:ml-72 min-h-screen relative w-full">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-margin-mobile md:px-margin-desktop py-md w-full bg-surface-container-lowest shadow-sm docked full-width top-0 sticky z-40">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary md:hidden">admin_panel_settings</span>
+<h1 class="text-headline-lg-mobile md:text-headline-lg font-headline-lg-mobile md:font-headline-lg font-black text-primary truncate">
+                    PawsApp Central Governance
+                </h1>
+</div>
+<div class="flex items-center gap-md">
+<div class="hidden md:flex items-center gap-sm">
+<span class="w-2 h-2 rounded-full bg-tertiary-container shadow-[0_0_8px_rgba(0,125,85,0.6)] animate-pulse"></span>
+<span class="text-label-sm font-label-sm text-tertiary-container">Systems Operational</span>
+</div>
+<div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant flex items-center justify-center">
+<img alt="Super Admin User" class="w-full h-full object-cover" data-alt="A professional headshot of a corporate executive, smiling warmly against a clean, light blue background. The lighting is bright and modern, conveying trust and authority within a high-end corporate setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAD5EThVinLbonU9klMACNLEvgumXAkOBWulbvzyVJk52rrtHrCIpRWO22fnfwg72ZtHu-8s0LSOFot4BThhuhl8SrP1CCS6SvVt5q3_qxsbxG2yGu0Bc5uVNiqMBz3pj3YHBkWrtPqalRwpcZ4w7BIK_wJXMFbKALEIKciys5HeJH35DYzkvlFozvXt5IASmpwqxbgFHfMKxDsayeixcH8RYStBas26ko6ALeuAdR67WE3CBsDN6ddRbcYZCd5ARX6JTCkTX_Mca0"/>
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<div class="flex-1 p-margin-mobile md:p-margin-desktop pb-safe max-w-[1600px] mx-auto w-full flex flex-col gap-lg">
+<!-- Global Performance Header & Quick Actions -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-md">
+<div>
+<h2 class="text-headline-md font-headline-md text-on-background mb-base">Global Performance</h2>
+<p class="text-body-md font-body-md text-on-surface-variant">Real-time metrics across all operating regions.</p>
+</div>
+<button class="bg-primary hover:bg-on-primary-fixed-variant text-on-primary px-lg py-sm rounded-lg flex items-center gap-xs transition-all shadow-sm hover:shadow-md w-full md:w-auto justify-center">
+<span class="material-symbols-outlined text-sm">campaign</span>
+<span class="text-label-md font-label-md">Send Broadcast</span>
+</button>
+</div>
+<!-- Metrics Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<!-- GMV Card -->
+<div class="glass-panel rounded-xl p-lg flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-shadow">
+<div class="absolute top-0 right-0 p-md opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-display-lg" style="font-size: 80px;">payments</span>
+</div>
+<div class="flex items-center gap-xs mb-md relative z-10">
+<div class="w-8 h-8 rounded-full bg-primary-container text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+</div>
+<span class="text-label-md font-label-md text-on-surface-variant">Total GMV (MTD)</span>
+</div>
+<div class="relative z-10">
+<h3 class="text-display-lg font-display-lg text-on-background tracking-tight">$4.2M</h3>
+<p class="text-label-sm font-label-sm text-tertiary mt-base flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]">arrow_upward</span>
+                            +12.4% vs last month
+                        </p>
+</div>
+</div>
+<!-- Active Users Card -->
+<div class="glass-panel rounded-xl p-lg flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-shadow">
+<div class="absolute top-0 right-0 p-md opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-display-lg" style="font-size: 80px;">group</span>
+</div>
+<div class="flex items-center gap-xs mb-md relative z-10">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">person</span>
+</div>
+<span class="text-label-md font-label-md text-on-surface-variant">Active Users</span>
+</div>
+<div class="relative z-10">
+<h3 class="text-display-lg font-display-lg text-on-background tracking-tight">842K</h3>
+<p class="text-label-sm font-label-sm text-tertiary mt-base flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]">arrow_upward</span>
+                            +5.2% vs last month
+                        </p>
+</div>
+</div>
+<!-- Total Orders Card -->
+<div class="glass-panel rounded-xl p-lg flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-shadow">
+<div class="absolute top-0 right-0 p-md opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-display-lg" style="font-size: 80px;">local_mall</span>
+</div>
+<div class="flex items-center gap-xs mb-md relative z-10">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">shopping_bag</span>
+</div>
+<span class="text-label-md font-label-md text-on-surface-variant">Total Orders</span>
+</div>
+<div class="relative z-10">
+<h3 class="text-display-lg font-display-lg text-on-background tracking-tight">1.2M</h3>
+<p class="text-label-sm font-label-sm text-tertiary mt-base flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]">arrow_upward</span>
+                            +8.1% vs last month
+                        </p>
+</div>
+</div>
+</div>
+<!-- Secondary Grids -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-md mt-sm">
+<!-- City Management -->
+<div class="glass-panel rounded-xl flex flex-col">
+<div class="p-md border-b border-outline-variant flex justify-between items-center bg-surface-bright rounded-t-xl">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary">location_city</span>
+<h3 class="text-headline-md font-headline-md text-on-background">City Management</h3>
+</div>
+<button class="text-primary hover:text-on-primary-fixed-variant text-label-md font-label-md flex items-center gap-xs px-sm py-xs rounded hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-sm">add</span>
+                            Add City
+                        </button>
+</div>
+<div class="p-md flex flex-col gap-sm">
+<!-- City Item 1 -->
+<div class="flex items-center justify-between p-sm rounded-lg hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded bg-surface-container flex items-center justify-center text-primary font-bold">
+                                    NY
+                                </div>
+<div>
+<p class="text-label-md font-label-md text-on-background">New York City</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant">452 Active Merchants</p>
+</div>
+</div>
+<span class="px-xs py-[2px] bg-tertiary-container/10 text-tertiary-container rounded text-label-sm font-label-sm">Active</span>
+</div>
+<!-- City Item 2 -->
+<div class="flex items-center justify-between p-sm rounded-lg hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded bg-surface-container flex items-center justify-center text-primary font-bold">
+                                    LD
+                                </div>
+<div>
+<p class="text-label-md font-label-md text-on-background">London</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant">310 Active Merchants</p>
+</div>
+</div>
+<span class="px-xs py-[2px] bg-tertiary-container/10 text-tertiary-container rounded text-label-sm font-label-sm">Active</span>
+</div>
+<!-- City Item 3 -->
+<div class="flex items-center justify-between p-sm rounded-lg hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded bg-surface-container flex items-center justify-center text-on-surface-variant font-bold border border-dashed border-outline">
+                                    TK
+                                </div>
+<div>
+<p class="text-label-md font-label-md text-on-background">Tokyo</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Preparing Launch</p>
+</div>
+</div>
+<span class="px-xs py-[2px] bg-secondary-container/10 text-secondary rounded text-label-sm font-label-sm">Pending</span>
+</div>
+</div>
+</div>
+<!-- Merchant Approvals -->
+<div class="glass-panel rounded-xl flex flex-col">
+<div class="p-md border-b border-outline-variant flex justify-between items-center bg-surface-bright rounded-t-xl">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary-container">storefront</span>
+<h3 class="text-headline-md font-headline-md text-on-background">Merchant Queue</h3>
+</div>
+<span class="bg-error text-on-error w-6 h-6 rounded-full flex items-center justify-center text-label-sm font-label-sm">3</span>
+</div>
+<div class="p-md flex flex-col gap-sm">
+<!-- Merchant Item 1 -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between p-sm rounded-lg border border-outline-variant bg-surface-bright gap-md">
+<div class="flex items-center gap-md">
+<img alt="Dog Grooming" class="w-12 h-12 rounded object-cover" data-alt="A clean, modern storefront for a high-end dog grooming salon. The exterior features sleek branding, large windows, and an inviting, professional atmosphere bathed in bright daylight." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDz7E1gPu0rVRMfsS4F2uf9_8Yp3sZ_JK-jEzuHDl7JXr9vmKu21XAxnWu49VaVIDigwfFHwAZNSq-ZCquwV8jxxnzzsHwkO1iEJwGz7b74WH3YZSiTdA_XPtxpr8WxICDkCiNLgBdmvxDobUCw6Jpfr52KdUYbFk7pvzhHNUttrM-8oEwcY7zpuolmvzQGbB5ys-goeCRTd6JZOer_oGeJyarLJ0IeYurbt9RzlauZ7ol9Y_38SG8TpKd9KrbmUjns66r5x7Yh5Ng"/>
+<div>
+<p class="text-label-md font-label-md text-on-background">Paws &amp; Bubbles</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Grooming • New York</p>
+</div>
+</div>
+<div class="flex gap-xs w-full sm:w-auto">
+<button class="flex-1 sm:flex-none px-md py-xs rounded bg-surface-container hover:bg-surface-container-high text-on-background text-label-sm font-label-sm transition-colors border border-outline-variant">Review</button>
+<button class="flex-1 sm:flex-none px-md py-xs rounded bg-primary hover:bg-on-primary-fixed-variant text-on-primary text-label-sm font-label-sm transition-colors">Approve</button>
+</div>
+</div>
+<!-- Merchant Item 2 -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between p-sm rounded-lg border border-outline-variant bg-surface-bright gap-md">
+<div class="flex items-center gap-md">
+<img alt="Pet Supplies" class="w-12 h-12 rounded object-cover" data-alt="A meticulously organized interior of a premium pet supply store. Shelves are stocked with high-quality products, illuminated by soft, natural light, conveying a sense of quality and care." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4ggpMfHvZq73zYzcE-RANTOszGfAYqJxVbLfzUkzw94jiyW2whDufyUoUWPnJFz2W6Rd975ZxNWClkjYK5ycpvIctghhMvvTncNpsmZUgxjbjBNf8L0T7jR7bdbbvopk7tjHJLXG8yne7y-7daKch5Pxs5S1WbZFhEDKYVRIDw5ygS_cLUkiOiW8qeFAw4MYnJYsdMhfvfJExhohFG7qp-Qs_e6TkaJ-qasPSiKEf7Wdv3Q28D4VwilNVe7b9_5tVZNVACgSbrQw"/>
+<div>
+<p class="text-label-md font-label-md text-on-background">The Healthy Hound</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Supplies • London</p>
+</div>
+</div>
+<div class="flex gap-xs w-full sm:w-auto">
+<button class="flex-1 sm:flex-none px-md py-xs rounded bg-surface-container hover:bg-surface-container-high text-on-background text-label-sm font-label-sm transition-colors border border-outline-variant">Review</button>
+<button class="flex-1 sm:flex-none px-md py-xs rounded bg-primary hover:bg-on-primary-fixed-variant text-on-primary text-label-sm font-label-sm transition-colors">Approve</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full flex justify-around items-center px-md pb-safe bg-surface shadow-lg docked full-width z-50 border-t-0">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-lg py-xs" href="#">
+<span class="material-symbols-outlined">location_city</span>
+<span class="text-label-sm font-label-sm mt-1">Cities</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-lg py-xs scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">monitoring</span>
+<span class="text-label-sm font-label-sm mt-1">Analytics</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-lg py-xs" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-label-sm font-label-sm mt-1">Users</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-lg py-xs" href="#">
+<span class="material-symbols-outlined">category</span>
+<span class="text-label-sm font-label-sm mt-1">Catalog</span>
+</a>
+</nav>
+</body></html>

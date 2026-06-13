@@ -1,0 +1,365 @@
+<!DOCTYPE html><html lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>PawsApp - Food &amp; Nutrition</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-fixed": "#dbe1ff",
+                      "secondary-fixed-dim": "#ffb95f",
+                      "outline": "#737686",
+                      "primary-fixed-dim": "#b4c5ff",
+                      "on-surface": "#0b1c30",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "tertiary": "#006242",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "on-primary": "#ffffff",
+                      "inverse-on-surface": "#eaf1ff",
+                      "background": "#f8f9ff",
+                      "surface-variant": "#d3e4fe",
+                      "on-error-container": "#93000a",
+                      "on-tertiary-container": "#bdffdb",
+                      "on-error": "#ffffff",
+                      "surface-container-highest": "#d3e4fe",
+                      "surface-container": "#e5eeff",
+                      "inverse-surface": "#213145",
+                      "surface-container-low": "#eff4ff",
+                      "primary": "#004ac6",
+                      "secondary": "#855300",
+                      "on-secondary-fixed": "#2a1700",
+                      "on-background": "#0b1c30",
+                      "on-primary-fixed-variant": "#003ea8",
+                      "on-surface-variant": "#434655",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-dim": "#cbdbf5",
+                      "primary-container": "#2563eb",
+                      "surface-tint": "#0053db",
+                      "tertiary-fixed": "#6ffbbe",
+                      "error": "#ba1a1a",
+                      "on-primary-container": "#eeefff",
+                      "on-primary-fixed": "#00174b",
+                      "secondary-fixed": "#ffddb8",
+                      "secondary-container": "#fea619",
+                      "surface-bright": "#f8f9ff",
+                      "on-secondary-container": "#684000",
+                      "surface": "#f8f9ff",
+                      "surface-container-high": "#dce9ff",
+                      "error-container": "#ffdad6",
+                      "on-secondary-fixed-variant": "#653e00",
+                      "on-tertiary-fixed": "#002113",
+                      "tertiary-container": "#007d55",
+                      "outline-variant": "#c3c6d7",
+                      "on-secondary": "#ffffff",
+                      "inverse-primary": "#b4c5ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "sm": "12px",
+                      "xs": "8px",
+                      "margin-desktop": "48px",
+                      "gutter": "16px",
+                      "xl": "32px",
+                      "base": "4px",
+                      "md": "16px",
+                      "margin-mobile": "16px",
+                      "lg": "24px",
+                      "safe": "env(safe-area-inset-bottom)"
+              },
+              "fontFamily": {
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+            },
+          },
+        }
+      </script>
+</head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen pb-24 antialiased">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 shadow-sm bg-surface dark:bg-on-background flex items-center justify-between px-margin-mobile h-16 w-full">
+<button class="flex items-center justify-center p-2 rounded-full hover:opacity-80 transition-opacity active:scale-95 transition-transform text-on-surface-variant dark:text-outline-variant">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">PawsApp</h1>
+<button class="flex items-center justify-center p-2 rounded-full hover:opacity-80 transition-opacity active:scale-95 transition-transform text-primary dark:text-primary-fixed relative">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+<span class="absolute top-1 right-1 flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-error border-2 border-surface"></span>
+</span>
+</button>
+</header>
+<!-- Main Canvas -->
+<main class="pt-20 px-margin-mobile max-w-7xl mx-auto">
+<!-- Search Bar -->
+<h1 class="font-headline-lg text-headline-lg mb-md text-on-surface">Food &amp; Nutrition</h1><div class="mb-lg">
+<div class="relative flex items-center w-full h-12 rounded-xl focus-within:shadow-sm bg-surface-container-low overflow-hidden">
+<div class="grid place-items-center h-full w-12 text-on-surface-variant">
+<span class="material-symbols-outlined text-gray-400">search</span>
+</div>
+<input class="peer h-full w-full outline-none text-sm text-on-surface pr-2 bg-transparent border-none ring-0 focus:ring-0 placeholder-on-surface-variant" id="search" placeholder="Search food, treats, brands..." type="text">
+</div>
+</div>
+<!-- Filter Chips (Circular Image Based) -->
+<div class="overflow-x-auto pb-4 mb-lg -mx-margin-mobile px-margin-mobile hide-scrollbar">
+<div class="flex space-x-lg w-max">
+<!-- Filter: All (Active) -->
+<div class="flex flex-col items-center gap-2 cursor-pointer group">
+<div class="w-16 h-16 rounded-full border-2 border-primary overflow-hidden shadow-sm p-0.5 bg-surface-container-low flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl">widgets</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary font-bold">All</span>
+</div>
+<!-- Filter: Dry Food -->
+<div class="flex flex-col items-center gap-2 cursor-pointer group hover:opacity-80 transition-opacity">
+<div class="w-16 h-16 rounded-full border-2 border-transparent overflow-hidden shadow-sm bg-surface-container-low flex items-center justify-center">
+<img alt="Dry pet food kibble in a bowl. Close up shot of premium dry food. Natural lighting, high quality." class="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-300" data-alt="A close-up, high-resolution shot of premium dry pet food kibble neatly arranged in a modern, minimalist bowl. The lighting is soft and natural, emphasizing the texture and quality of the dry food. The setting suggests a clean, upscale pet care environment, aligning with a corporate modern and playful aesthetic. Warm, inviting tones dominate the scene." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaMcJIVCpMDAryThufnqIu7D7lVvv7DQZozbM5bBJP76CSyNO6_lD2-p5XffQ8R8_3fjOunxk33lAXLIiF-iX_icpAK32P8bMf3d72NJDAQAU4KKOijGVZ2ijzvEpG2_Yb1kjzYyIA7rofOLqctqJ--ccjq1QgeORABUppYOf_PJ-iM9cacu1OPKIw18xhBIy17gu41K7ilF5W04ZIxno5M9zCbgfCMY8-ote6eQZE0yIj27bNQunYA_xHnQuuwnmeksASk84c8rA">
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Dry Food</span>
+</div>
+<!-- Filter: Wet Food -->
+<div class="flex flex-col items-center gap-2 cursor-pointer group hover:opacity-80 transition-opacity">
+<div class="w-16 h-16 rounded-full border-2 border-transparent overflow-hidden shadow-sm bg-surface-container-low flex items-center justify-center">
+<img alt="Wet pet food in a tin can." class="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-300" data-alt="A macro shot of rich, high-quality wet pet food freshly opened from a sleek tin can. The lighting is bright and even, highlighting the moisture and appealing texture of the food. The background is a soft, blurred white, reflecting a clean, utility-first quick-commerce design aesthetic. The overall mood is fresh and premium." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZy7gL7akW0RbMjB6o-_yq6zVuuhqdZJBcTEX_CG4v1Jn4qLIWgzNlmLkmBhU_vGlbcAAVmXfUFBavIyayRmHt-_QJLlCsDXAIecmSPmU3b9Ye8SGr_SejNo4JIuzcVUqj9koe03E3RhCc9QIKTbnZ4lvwHhQUZXaVQIYeX5tldG4f1T7deoobjF6Wu87OXIEziz15NHHH4KY-Y78lUWw-f07r3-aD-j2oj2JLGyQ_bE_rDzTf4imsA3Z9uPQ_TASpMo-HZAL_k3k">
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Wet Food</span>
+</div>
+<!-- Filter: Puppy -->
+<div class="flex flex-col items-center gap-2 cursor-pointer group hover:opacity-80 transition-opacity">
+<div class="w-16 h-16 rounded-full border-2 border-transparent overflow-hidden shadow-sm bg-surface-container-low flex items-center justify-center">
+<img alt="A cute golden retriever puppy looking up." class="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-300" data-alt="An adorable, vibrant portrait of a young Golden Retriever puppy looking upward with bright, energetic eyes. The image is set against a clean, light-colored background, embodying a high-energy, playful yet refined brand identity. Soft studio lighting ensures the puppy's fur looks pristine and soft, appealing directly to discerning pet owners." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmubYy_3TutaMx8F-iGy1rTiTh9Mgsle_aXKV01Krqp67x10PE-FKrHx8XiZiz0qs2CXbwtTT8ApJGqUnN6SiH6CbnQ269Y78W83b6dXyFTpKYfaAPkYxbe1vKv6HrzN5BB8IQGqhQWuTTyV62x88XKObifTHmfHMfA4cHzRryGfNmnGQJPkUdO55okvDq_bToNaxbWl1Bll4Zf44mamDUx31CALZmgsiTMxb_BgawB_7lU8LKs_mSHcTLusRKoHiUbATt_CoskCY">
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Puppy</span>
+</div>
+<!-- Filter: Adult -->
+<div class="flex flex-col items-center gap-2 cursor-pointer group hover:opacity-80 transition-opacity">
+<div class="w-16 h-16 rounded-full border-2 border-transparent overflow-hidden shadow-sm bg-surface-container-low flex items-center justify-center">
+<img alt="A healthy adult dog running in a park." class="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-300" data-alt="A dynamic action shot of a healthy, athletic adult dog running happily through a pristine, sunlit park. The scene exudes vitality, trust, and premium care. The colors are vibrant yet sophisticated, aligning with a corporate modern style that avoids juvenile tropes. The lighting is bright and natural, capturing peak energy." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjN_IZ-uk5uuHO7oyQucHRDac-jIF26JLbL_YmoLXVjQIBUA1jzdVBnR22Yt8Njy4IdG4Ey7P8q3hbEvtgMw1p7b8vzF9MRi2BxeDn1wD0cPTBloyInW5QyGuxac0iBN8U0KfJgx_yiqx5YHNlkhiguLMySI9vgpnsAdxtamSJmxBZ5mDpEc6go2k9ULISpgK84pXIykfGUK_KEOiJ1qMH3X7L_w9PAuBwQp14LtokOk3Tzzu629XREmzYcaQwRs2r_2XCVAgvWns">
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Adult</span>
+</div>
+</div>
+</div>
+<!-- Section Title -->
+<h2 class="font-headline-md text-headline-md mb-md text-on-surface">Trending Nutrition</h2>
+<!-- Product Grid -->
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-md">
+<!-- Product Card 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-md border border-outline-variant hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.08)] transition-shadow duration-300 flex flex-col relative group">
+<div class="absolute top-sm left-sm z-10 bg-secondary-container text-on-secondary-container font-label-sm text-[10px] px-2 py-1 rounded-full uppercase tracking-wider font-bold">
+                    Best Seller
+                </div>
+<div class="aspect-square bg-surface-container-low rounded-lg mb-sm overflow-hidden relative">
+<img alt="Premium Dry Dog Food" class="w-full h-full object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-500" data-alt="A beautifully styled, high-angle shot of a premium brand's dry dog food poured neatly into a ceramic bowl. The image sits on a stark white, clean background, ensuring the product is the hero, typical of high-end delivery platform aesthetics. Lighting is sharp and bright, highlighting the texture of the kibble." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBToNOaKcxRoxDFUsLuS1UtUkLC1NJhJjtPjuxox8ZASfJyf-f2euEVX8b9gX0X7VT1My3Uc_iIbWdPc_HMGBHxVnT3U-5Z46_547A-kWLOc-XEF6W3s8gpgM0preYR2ncE3NBqh-LRb-BXbms-qTPXur6bED53PkEOOchm8uEteKoRvRh-CjIRKxUjtlVImM3iHZzIkAj1KlHWFJd1xh_n88ku87lZl6npC8l-01tHaLaiaQvnfpUyK1q0BsPh8Zjj7lBrtej19E">
+</div>
+<div class="flex-grow flex flex-col justify-between">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-1 line-clamp-1">Sold by: The Posh Paws</p>
+<h3 class="font-label-md text-label-md text-on-surface mb-xs leading-snug line-clamp-2">Royal Canin Puppy Dry Food 2kg</h3>
+</div>
+<div class="mt-sm flex items-center justify-between">
+<div>
+<span class="font-body-md text-body-md font-bold text-on-surface">$24.99</span>
+<span class="font-label-sm text-[10px] text-outline line-through ml-1">$29.99</span>
+</div>
+<button class="bg-primary text-on-primary rounded-lg w-8 h-8 flex items-center justify-center hover:bg-primary-fixed-variant transition-colors active:scale-95 shadow-sm">
+<span class="material-symbols-outlined text-sm font-bold">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-md border border-outline-variant hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.08)] transition-shadow duration-300 flex flex-col relative group">
+<div class="absolute top-sm left-sm z-10 bg-error text-on-error font-label-sm text-[10px] px-2 py-1 rounded-full uppercase tracking-wider font-bold">
+                    Sale 15%
+                </div>
+<div class="aspect-square bg-surface-container-low rounded-lg mb-sm overflow-hidden relative">
+<img alt="Gourmet Wet Cat Food" class="w-full h-full object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-500" data-alt="A meticulously arranged presentation of gourmet wet cat food, showing rich chunks in gravy. The setting is bright, modern, and clinical, emphasizing food safety and high quality. The background is a soft, seamless gradient of light blue to white, reflecting the brand's sophisticated and trustworthy visual narrative." src="https://lh3.googleusercontent.com/aida-public/AB6AXuApmXaez-9XeR1X8kznhqAwPpI96UxPBx7ISpVuJR8kcZsou-lVTw5_3zDwZbVHFQxYRhFtPsTopA6Y1XLoUhUP1jsAVNeU-YK7EIrArab9tb0HGYc8CyDeusi3OI3T6eW2pfY2XXEd_SJpRXXC5KpdMoAeNGD46LD7Cc6O0B0CospBgKWwOdIbZkr23jTmjt9D3t6RLpIjxoeR08rkX-qmVq2_1DJbg86RlPRHh1Jk1TfPS0dlmXH-jkecSM04mXJUZ1FfSz7pHmg">
+</div>
+<div class="flex-grow flex flex-col justify-between">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-1 line-clamp-1">Sold by: Furry Friends</p>
+<h3 class="font-label-md text-label-md text-on-surface mb-xs leading-snug line-clamp-2">Purina Pro Plan Adult Salmon Wet</h3>
+</div>
+<div class="mt-sm flex items-center justify-between">
+<div>
+<span class="font-body-md text-body-md font-bold text-on-surface">$18.50</span>
+</div>
+<button class="bg-primary text-on-primary rounded-lg w-8 h-8 flex items-center justify-center hover:bg-primary-fixed-variant transition-colors active:scale-95 shadow-sm">
+<span class="material-symbols-outlined text-sm font-bold">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-md border border-outline-variant hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.08)] transition-shadow duration-300 flex flex-col relative group">
+<div class="aspect-square bg-surface-container-low rounded-lg mb-sm overflow-hidden relative">
+<img alt="Organic Dog Treats" class="w-full h-full object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-500" data-alt="A clean, minimalist product shot of organic, bone-shaped dog treats arranged systematically on a stark white surface. The lighting is high-key and shadowless, evoking an aesthetic of efficiency and premium quality akin to top-tier delivery apps. The overall tone is bright, appetizing, and highly professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_5MohKhvLDl5GZoUh3CY6KYaOXydPZjzKUy5JUvYKLoP01wDuUB_ROh07T9uUF0HZKn0h7OaiTIP-G8FwDCjwbvS6HQBOyjGvF7EvlYMGXmN9Q43HHamJsU4K4P_BEH5-DLzgmyjuG57W1zLVD3fult1HDRxW1IxHMaAILB7qehm2XHllyCL60dA_TMNTeN8Q7Hzvrd7f0xOKRGwpfKLh-_vmtor3cWh_TNpyXfS-n61bib1vgb2btFUYoiMzaGmUMxi5L3HnlR4">
+</div>
+<div class="flex-grow flex flex-col justify-between">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-1 line-clamp-1">Sold by: Healthy Pets Hub</p>
+<h3 class="font-label-md text-label-md text-on-surface mb-xs leading-snug line-clamp-2">BarkBox Organic Chicken Treats</h3>
+</div>
+<div class="mt-sm flex items-center justify-between">
+<div>
+<span class="font-body-md text-body-md font-bold text-on-surface">$12.00</span>
+</div>
+<button class="bg-primary text-on-primary rounded-lg w-8 h-8 flex items-center justify-center hover:bg-primary-fixed-variant transition-colors active:scale-95 shadow-sm">
+<span class="material-symbols-outlined text-sm font-bold">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 4 -->
+<div class="bg-surface-container-lowest rounded-xl p-md border border-outline-variant hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.08)] transition-shadow duration-300 flex flex-col relative group hidden md:flex">
+<div class="aspect-square bg-surface-container-low rounded-lg mb-sm overflow-hidden relative">
+<img alt="Large Breed Dry Food" class="w-full h-full object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-500" data-alt="A crisp, high-resolution image of a large bag of premium dry dog food for large breeds. The bag is sleekly designed, standing upright against a pristine, light grey studio backdrop. Lighting is bright and even, highlighting the product details without heavy shadows, maintaining a clean, modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCwW611WGUgb9qtZumo0F7sDvGiFYnoYVhjC_o_PRee7zuMJXn6xdPn1dfweCStgeepFDUBL-9vCGGPnntOaRJcn2KWu7BZ8JufcRVEw4KS4Oye7kogXsVUAAPuXKcvhbB9Cl0nfm-pfj3Cc1depixhI6D-I_EOvWSodf5ft9mVFpFWOhIguTjJJAog_653JBmNeOm6SXXSAPCIz7dNkd0JWV5pVD45Uyx0jV8tf5fRDKhhJfN6CYjlNenIwmOO08odUG-7QVZuQw">
+</div>
+<div class="flex-grow flex flex-col justify-between">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-1 line-clamp-1">Sold by: MegaMart Pets</p>
+<h3 class="font-label-md text-label-md text-on-surface mb-xs leading-snug line-clamp-2">Hill's Science Diet Large Breed 15kg</h3>
+</div>
+<div class="mt-sm flex items-center justify-between">
+<div>
+<span class="font-body-md text-body-md font-bold text-on-surface">$85.00</span>
+</div>
+<button class="bg-primary text-on-primary rounded-lg w-8 h-8 flex items-center justify-center hover:bg-primary-fixed-variant transition-colors active:scale-95 shadow-sm">
+<span class="material-symbols-outlined text-sm font-bold">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-2 pb-safe bg-surface dark:bg-on-background border-t border-outline-variant dark:border-outline flat no shadows z-50">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1 hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-xl transition-colors active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span class="font-label-sm text-[10px]">Home</span>
+</a>
+<!-- Active Tab: Search (Mapped based on intent 'Food & Nutrition category listing/Search') -->
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-xl px-3 py-1 active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="search" data-weight="fill" style="font-variation-settings: 'FILL' 1;">search</span>
+<span class="font-label-sm text-[10px] font-bold">Search</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1 hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-xl transition-colors active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="shopping_bag">shopping_bag</span>
+<span class="font-label-sm text-[10px]">Orders</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1 hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-xl transition-colors active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="font-label-sm text-[10px]">Profile</span>
+</a>
+</nav>
+<style>
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .hide-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+
+
+</body></html>

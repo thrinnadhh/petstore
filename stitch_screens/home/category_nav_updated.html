@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<title>PawsApp Home</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#434655",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "on-secondary-container": "#684000",
+                        "on-primary-container": "#eeefff",
+                        "primary-fixed": "#dbe1ff",
+                        "surface": "#f8f9ff",
+                        "surface-container": "#e5eeff",
+                        "on-tertiary-fixed": "#002113",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "on-primary": "#ffffff",
+                        "surface-dim": "#cbdbf5",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "surface-variant": "#d3e4fe",
+                        "surface-container-low": "#eff4ff",
+                        "secondary": "#855300",
+                        "on-secondary-fixed": "#2a1700",
+                        "primary-container": "#2563eb",
+                        "inverse-surface": "#213145",
+                        "surface-container-high": "#dce9ff",
+                        "outline": "#737686",
+                        "tertiary": "#006242",
+                        "inverse-primary": "#b4c5ff",
+                        "primary": "#004ac6",
+                        "surface-container-highest": "#d3e4fe",
+                        "background": "#f8f9ff",
+                        "on-surface": "#0b1c30",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "secondary-fixed": "#ffddb8",
+                        "on-error": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-background": "#0b1c30",
+                        "surface-bright": "#f8f9ff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "tertiary-fixed": "#6ffbbe",
+                        "outline-variant": "#c3c6d7",
+                        "on-tertiary": "#ffffff",
+                        "surface-tint": "#0053db",
+                        "error": "#ba1a1a",
+                        "on-tertiary-container": "#bdffdb",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "secondary-container": "#fea619",
+                        "on-primary-fixed": "#00174b",
+                        "tertiary-container": "#007d55"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "sm": "12px",
+                        "xs": "8px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "48px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "base": "4px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom, 80px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen pb-safe antialiased">
+<!-- TopAppBar -->
+<header class="docked full-width top-0 bg-surface dark:bg-background z-40 sticky">
+<div class="flex justify-between items-center w-full px-margin-mobile py-xs max-w-7xl mx-auto">
+<div class="flex items-center gap-xs cursor-pointer hover:bg-surface-container-low transition-colors rounded-lg p-2 -ml-2">
+<span class="material-symbols-outlined text-primary" data-icon="location_on" data-weight="fill" style="font-variation-settings: 'FILL' 1;">location_on</span>
+<div class="flex flex-col">
+<div class="flex items-center gap-1">
+<span class="font-label-md text-label-md font-bold text-on-surface">Home</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm">expand_more</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant truncate w-32">Bengaluru, Karnataka</span>
+</div>
+</div>
+<div class="flex items-center gap-2 cursor-pointer hover:bg-surface-container-low transition-colors rounded-lg p-1 -mr-1">
+<div class="flex flex-col items-end text-right hidden sm:flex">
+<div class="flex items-center gap-1 bg-secondary-container/20 border border-secondary-container/30 px-1.5 py-0.5 rounded-full mb-0.5">
+<span class="material-symbols-outlined text-[10px] text-secondary-container" data-icon="stars" data-weight="fill" style="font-variation-settings: 'FILL' 1;">stars</span>
+<span class="text-[10px] font-bold text-on-surface">Premium</span>
+</div>
+<span class="font-label-sm text-[11px] text-on-surface-variant truncate max-w-[120px]">Max (Golden Retriever)</span>
+</div>
+<div class="flex flex-col items-end text-right sm:hidden">
+<span class="text-[10px] font-bold bg-secondary-container text-on-secondary-container px-1.5 rounded-full mb-0.5">Premium</span>
+<span class="font-label-sm text-[11px] text-on-surface-variant truncate max-w-[80px]">Max</span>
+</div>
+<div class="relative w-10 h-10 rounded-full border-2 border-secondary-container p-0.5">
+<img alt="Profile Avatar" class="w-full h-full rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2KsW7gWLv5UgbYQyePDKB5PUl6E_MlrrcsyIn8ExEFGpcuOuoWX_5iK1u6HVWAVgHbQ4KLaft9SCiE5Sf2svsAm5g4sTQIId5YJxG_QRIEf-VSN9S-9qvGxkChVs8K2gPIQ9dMJ1_0WdRywB1FEphKT3JKGzMWtBwX1TXW9FBDnV43dTvJCdttet_Fm7angT28GP180qAmNQAymxY0rohM0qZelZUSvPeeeQFF6H4JosS0U0Ka05a8vCriklgcplLDwqvatiVRFM"/>
+</div>
+</div>
+</div>
+<!-- Sticky Search Bar -->
+<div class="px-margin-mobile pb-md max-w-7xl mx-auto">
+<div class="flex items-center bg-surface-container-lowest border border-outline-variant rounded-xl px-md py-sm shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+<span class="material-symbols-outlined text-on-surface-variant mr-sm" data-icon="search">search</span>
+<input class="w-full bg-transparent border-none p-0 focus:ring-0 font-body-md text-body-md placeholder:text-outline outline-none" placeholder="Search for 'Pedigree' or 'Grooming'..." type="text"/>
+<div class="w-px h-5 bg-outline-variant mx-sm"></div>
+<span class="material-symbols-outlined text-primary cursor-pointer" data-icon="mic">mic</span>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto pb-xl">
+<!-- Categories Grid -->
+<!-- Promo Carousel -->
+<section class="py-md px-margin-mobile">
+<div class="relative w-full h-48 rounded-xl overflow-hidden shadow-sm bg-surface-container">
+<div class="flex h-full w-[1000%] transition-transform duration-500 ease-in-out" id="promo-carousel-track" style="transform: translateX(-20%);">
+<!-- Slide 1 -->
+<div class="relative w-[10%] h-full flex-shrink-0">
+<img alt="Promo Banner" class="w-full h-full object-cover absolute inset-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6AeLhg79H-Qs95EgMOGxSG2HjJa3jlosvBXsvXE5r1rnCSeml3ETIaLhK2r2kkY8l014vbMq3CO9DvXCeF_udak6kApRBpmmenOLebPTGJDX0lNUEn2c_IpOj50T6QSmzoOy6xOPOOdMY2evfXi4nMgs9TZbCWytwpJvN8ZpQmxIi2hs9iM4G6ZZ-KAAlvmuhSUGUnp0BytQTvH3Yv5djAj6xrWVYt-TSyCg82T7EA5rORY6blClGGYC9o-eRv02kkJ1gcOfYEjg"/>
+<div class="absolute inset-0 bg-gradient-to-r from-on-surface/80 to-transparent flex flex-col justify-center px-lg">
+<span class="font-label-md text-label-md text-secondary-fixed font-bold uppercase tracking-wider mb-1">Mega Sale</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-primary mb-2 max-w-[60%]">Flat 20% Off Premium Gear</h2>
+<button class="bg-primary text-on-primary font-label-md text-label-md px-4 py-2 rounded-lg w-max shadow-md hover:bg-primary/90 transition-colors">Shop Now</button>
+</div>
+</div>
+<!-- Slide 2 -->
+<div class="relative w-[10%] h-full flex-shrink-0">
+<img alt="New Arrivals" class="w-full h-full object-cover absolute inset-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuASfM4FE2gFaBN0OhgeTBOjES2tuJHOL72sgaRGgO-tENBpVYDnBud9une2vRaHplLerDL25aSx0vh9cJz69DTuFIW1egWGJvltzY6_RQn4GF_mmvas_iU801N87_y6-JFB3H3zQFxvQwyYXfEgQuQ8JQuV0F3BI5heqbe6Fn_zOitcCR1esBTCKNBI4NVMHkzRxgVe8mC0fGuNb2htuR3f91sz8odhN4x_vfPmxh9MBA5fDQuWEqnrBtDvcw7nJsN8Qi7g7AzJId8"/>
+<div class="absolute inset-0 bg-gradient-to-r from-on-surface/80 to-transparent flex flex-col justify-center px-lg">
+<span class="font-label-md text-label-md text-tertiary-fixed font-bold uppercase tracking-wider mb-1">New Arrivals</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-primary mb-2 max-w-[60%]">Discover Fresh Essentials</h2>
+<button class="bg-primary text-on-primary font-label-md text-label-md px-4 py-2 rounded-lg w-max shadow-md hover:bg-primary/90 transition-colors">Explore</button>
+</div>
+</div>
+<!-- Slide 3 -->
+<div class="relative w-[10%] h-full flex-shrink-0">
+<img alt="Community Picks" class="w-full h-full object-cover absolute inset-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDP0Bso5NdUTuYfQmdxjGfrU18IgCERDgWEobR1RzRKk0phJmTjprXxrZ2e6MSiBzYHNllyH_O29w9XG-5RgKbo7sx9KygQhzOHoPj74CO-x1GqUujm5wEjiMN462Jd5zLvEnUDGElVK2fb7LGOI7ziuz25lE42roHK7gbnIVfpE7H3TXg8vXkDQ8iQBLfj3YiIarAthoLCqep7tQ7gY0S0wJwunX30RA3VqJ-IO10PEIcc7YJiBsxCcI9DaozwNmO6Uu30bknpLIc"/>
+<div class="absolute inset-0 bg-gradient-to-r from-on-surface/80 to-transparent flex flex-col justify-center px-lg">
+<span class="font-label-md text-label-md text-primary-fixed font-bold uppercase tracking-wider mb-1">Community Picks</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-primary mb-2 max-w-[60%]">Top Rated by Pet Parents</h2>
+<button class="bg-primary text-on-primary font-label-md text-label-md px-4 py-2 rounded-lg w-max shadow-md hover:bg-primary/90 transition-colors">View Top Picks</button>
+</div>
+</div>
+<!-- Placeholder Slides 4-10 -->
+<div class="relative w-[10%] h-full flex-shrink-0 bg-surface-container-high flex items-center justify-center">
+<span class="text-on-surface-variant font-label-md">Placeholder 4</span>
+</div>
+<div class="relative w-[10%] h-full flex-shrink-0 bg-surface-container-highest flex items-center justify-center">
+<span class="text-on-surface-variant font-label-md">Placeholder 5</span>
+</div>
+<div class="relative w-[10%] h-full flex-shrink-0 bg-surface-variant flex items-center justify-center">
+<span class="text-on-surface-variant font-label-md">Placeholder 6</span>
+</div>
+<div class="relative w-[10%] h-full flex-shrink-0 bg-surface-container-high flex items-center justify-center">
+<span class="text-on-surface-variant font-label-md">Placeholder 7</span>
+</div>
+<div class="relative w-[10%] h-full flex-shrink-0 bg-surface-container-highest flex items-center justify-center">
+<span class="text-on-surface-variant font-label-md">Placeholder 8</span>
+</div>
+<div class="relative w-[10%] h-full flex-shrink-0 bg-surface-variant flex items-center justify-center">
+<span class="text-on-surface-variant font-label-md">Placeholder 9</span>
+</div>
+<div class="relative w-[10%] h-full flex-shrink-0 bg-surface-container-high flex items-center justify-center">
+<span class="text-on-surface-variant font-label-md">Placeholder 10</span>
+</div>
+</div>
+<div class="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5 z-10 flex-wrap px-4" id="promo-indicators">
+<div class="w-1.5 h-1.5 rounded-full bg-on-primary/40 transition-colors"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-on-primary/40 transition-colors"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-on-primary transition-colors"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-on-primary/40 transition-colors"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-on-primary/40 transition-colors"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-on-primary/40 transition-colors"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-on-primary/40 transition-colors"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-on-primary/40 transition-colors"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-on-primary/40 transition-colors"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-on-primary/40 transition-colors"></div>
+</div>
+</div>
+</section>
+<!-- Quick Action Pills -->
+<section class="py-sm px-margin-mobile">
+<div class="flex justify-between items-center bg-surface-container-lowest rounded-xl p-xs shadow-sm border border-surface-container">
+<button class="flex-1 flex flex-col items-center justify-center py-sm gap-1 hover:bg-surface-container-low rounded-lg transition-colors">
+<span class="material-symbols-outlined text-primary" data-icon="favorite">favorite</span>
+<span class="font-label-sm text-label-sm text-on-surface">Favourites</span>
+</button>
+<div class="w-px h-8 bg-surface-container-high"></div>
+<button class="flex-1 flex flex-col items-center justify-center py-sm gap-1 hover:bg-surface-container-low rounded-lg transition-colors">
+<span class="material-symbols-outlined text-primary" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-sm text-label-sm text-on-surface">Orders</span>
+</button>
+<div class="w-px h-8 bg-surface-container-high"></div>
+<button class="flex-1 flex flex-col items-center justify-center py-sm gap-1 hover:bg-surface-container-low rounded-lg transition-colors"><span class="material-symbols-outlined text-primary" data-icon="new_releases">new_releases</span><span class="font-label-sm text-label-sm text-on-surface">New Arrivals</span></button>
+</div>
+</section>
+<!-- Reports & Health Dashboard -->
+<section class="py-xs px-margin-mobile mb-sm">
+<div class="bg-surface-container-low rounded-xl p-sm border border-outline-variant/30">
+<h3 class="font-label-md text-label-md text-on-surface mb-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-primary text-[18px]">assignment</span> Reports &amp; Health
+</h3>
+<div class="grid grid-cols-3 gap-2">
+<div class="bg-surface-container-lowest rounded-lg p-2 flex flex-col items-center justify-center text-center gap-1 shadow-sm cursor-pointer hover:bg-surface-container-lowest/80 transition-colors"><span class="material-symbols-outlined text-tertiary text-[24px]">vaccines</span><span class="font-label-sm text-[10px] leading-[14px] text-on-surface">Vaccinations &amp; Tablets</span></div>
+<div class="bg-surface-container-lowest rounded-lg p-2 flex flex-col items-center justify-center text-center gap-1 shadow-sm cursor-pointer hover:bg-surface-container-lowest/80 transition-colors"><span class="material-symbols-outlined text-secondary text-[24px]">assignment</span><span class="font-label-sm text-[10px] leading-[14px] text-on-surface">Reports</span></div>
+<div class="bg-surface-container-lowest rounded-lg p-2 flex flex-col items-center justify-center text-center gap-1 shadow-sm cursor-pointer hover:bg-surface-container-lowest/80 transition-colors">
+<span class="material-symbols-outlined text-primary text-[24px]">event</span>
+<span class="font-label-sm text-[10px] leading-[14px] text-on-surface">Appointments</span>
+</div>
+</div>
+</div>
+</section><section class="py-md overflow-hidden bg-surface">
+<div class="px-margin-mobile mb-sm">
+<h3 class="font-headline-md text-headline-md text-on-surface">What's on your pet's mind? ✨</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Choose from premium foods, toys, grooming services &amp; more</p>
+</div>
+<div class="flex overflow-x-auto hide-scrollbar px-margin-mobile gap-lg snap-x">
+<div class="flex-shrink-0 flex flex-col items-center gap-2 w-20 snap-start">
+<div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-primary text-3xl">restaurant</span>
+</div>
+<span class="font-label-sm text-[10px] leading-[14px] text-center text-on-surface-variant">Food &amp; Nutrition</span>
+</div>
+<div class="flex-shrink-0 flex flex-col items-center gap-2 w-20 snap-start">
+<div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-primary text-3xl">bakery_dining</span>
+</div>
+<span class="font-label-sm text-[10px] leading-[14px] text-center text-on-surface-variant">Treats &amp; Chews</span>
+</div>
+<div class="flex-shrink-0 flex flex-col items-center gap-2 w-20 snap-start">
+<div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-primary text-3xl">smart_toy</span>
+</div>
+<span class="font-label-sm text-[10px] leading-[14px] text-center text-on-surface-variant">Toys &amp; Mental Enrichment</span>
+</div>
+<div class="flex-shrink-0 flex flex-col items-center gap-2 w-20 snap-start">
+<div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-primary text-3xl">apparel</span>
+</div>
+<span class="font-label-sm text-[10px] leading-[14px] text-center text-on-surface-variant">Travel, Leashes &amp; Apparel</span>
+</div>
+<div class="flex-shrink-0 flex flex-col items-center gap-2 w-20 snap-start">
+<div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-primary text-3xl">bed</span>
+</div>
+<span class="font-label-sm text-[10px] leading-[14px] text-center text-on-surface-variant">Furniture &amp; Bedding</span>
+</div>
+</div>
+</section>
+<!-- Featured Stores -->
+<section class="py-md">
+<div class="px-margin-mobile mb-md flex justify-between items-end">
+<h3 class="font-headline-md text-headline-md text-on-surface">Premium Shops Nearby <span class="text-xl">🏆</span></h3>
+</div>
+<div class="flex overflow-x-auto hide-scrollbar px-margin-mobile gap-md snap-x">
+<div class="min-w-[240px] snap-start bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border border-surface-container hover:shadow-md transition-shadow cursor-pointer">
+<div class="h-32 relative">
+<img alt="Store front" class="w-full h-full object-cover" data-alt="The modern, brightly lit interior of a boutique pet supply store. Aisles are neatly organized with premium products on sleek, minimalist shelving. The lighting is inviting and warm, emphasizing cleanliness and high-end retail. The overall atmosphere is sophisticated, aligning with a corporate modern brand identity for a premium delivery app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDP0Bso5NdUTuYfQmdxjGfrU18IgCERDgWEobR1RzRKk0phJmTjprXxrZ2e6MSiBzYHNllyH_O29w9XG-5RgKbo7sx9KygQhzOHoPj74CO-x1GqUujm5wEjiMN462Jd5zLvEnUDGElVK2fb7LGOI7ziuz25lE42roHK7gbnIVfpE7H3TXg8vXkDQ8iQBLfj3YiIarAthoLCqep7tQ7gY0S0wJwunX30RA3VqJ-IO10PEIcc7YJiBsxCcI9DaozwNmO6Uu30bknpLIc"/>
+<div class="absolute top-2 right-2 bg-surface-container-lowest/90 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1 shadow-sm">
+<span class="font-label-sm text-label-sm text-on-surface font-bold">4.8</span>
+<span class="material-symbols-outlined text-secondary-container text-sm" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<div class="p-sm">
+<h4 class="font-label-md text-label-md text-on-surface truncate">The Posh Paws</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant truncate mb-2">Luxury Accessories &amp; Food</p>
+<div class="flex items-center gap-xs bg-surface-container-low w-max px-2 py-1 rounded text-xs font-medium text-on-surface">
+<span class="material-symbols-outlined text-[14px]" data-icon="schedule">schedule</span>
+<span class="">20 mins</span>
+</div>
+</div>
+</div>
+<div class="min-w-[240px] snap-start bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border border-surface-container hover:shadow-md transition-shadow cursor-pointer">
+<div class="h-32 relative">
+<img alt="Store front" class="w-full h-full object-cover" data-alt="A pristine, well-stocked wall of premium organic dog food bags in a high-end pet store. The packaging features earthy tones and clean typography, arranged symmetrically on white shelves. Bright, even lighting highlights the quality of the merchandise, creating an organized, trustworthy retail environment suitable for a fast-commerce app interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuASfM4FE2gFaBN0OhgeTBOjES2tuJHOL72sgaRGgO-tENBpVYDnBud9une2vRaHplLerDL25aSx0vh9cJz69DTuFIW1egWGJvltzY6_RQn4GF_mmvas_iU801N87_y6-JFB3H3zQFxvQwyYXfEgQuQ8JQuV0F3BI5heqbe6Fn_zOitcCR1esBTCKNBI4NVMHkzRxgVe8mC0fGuNb2htuR3f91sz8odhN4x_vfPmxh9MBA5fDQuWEqnrBtDvcw7nJsN8Qi7g7AzJId8"/>
+<div class="absolute top-2 right-2 bg-surface-container-lowest/90 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1 shadow-sm">
+<span class="font-label-sm text-label-sm text-on-surface font-bold">4.5</span>
+<span class="material-symbols-outlined text-secondary-container text-sm" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<div class="p-sm">
+<h4 class="font-label-md text-label-md text-on-surface truncate">Healthy Hounds Pantry</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant truncate mb-2">Organic &amp; Raw Diet Specialist</p>
+<div class="flex items-center gap-xs bg-surface-container-low w-max px-2 py-1 rounded text-xs font-medium text-on-surface">
+<span class="material-symbols-outlined text-[14px]" data-icon="schedule">schedule</span>
+<span class="">25 mins</span>
+</div>
+</div>
+</div>
+</div>
+</section><section class="py-md">
+<div class="px-margin-mobile mb-md">
+<h3 class="font-headline-md text-headline-md text-on-surface">Guides <span class="text-xl">🩺</span></h3>
+</div>
+<div class="flex overflow-x-auto hide-scrollbar px-margin-mobile gap-md snap-x">
+<!-- Puppy Nutrition -->
+<div class="min-w-[200px] snap-start bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border border-surface-container hover:shadow-md transition-shadow cursor-pointer flex flex-col">
+<div class="h-24 w-full">
+<img alt="Puppy Nutrition" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5z2g3IHBH5gz3oR6QqQl6XDHPXhUN4b482F_jJ_bPPyD_OnMLA-gnGMdyNXz7v-jaFvfwW2nZgw5KX9NdTC9YFXzkoNU1GbbdvagvvRSdasnjCk7_elM2rSKuGbzmVkaxSgZdguhWDkjbumkNBU7ppWfcO0BHE2XmNjU2nF4ild_5dbokZ4jck5r_IU4B0KaW73XkasFSbOjZBQL9xAMihZ9AWDirYg99ysJl5RAKEqRVNyjhtIeMcQILmQFS97_A-HBozb9Kz-k"/>
+</div>
+<div class="p-3 text-center flex-1 flex flex-col justify-center">
+<h4 class="font-label-md text-label-md text-on-surface mb-0.5">Puppy Nutrition (0-2 mo)</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Dietary guide</p>
+</div>
+</div>
+<!-- Puppy Growth -->
+<div class="min-w-[200px] snap-start bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border border-surface-container hover:shadow-md transition-shadow cursor-pointer flex flex-col">
+<div class="h-24 w-full">
+<img alt="Puppy Growth" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwFpaCtKFAmO7u4LFhgbudFkcsabYvyZjr-jxBxNF4vzO99nSWyB1ctF35zFChTfG2kDD7lTnLyX3yqYMgslq2MKyTOED_O2D5wQ2IngywdmQOVbanZTXPwBa9bpdjzT3ViUDhNrkfbU-HKFLtGNI_9NRmi_NOj_ELxWiZJ-ZMpz9hOQhsTHA133HKuZbZbwUsiQeLUzzEbOmVrpylOe0dkYv5ib-0mHIRkyZllWTFC9L8NfD9mD0yqX9w1ck6HEsH3Z0tUxdpdpQ"/>
+</div>
+<div class="p-3 text-center flex-1 flex flex-col justify-center">
+<h4 class="font-label-md text-label-md text-on-surface mb-0.5">Puppy Growth (2-12 mo)</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Milestone tracking</p>
+</div>
+</div>
+<!-- Hair & Coat -->
+<div class="min-w-[200px] snap-start bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border border-surface-container hover:shadow-md transition-shadow cursor-pointer flex flex-col">
+<div class="h-24 w-full">
+<img alt="Hair &amp; Coat Health" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYKJG83KcL1yNh-w9EyZpJJHjgLNuCQIwoxOy4oxO9897FscAQj38VOtNLWetFhV0UcGvbpvYFMlMNisc1N7np5cd_0qaZcKNYGqSiaBeZDsParI4mxGmOxyw6mMU4RnJGckXQcWZv9-HU08XqZzmVBHFvSqAiJicfb1bes3T14Iv-yfAJJflwwAUl-CIk_HMUPFxRcCa1f_RtBSqklHewyESVhtAzbgZgixnF5Psbz6VhIkMXq-m2KovO2SB4RSYINa5KONreaS8"/>
+</div>
+<div class="p-3 text-center flex-1 flex flex-col justify-center">
+<h4 class="font-label-md text-label-md text-on-surface mb-0.5">Hair &amp; Coat Health</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Grooming tips</p>
+</div>
+</div>
+<!-- Joint Health -->
+<div class="min-w-[200px] snap-start bg-surface-container-lowest rounded-xl p-md shadow-sm border border-surface-container hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center justify-center text-center">
+<div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-base">
+<span class="material-symbols-outlined text-primary text-3xl">fitness_center</span>
+</div>
+<h4 class="font-label-md text-label-md text-on-surface mb-1">Joint Health</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Supplements for mobility</p>
+</div>
+<!-- Digestive Care -->
+<div class="min-w-[200px] snap-start bg-surface-container-lowest rounded-xl p-md shadow-sm border border-surface-container hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center justify-center text-center">
+<div class="w-12 h-12 bg-tertiary/10 rounded-full flex items-center justify-center mb-base">
+<span class="material-symbols-outlined text-tertiary text-3xl">medication</span>
+</div>
+<h4 class="font-label-md text-label-md text-on-surface mb-1">Digestive Care</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Probiotics &amp; enzymes</p>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="docked full-width bottom-0 rounded-t-xl shadow-sm bg-surface-container-lowest dark:bg-surface-container-lowest fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-xs pb-safe py-base shadow-lg">
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary-container text-on-primary-container dark:text-on-primary-container rounded-full px-4 py-1 hover:text-primary dark:hover:text-primary-fixed transition-colors scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="home" data-weight="fill" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+<span class="font-label-sm text-label-sm mt-1">Search</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_bag">shopping_bag</span>
+<span class="font-label-sm text-label-sm mt-1">Orders</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm mt-1">Profile</span>
+</a>
+</nav>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const track = document.getElementById('promo-carousel-track');
+    const indicators = document.getElementById('promo-indicators').children;
+    let currentIndex = 0;
+    const totalSlides = 10;
+
+    setInterval(() => {
+        currentIndex = (currentIndex + 1) % totalSlides;
+        track.style.transform = `translateX(-${(currentIndex * 100) / totalSlides}%)`;
+        
+        Array.from(indicators).forEach((ind, i) => {
+            if(i === currentIndex) {
+                ind.classList.replace('bg-on-primary/40', 'bg-on-primary');
+            } else {
+                ind.classList.replace('bg-on-primary', 'bg-on-primary/40');
+            }
+        });
+    }, 4000);
+});
+</script>
+</body></html>

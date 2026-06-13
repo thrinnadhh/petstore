@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Waste Management &amp; Litter - PawsApp</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-fixed": "#dbe1ff",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "outline": "#737686",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-surface": "#0b1c30",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "tertiary": "#006242",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "background": "#f8f9ff",
+                        "surface-variant": "#d3e4fe",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-container": "#bdffdb",
+                        "on-error": "#ffffff",
+                        "surface-container-highest": "#d3e4fe",
+                        "surface-container": "#e5eeff",
+                        "inverse-surface": "#213145",
+                        "surface-container-low": "#eff4ff",
+                        "primary": "#004ac6",
+                        "secondary": "#855300",
+                        "on-secondary-fixed": "#2a1700",
+                        "on-background": "#0b1c30",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "on-surface-variant": "#434655",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-dim": "#cbdbf5",
+                        "primary-container": "#2563eb",
+                        "surface-tint": "#0053db",
+                        "tertiary-fixed": "#6ffbbe",
+                        "error": "#ba1a1a",
+                        "on-primary-container": "#eeefff",
+                        "on-primary-fixed": "#00174b",
+                        "secondary-fixed": "#ffddb8",
+                        "secondary-container": "#fea619",
+                        "surface-bright": "#f8f9ff",
+                        "on-secondary-container": "#684000",
+                        "surface": "#f8f9ff",
+                        "surface-container-high": "#dce9ff",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "on-tertiary-fixed": "#002113",
+                        "tertiary-container": "#007d55",
+                        "outline-variant": "#c3c6d7",
+                        "on-secondary": "#ffffff",
+                        "inverse-primary": "#b4c5ff"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "sm": "12px",
+                        "xs": "8px",
+                        "margin-desktop": "48px",
+                        "gutter": "16px",
+                        "xl": "32px",
+                        "base": "4px",
+                        "md": "16px",
+                        "margin-mobile": "16px",
+                        "lg": "24px"
+                    },
+                    fontFamily: {
+                        "display-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    fontSize: {
+                        "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "800" }],
+                        "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "600" }],
+                        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "label-sm": ["12px", { lineHeight: "16px", fontWeight: "500" }],
+                        "headline-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "700" }],
+                        "headline-md": ["20px", { lineHeight: "28px", fontWeight: "600" }],
+                        "headline-lg-mobile": ["24px", { lineHeight: "32px", fontWeight: "700" }],
+                        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased pb-safe">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface dark:bg-on-background shadow-sm dark:bg-surface-container-low flex items-center justify-between px-margin-mobile h-16">
+<button aria-label="Go back" class="material-symbols-outlined text-primary dark:text-primary-fixed hover:opacity-80 transition-opacity active:scale-95 transition-transform" style="font-variation-settings: 'FILL' 0;">
+            arrow_back
+        </button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">
+            PawsApp
+        </h1>
+<button aria-label="View Cart" class="material-symbols-outlined text-primary dark:text-primary-fixed hover:opacity-80 transition-opacity active:scale-95 transition-transform" style="font-variation-settings: 'FILL' 0;">
+            shopping_cart
+        </button>
+</header>
+<main class="pt-20 pb-8 min-h-screen max-w-7xl mx-auto">
+<!-- Page Header -->
+<div class="px-margin-mobile mb-6">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface">Waste Management &amp; Litter</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Keep it clean and fresh with premium supplies.</p>
+</div><div class="px-margin-mobile mb-8"><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-3 text-on-surface-variant">search</span><input class="w-full h-12 pl-10 pr-4 rounded-lg border border-outline-variant bg-surface-container-low focus:border-primary focus:outline-none text-body-md" placeholder="Search products..." type="text"/></div></div>
+<!-- Categories / Filters Carousel -->
+<!-- Product Grid -->
+<section class="px-margin-mobile">
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-gutter md:gap-lg">
+<!-- Product Card 1 -->
+<article class="bg-surface rounded-lg shadow-sm border border-outline-variant flex flex-col relative group hover:shadow-md transition-shadow duration-300">
+<div class="aspect-square bg-surface-container-low overflow-hidden rounded-t-lg relative p-4 flex items-center justify-center">
+<img class="max-w-full max-h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105" data-alt="A high-quality product shot of Earth Rated lavender-scented degradable dog poop bags. The roll is vibrant purple and sits next to a green biodegradable dispenser. The background is a clean, bright white studio setting with soft, ambient lighting that enhances the premium feel and modern e-commerce style required for the PawsApp marketplace." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmWBhmnG8zVtMYSmDr9dsFp9M7d1fBUVpE8ZEjOJ4m8XFzJhctZztGQTo8qVeRZGlWTb2YIBkudkgUIAJ7SWTOCvdeMdQxT39gexF1mQQ9gDJDRUJE8LF1w5uFEvySdRCQyS7DHvbfBQDfIWBFPOkcWqL0ZT5HgH5ODLKS9plD86cz3v-9dm0TbdyMVHX7osl0yYnR4Sowdf6KX_VhjOWm21YceyrPq7cnjPvPtWy2bbZAPCUJqIa-7ZMO70KlqDuWcqXjkR8Kzew"/>
+<span class="absolute top-2 left-2 bg-secondary-container text-on-secondary-container font-label-sm text-label-sm px-2 py-0.5 rounded-full shadow-sm">Best Seller</span>
+</div>
+<div class="p-3 md:p-4 flex flex-col flex-1">
+<h3 class="font-label-md text-label-md text-on-surface line-clamp-2 mb-1">Earth Rated Lavender Scented Poop Bags</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-3 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">storefront</span>
+                            Sold by: EcoPet Supplies
+                        </p>
+<div class="mt-auto flex items-center justify-between">
+<span class="font-headline-md text-headline-md text-on-surface">$12.99</span>
+<button aria-label="Add to cart" class="bg-primary text-on-primary w-9 h-9 rounded-lg flex items-center justify-center active:scale-95 transition-transform hover:bg-surface-tint shadow-sm">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">add</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Product Card 2 -->
+<article class="bg-surface rounded-lg shadow-sm border border-outline-variant flex flex-col relative group hover:shadow-md transition-shadow duration-300">
+<div class="aspect-square bg-surface-container-low overflow-hidden rounded-t-lg relative p-4 flex items-center justify-center">
+<img class="max-w-full max-h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105" data-alt="A studio product photograph of a large bag of premium clumping tofu cat litter. The packaging is sleek and modern, standing upright against a pristine white backdrop. The lighting is bright and evenly distributed, highlighting the high-quality nature of the product and perfectly matching the corporate modern aesthetic of a top-tier delivery platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTzIR8bpIFcWjR2Lh0gfMechDQI_jhSsTBDnIospTf0-ab09IKr7cGiStYy9DiawVBEq16ADbH_RyF_2Dgbg8Dua9HyaH863mJWQ-AoKvyOK-DgauseXhTdeu4XRZO0ahfnsXsJMaB8RcwwIAG3nZLGoRW-SIr9TMH68eSe4FDMkav0vL2onMVJDclebkMZltVYYUdL78CqQU3fqyMlzChHafWTjiIYQ6kbDaRu6YPBWgTbSgdEoBMYQn1PKXW6s6K_iz0jluliHM"/>
+</div>
+<div class="p-3 md:p-4 flex flex-col flex-1">
+<h3 class="font-label-md text-label-md text-on-surface line-clamp-2 mb-1">Premium Clumping Tofu Litter - 10lbs</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-3 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">storefront</span>
+                            Sold by: CleanPaws Hub
+                        </p>
+<div class="mt-auto flex items-center justify-between">
+<span class="font-headline-md text-headline-md text-on-surface">$24.50</span>
+<button aria-label="Add to cart" class="bg-primary text-on-primary w-9 h-9 rounded-lg flex items-center justify-center active:scale-95 transition-transform hover:bg-surface-tint shadow-sm">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">add</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Product Card 3 -->
+<article class="bg-surface rounded-lg shadow-sm border border-outline-variant flex flex-col relative group hover:shadow-md transition-shadow duration-300">
+<div class="aspect-square bg-surface-container-low overflow-hidden rounded-t-lg relative p-4 flex items-center justify-center">
+<img class="max-w-full max-h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105" data-alt="An elegant, top-entry modern cat litter box in a matte white finish. The product is photographed in a highly lit, minimalist studio setting with a seamless white background. The image emphasizes clean lines and functional design, catering to the sophisticated visual narrative of the PawsApp marketplace." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAN4zDQO5H87AhGgUZyUTdyG2akkOm67ZzN0iMOCVTB-O91UY7BTd9BHkzq8G1oNps8NN8Pb9PTAUMAK30gQTZKiomZNjZiBzUqTdyJmtcgV6Fo04c1ZRBA3vi7vpG2jW9_VZQNRoLGAUMRI4z_gMFnQRGFsdUUtD62bO5VRLU3PdDiv1qeW_Lhq2C2hgkqsM4opEtKDytvmCt_YeTbUj97rzIpAJ-nXRThD9YHnIBMey3f1c-w7jGDcLO9XV-xGRtcRtN1K-MjZwQ"/>
+<span class="absolute top-2 left-2 bg-error text-on-error font-label-sm text-label-sm px-2 py-0.5 rounded-full shadow-sm">Sale 15%</span>
+</div>
+<div class="p-3 md:p-4 flex flex-col flex-1">
+<h3 class="font-label-md text-label-md text-on-surface line-clamp-2 mb-1">Moderna Top-Entry Litter Box</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-3 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">storefront</span>
+                            Sold by: Feline Furnishings
+                        </p>
+<div class="mt-auto flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md text-on-surface">$45.00</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant line-through">$52.99</span>
+</div>
+<button aria-label="Add to cart" class="bg-primary text-on-primary w-9 h-9 rounded-lg flex items-center justify-center active:scale-95 transition-transform hover:bg-surface-tint shadow-sm">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">add</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Product Card 4 -->
+<article class="bg-surface rounded-lg shadow-sm border border-outline-variant flex flex-col relative group hover:shadow-md transition-shadow duration-300">
+<div class="aspect-square bg-surface-container-low overflow-hidden rounded-t-lg relative p-4 flex items-center justify-center">
+<img class="max-w-full max-h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105" data-alt="A sophisticated bottle of enzymatic pet stain and odor remover spray. The bottle is clear with a minimalist blue label, standing on a bright, reflective white surface. The high-key studio lighting conveys a sense of cleanliness, hygiene, and efficiency, aligning perfectly with the corporate modern style requested." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBE08T9Hz6NTH5n-IyVZv-EjObVVjdsoenmoIPbeSIWwdeUXNl2BJh_8fnHnGr6dDXdjotC4_S1_nNwuMPPwmLC05eWAmcPNDPOR8F_UjKrz_cDTuhM_zZ6P4cVNp0_um5Y8pKzjPEvZohN_X44gZPina_w1njKvhr5Vg7S52JzAPgsgEI2lSU_S9xK2ezNPTgOOkk0hEncpk-GRBCcO2a2q5gQj6mtpAH5CereunCfIK2uB55v7VuVX75G9_iexKID3qjcC0415XQ"/>
+</div>
+<div class="p-3 md:p-4 flex flex-col flex-1">
+<h3 class="font-label-md text-label-md text-on-surface line-clamp-2 mb-1">Enzymatic Stain &amp; Odour Eliminator Spray</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-3 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">storefront</span>
+                            Sold by: FreshHome Pets
+                        </p>
+<div class="mt-auto flex items-center justify-between">
+<span class="font-headline-md text-headline-md text-on-surface">$16.50</span>
+<button aria-label="Add to cart" class="bg-primary text-on-primary w-9 h-9 rounded-lg flex items-center justify-center active:scale-95 transition-transform hover:bg-surface-tint shadow-sm">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">add</span>
+</button>
+</div>
+</div>
+</article>
+</div>
+</section>
+</main>
+</body></html>

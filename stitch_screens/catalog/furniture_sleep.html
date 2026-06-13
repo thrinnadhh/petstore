@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>PawsApp - Furniture &amp; Sleep</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-fixed": "#dbe1ff",
+                      "secondary-fixed-dim": "#ffb95f",
+                      "outline": "#737686",
+                      "primary-fixed-dim": "#b4c5ff",
+                      "on-surface": "#0b1c30",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "tertiary": "#006242",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "on-primary": "#ffffff",
+                      "inverse-on-surface": "#eaf1ff",
+                      "background": "#f8f9ff",
+                      "surface-variant": "#d3e4fe",
+                      "on-error-container": "#93000a",
+                      "on-tertiary-container": "#bdffdb",
+                      "on-error": "#ffffff",
+                      "surface-container-highest": "#d3e4fe",
+                      "surface-container": "#e5eeff",
+                      "inverse-surface": "#213145",
+                      "surface-container-low": "#eff4ff",
+                      "primary": "#004ac6",
+                      "secondary": "#855300",
+                      "on-secondary-fixed": "#2a1700",
+                      "on-background": "#0b1c30",
+                      "on-primary-fixed-variant": "#003ea8",
+                      "on-surface-variant": "#434655",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-dim": "#cbdbf5",
+                      "primary-container": "#2563eb",
+                      "surface-tint": "#0053db",
+                      "tertiary-fixed": "#6ffbbe",
+                      "error": "#ba1a1a",
+                      "on-primary-container": "#eeefff",
+                      "on-primary-fixed": "#00174b",
+                      "secondary-fixed": "#ffddb8",
+                      "secondary-container": "#fea619",
+                      "surface-bright": "#f8f9ff",
+                      "on-secondary-container": "#684000",
+                      "surface": "#f8f9ff",
+                      "surface-container-high": "#dce9ff",
+                      "error-container": "#ffdad6",
+                      "on-secondary-fixed-variant": "#653e00",
+                      "on-tertiary-fixed": "#002113",
+                      "tertiary-container": "#007d55",
+                      "outline-variant": "#c3c6d7",
+                      "on-secondary": "#ffffff",
+                      "inverse-primary": "#b4c5ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "sm": "12px",
+                      "xs": "8px",
+                      "margin-desktop": "48px",
+                      "gutter": "16px",
+                      "xl": "32px",
+                      "base": "4px",
+                      "md": "16px",
+                      "margin-mobile": "16px",
+                      "lg": "24px"
+              },
+              "fontFamily": {
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface antialiased font-body-md selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface shadow-sm flex items-center justify-between px-margin-mobile h-16 transition-colors">
+<button aria-label="Go back" class="material-symbols-outlined text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 focus:outline-none">arrow_back</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary tracking-tight">PawsApp</h1>
+<div class="relative">
+<button aria-label="View Cart" class="material-symbols-outlined text-primary hover:opacity-80 transition-opacity active:scale-95 focus:outline-none">shopping_cart</button>
+<span class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-error text-on-error font-label-sm text-[10px]">2</span>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="pt-[80px] pb-[100px] px-margin-mobile min-h-screen">
+<!-- Section Header -->
+<div class="mb-lg flex items-end justify-between">
+<div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-1">Furniture &amp; Sleep</h2>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Create the perfect resting spot.</p>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant p-2 hover:bg-surface-container-low rounded-full transition-colors active:scale-95">tune</button>
+</div><div class="mb-lg relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-xl py-3 pl-10 pr-4 text-body-md focus:ring-2 focus:ring-primary transition-shadow shadow-sm" placeholder="Search furniture, beds, and more..." type="text"/>
+</div>
+<!-- Filter Categories (Horizontal Scroll) -->
+<!-- Product Grid -->
+<section class="grid grid-cols-2 gap-4">
+<!-- Product Card 1 -->
+<article class="bg-surface-container-lowest rounded-lg border border-outline-variant/40 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col overflow-hidden group">
+<div class="aspect-square bg-surface-container-low relative p-4 flex items-center justify-center overflow-hidden">
+<span class="absolute top-2 left-2 bg-secondary-container text-on-secondary-container font-label-sm text-[10px] px-2 py-0.5 rounded-full z-10 font-bold uppercase tracking-wide">Best Seller</span>
+<button class="absolute top-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-surface-container-lowest/80 backdrop-blur-sm text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+<img alt="Orthopedic Bed" class="w-full h-full object-cover mix-blend-multiply transition-transform duration-500 group-hover:scale-105" data-alt="A pristine studio shot of a high-end, rectangular orthopedic pet bed featuring a heather grey textured base and a soft, cream-colored sherpa sleeping surface. The background is completely plain and brightly lit, isolating the product to emphasize its sleek lines and premium construction. The aesthetic is highly polished and refined, suited for a top-tier retail app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAyB22rbZoXa_TMwG1PEQTebwvY15P0IxP7v6TdhTCytfwZMgahnIef-ltbzHyLc_859V8B5Psd23oz7A9s8bSBmvfCPqBasyHBffdOkRPAxP9NvPH_pu4BzKT13fsIdR33FIlcOoXrfZ7cdUEMPQdN6rYxYtvXd9xBISfzj2aZ5-mVQ_WpQh7eb4G-GZwg-4swSJJf-HKfoZk7aXifTG1h6p-b0c3r3LMv3WzClpsDJGOEeVhCIqHh_FTY8RhpbCtjZMXZ41lMicM"/>
+</div>
+<div class="p-3 flex flex-col flex-grow">
+<h3 class="font-label-md text-label-md text-on-surface line-clamp-2 leading-tight mb-1">Cloud Nine Orthopedic Lounger</h3>
+<p class="font-label-sm text-[11px] text-outline mb-2">Sold by: Pawsome Furniture</p>
+<div class="mt-auto flex items-center justify-between pt-2 border-t border-surface-container-high">
+<span class="font-headline-md text-[18px] font-bold text-on-surface">$129.99</span>
+<button aria-label="Add to cart" class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center hover:bg-on-primary-fixed-variant transition-colors active:scale-90 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Product Card 2 -->
+<article class="bg-surface-container-lowest rounded-lg border border-outline-variant/40 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col overflow-hidden group">
+<div class="aspect-square bg-surface-container-low relative p-4 flex items-center justify-center overflow-hidden">
+<button class="absolute top-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-surface-container-lowest/80 backdrop-blur-sm text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+<img alt="Modern Crate" class="w-full h-full object-cover mix-blend-multiply transition-transform duration-500 group-hover:scale-105" data-alt="An elegant product photograph of a modern indoor dog crate crafted from warm walnut wood and black matte metal wire. It stands against a stark, light-mode background with soft ambient shadows grounding it. The design merges high functionality with sophisticated furniture aesthetics, appealing to style-conscious pet owners looking for premium quality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXTaMdebKGAKtAnT0cEV4gXbtJVxJp-x0WhP9EZpn46KATHlUE_gQjtwHH121xm7uc_f1tso3uPRX7woaDW4HcgQ7wgyrhmR1iXytIx-b_lUu_diRbY1ae0huSkyCCUcWZEaFLEXWJm07kdOBAaANZ3K25fOARhpTLgiRWXP2IBObfzKtZQh0SMC2Y-4dWVbFzgjLB9wSnHBkyRhoCHI7L6GUr98L4eTfbMUcvGPziVUHRrxUsK5bvkOO6fPIyag_K45MK81ZZYe0"/>
+</div>
+<div class="p-3 flex flex-col flex-grow">
+<h3 class="font-label-md text-label-md text-on-surface line-clamp-2 leading-tight mb-1">Mid-Century Modern Crate</h3>
+<p class="font-label-sm text-[11px] text-outline mb-2">Sold by: The Cozy Den</p>
+<div class="mt-auto flex items-center justify-between pt-2 border-t border-surface-container-high">
+<span class="font-headline-md text-[18px] font-bold text-on-surface">$245.00</span>
+<button aria-label="Add to cart" class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center hover:bg-on-primary-fixed-variant transition-colors active:scale-90 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Product Card 3 -->
+<article class="bg-surface-container-lowest rounded-lg border border-outline-variant/40 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col overflow-hidden group">
+<div class="aspect-square bg-surface-container-low relative p-4 flex items-center justify-center overflow-hidden">
+<span class="absolute top-2 left-2 bg-error text-on-error font-label-sm text-[10px] px-2 py-0.5 rounded-full z-10 font-bold uppercase tracking-wide">Sale</span>
+<button class="absolute top-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-surface-container-lowest/80 backdrop-blur-sm text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+<img alt="Cat Tree" class="w-full h-full object-cover mix-blend-multiply transition-transform duration-500 group-hover:scale-105" data-alt="A minimalist architectural cat tree composed of natural birch wood and white felt pads, shot against a bright, airy white backdrop. The clean lines and structural simplicity represent a modern, corporate-chic approach to pet furniture. Lighting is extremely soft and diffused, creating a serene, high-trust visual environment indicative of a premium e-commerce platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDANZpzNndPE-rVda5l7w0EsRG9jdriO-kyH0RPe7HkiUuey3JzoINi3hZRsCiHBcRj05fSgtSah8ZTVwGxdhq4soYi2lJBTgbJLljinFCcZnJJGLVZSlo7CxiFhf-G2Ao7fYoYhfSGrurBcKYIDOCdiaw2Xmv2ryKNxUQ7X6YP3Fvdl62f_lbQZnKBsbXzYnfjZVvSTX-EB1UPCPURcdRqMSmqcjvdH9oX27krCGvl4bfZbkblpFvIql0dgeCSBobZ6IrEJ3aAtns"/>
+</div>
+<div class="p-3 flex flex-col flex-grow">
+<h3 class="font-label-md text-label-md text-on-surface line-clamp-2 leading-tight mb-1">Scandi Minimalist Cat Tree</h3>
+<p class="font-label-sm text-[11px] text-outline mb-2">Sold by: Feline Fine Designs</p>
+<div class="mt-auto flex items-center justify-between pt-2 border-t border-surface-container-high">
+<div class="flex flex-col">
+<span class="font-headline-md text-[18px] font-bold text-error">$189.00</span>
+<span class="text-[10px] text-outline line-through">$220.00</span>
+</div>
+<button aria-label="Add to cart" class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center hover:bg-on-primary-fixed-variant transition-colors active:scale-90 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Product Card 4 -->
+<article class="bg-surface-container-lowest rounded-lg border border-outline-variant/40 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col overflow-hidden group">
+<div class="aspect-square bg-surface-container-low relative p-4 flex items-center justify-center overflow-hidden">
+<button class="absolute top-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-surface-container-lowest/80 backdrop-blur-sm text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+<img alt="Velvet Lounger" class="w-full h-full object-cover mix-blend-multiply transition-transform duration-500 group-hover:scale-105" data-alt="A luxurious, circular pet lounger upholstered in deep navy blue velvet, centered in a crisp, brightly lit frame. The rich texture of the fabric contrasts beautifully against a pure white surface, subtly elevated by a soft 4% opacity drop shadow. The image communicates vibrancy and premium comfort, aligning with a high-energy yet sophisticated brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXnG9j1AnSA_q_kS_rzvrieaz-Tz0Bv5rvZ62mbtFF6j2ZfioOavFXmWUxEOtjCEiW0U823DiGseN9AS_14rdV8bBeCPBI2_EP75EOorHW0bZ8IileRfjvX3q3k-7rWTPhxldqgfldGzvHZZsOUk_UanXurbpU8_twp3rhl1wS7_NCb-ag2_UjTfjpKok60uuuqpmv0c04Fet2BvDCry4xFwL3w6pic3i29ZdaodjxuabsWI3oLrtAczVKQPvQJ0zq9esgLAf1_lg"/>
+</div>
+<div class="p-3 flex flex-col flex-grow">
+<h3 class="font-label-md text-label-md text-on-surface line-clamp-2 leading-tight mb-1">Royal Velvet Donut Bed</h3>
+<p class="font-label-sm text-[11px] text-outline mb-2">Sold by: Pawsome Furniture</p>
+<div class="mt-auto flex items-center justify-between pt-2 border-t border-surface-container-high">
+<span class="font-headline-md text-[18px] font-bold text-on-surface">$75.50</span>
+<button aria-label="Add to cart" class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center hover:bg-on-primary-fixed-variant transition-colors active:scale-90 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+</article>
+</section>
+</main>
+<!-- BottomNavBar (JSON Driven - Search is active context) -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-2 pb-safe bg-surface border-t border-outline-variant z-50">
+<!-- Inactive: Home -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high rounded-xl transition-colors active:scale-90 duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:-translate-y-0.5 transition-transform">home</span>
+<span class="font-label-sm text-[11px] mt-1">Home</span>
+</a>
+<!-- Active: Search -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1.5 hover:bg-primary-fixed-dim transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">search</span>
+<span class="font-label-sm text-[11px] mt-0.5 font-bold">Search</span>
+</a>
+<!-- Inactive: Orders -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high rounded-xl transition-colors active:scale-90 duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:-translate-y-0.5 transition-transform">shopping_bag</span>
+<span class="font-label-sm text-[11px] mt-1">Orders</span>
+</a>
+<!-- Inactive: Profile -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high rounded-xl transition-colors active:scale-90 duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:-translate-y-0.5 transition-transform">person</span>
+<span class="font-label-sm text-[11px] mt-1">Profile</span>
+</a>
+</nav>
+</body></html>

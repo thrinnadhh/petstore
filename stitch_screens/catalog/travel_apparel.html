@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PawsApp - Travel, Leashes &amp; Apparel</title>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+        /* Hide scrollbar for horizontal scroll areas but keep functionality */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<!-- Tailwind CSS with Config -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#dbe1ff",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "outline": "#737686",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-surface": "#0b1c30",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "tertiary": "#006242",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "background": "#f8f9ff",
+                        "surface-variant": "#d3e4fe",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-container": "#bdffdb",
+                        "on-error": "#ffffff",
+                        "surface-container-highest": "#d3e4fe",
+                        "surface-container": "#e5eeff",
+                        "inverse-surface": "#213145",
+                        "surface-container-low": "#eff4ff",
+                        "primary": "#004ac6",
+                        "secondary": "#855300",
+                        "on-secondary-fixed": "#2a1700",
+                        "on-background": "#0b1c30",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "on-surface-variant": "#434655",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-dim": "#cbdbf5",
+                        "primary-container": "#2563eb",
+                        "surface-tint": "#0053db",
+                        "tertiary-fixed": "#6ffbbe",
+                        "error": "#ba1a1a",
+                        "on-primary-container": "#eeefff",
+                        "on-primary-fixed": "#00174b",
+                        "secondary-fixed": "#ffddb8",
+                        "secondary-container": "#fea619",
+                        "surface-bright": "#f8f9ff",
+                        "on-secondary-container": "#684000",
+                        "surface": "#f8f9ff",
+                        "surface-container-high": "#dce9ff",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "on-tertiary-fixed": "#002113",
+                        "tertiary-container": "#007d55",
+                        "outline-variant": "#c3c6d7",
+                        "on-secondary": "#ffffff",
+                        "inverse-primary": "#b4c5ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "12px",
+                        "xs": "8px",
+                        "margin-desktop": "48px",
+                        "gutter": "16px",
+                        "xl": "32px",
+                        "base": "4px",
+                        "md": "16px",
+                        "margin-mobile": "16px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased pb-24 md:pb-0 pt-16">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] flex items-center justify-between px-margin-mobile h-16">
+<button aria-label="Back" class="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 flex items-center justify-center p-2 -ml-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">PawsApp</h1>
+<button aria-label="Shopping Cart" class="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 flex items-center justify-center p-2 -mr-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+<span class="absolute top-2 right-2 bg-error text-on-error text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center border border-surface">2</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="w-full max-w-7xl mx-auto">
+<!-- Category Header -->
+<section class="px-margin-mobile md:px-margin-desktop py-lg">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface mb-xs">Travel, Leashes &amp; Apparel</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Premium gear for your next adventure.</p>
+</section><section class="px-margin-mobile md:px-margin-desktop mb-lg">
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-xl py-3 pl-10 pr-4 text-body-md focus:ring-2 focus:ring-primary transition-all shadow-sm" placeholder="Search travel gear..." type="text"/>
+</div>
+</section>
+<!-- Circular Category Filters (Horizontal Scroll) -->
+<!-- Product Grid (Bento/Premium style layout hints via spacing and cards) -->
+<section class="px-margin-mobile md:px-margin-desktop grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-gutter mb-xl">
+<!-- Product Card 1 (Featured/Image from prompt) -->
+<article class="bg-surface rounded-lg shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] border border-surface-container-highest overflow-hidden flex flex-col group hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.08)] transition-shadow duration-300">
+<div class="relative w-full aspect-square bg-surface-container-lowest p-2">
+<!-- Subtle badge -->
+<div class="absolute top-3 left-3 z-10 bg-secondary-container text-on-secondary-container font-label-sm text-[10px] px-2 py-1 rounded-full uppercase tracking-wider font-bold shadow-sm">
+                        Best Seller
+                    </div>
+<img alt="Denim Blue Comfort Harness Set" class="w-full h-full object-contain mix-blend-darken transition-transform duration-500 group-hover:scale-105" data-alt="A high-quality studio photograph of a premium, textured denim-blue fabric dog harness and matching leash set. The items are beautifully arranged on a soft, textured cream-colored blanket background, illuminated by soft, natural-looking directional light that casts gentle shadows. The lighting highlights the woven texture of the fabric, the stitched leather logo patch, and the shiny metallic brass hardware. The aesthetic is extremely elegant, modern, and perfectly suited for a high-end luxury pet boutique e-commerce catalog." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqVfcoxARGwW9gaA7nx42d8FbDxWiCujm8_KKCckeRwBJyxAjoOZqQ3lJDuigUvz1EK56DrPoPLjbNoYvAUHEuLqv0aBLRKGD5bx6lX7Zwiwjd9OEv5XBHTgGBvS8Dq7O24CKxcUcTUEtbPhKyaDvXhZH26IXUsARdoOvP4JhO0hIz_2iR1GUHyJfueCMIa6ZYumUupFfnaMVzAfChSzE55_Qtxvk49WTaXUCQU0FpJv8gFkRfK850NMMnqbOufieHfe6TDzfpS0Q"/>
+</div>
+<div class="p-md flex flex-col flex-grow justify-between border-t border-surface-container-low">
+<div>
+<p class="font-label-sm text-[11px] text-outline uppercase tracking-wide mb-1 truncate">Sold by: Luxury Pet Boutique</p>
+<h3 class="font-label-md text-label-md text-on-surface line-clamp-2 leading-tight mb-2 group-hover:text-primary transition-colors">Denim Blue Comfort Harness &amp; Leash Set</h3>
+<div class="flex items-center gap-1 mb-3">
+<span class="material-symbols-outlined text-secondary-container text-[16px]" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">4.9 (128)</span>
+</div>
+</div>
+<div class="flex items-center justify-between mt-auto pt-2">
+<span class="font-headline-md text-headline-md text-on-surface">$48.00</span>
+<button class="bg-primary text-on-primary rounded-lg h-8 px-4 font-label-md flex items-center justify-center hover:bg-primary-fixed-variant active:scale-95 transition-all shadow-sm">
+                            Add
+                        </button>
+</div>
+</div>
+</article>
+<!-- Product Card 2 -->
+<article class="bg-surface rounded-lg shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] border border-surface-container-highest overflow-hidden flex flex-col group hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.08)] transition-shadow duration-300">
+<div class="relative w-full aspect-square bg-surface-container-lowest p-2">
+<img alt="Tactical Adventure Harness" class="w-full h-full object-contain mix-blend-darken transition-transform duration-500 group-hover:scale-105" data-alt="A clean, studio-lit photograph of a rugged, olive green tactical dog harness. The harness is displayed on an invisible mannequin form against a solid, bright white background. The image clearly shows the heavy-duty nylon webbing, multiple adjustment points, and sturdy metal buckles. The lighting is crisp and bright, creating a premium utility aesthetic for a modern pet e-commerce platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-QHWp4QCk1VNmJdIzmfZ-85TGg8bbGE1NCCh4LsUdk7NkLsUfHuzv3XG0onZyoxqBSHd8MasEiQSG8moM6-Ose0FSf_m2Na6TgqJpDPuZJO18k4l_LWSfQ_33JR8Yi3UtxDZr0khnao8cXp8qB2ct-O161M5lFDRqU2oQPzN5yKT3YptErWZW0JnjsQQnnTzVds63EzQOBpEgEIpwquXR-UiLlqNd_l_NGDAi3h5_CEe0gf0s-vTyhS26_GkYbRLx4J6HCt_3PiE"/>
+</div>
+<div class="p-md flex flex-col flex-grow justify-between border-t border-surface-container-low">
+<div>
+<p class="font-label-sm text-[11px] text-outline uppercase tracking-wide mb-1 truncate">Sold by: Barking Heads Store</p>
+<h3 class="font-label-md text-label-md text-on-surface line-clamp-2 leading-tight mb-2 group-hover:text-primary transition-colors">K9 Tactical Adventure Harness - Olive</h3>
+<div class="flex items-center gap-1 mb-3">
+<span class="material-symbols-outlined text-secondary-container text-[16px]" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">4.7 (85)</span>
+</div>
+</div>
+<div class="flex items-center justify-between mt-auto pt-2">
+<span class="font-headline-md text-headline-md text-on-surface">$65.00</span>
+<button class="bg-primary text-on-primary rounded-lg h-8 px-4 font-label-md flex items-center justify-center hover:bg-primary-fixed-variant active:scale-95 transition-all shadow-sm">
+                            Add
+                        </button>
+</div>
+</div>
+</article>
+<!-- Product Card 3 -->
+<article class="bg-surface rounded-lg shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] border border-surface-container-highest overflow-hidden flex flex-col group hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.08)] transition-shadow duration-300">
+<div class="relative w-full aspect-square bg-surface-container-lowest p-2">
+<img alt="Classic Leather Lead" class="w-full h-full object-contain mix-blend-darken transition-transform duration-500 group-hover:scale-105" data-alt="An elegant e-commerce product shot of a rolled genuine leather dog leash in a rich mahogany brown color. The leash is coiled perfectly on a pristine white surface under soft, even studio lighting. The brass snap hook gleams subtly, emphasizing the high-quality materials and craftsmanship. The overall mood is sophisticated, clean, and perfectly aligned with a premium corporate modern pet brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBstmBxcbiDYtks9mq4NixOW-4D3L9VcAfquJWjfv1N0bCdho7p0KKgykp_qBcyTD0ENSGCyfIDfHQQH-gLSY8Kv-0v2MaS87Cs83aU9F4el_pyARk80ra1n2N_KxNkfpXizkatturIIYh8XSS28oOFnV4ePt4jX_kYYukkKH01CBX7aMlHG5MF_ddHTXG6wKRAVDyDvOfIh8ABrjnm0W_4SeeJcoKal0ugJu3MGoH5fSpdWmK2Ki2NKuGQ_cy4-UDWNVoTPnc0aC4"/>
+</div>
+<div class="p-md flex flex-col flex-grow justify-between border-t border-surface-container-low">
+<div>
+<p class="font-label-sm text-[11px] text-outline uppercase tracking-wide mb-1 truncate">Sold by: LeatherCraft Pets</p>
+<h3 class="font-label-md text-label-md text-on-surface line-clamp-2 leading-tight mb-2 group-hover:text-primary transition-colors">Classic Rolled Leather City Lead</h3>
+<div class="flex items-center gap-1 mb-3">
+<span class="material-symbols-outlined text-secondary-container text-[16px]" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">5.0 (42)</span>
+</div>
+</div>
+<div class="flex items-center justify-between mt-auto pt-2">
+<span class="font-headline-md text-headline-md text-on-surface">$32.00</span>
+<button class="bg-primary text-on-primary rounded-lg h-8 px-4 font-label-md flex items-center justify-center hover:bg-primary-fixed-variant active:scale-95 transition-all shadow-sm">
+                            Add
+                        </button>
+</div>
+</div>
+</article>
+<!-- Product Card 4 -->
+<article class="bg-surface rounded-lg shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] border border-surface-container-highest overflow-hidden flex flex-col group hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.08)] transition-shadow duration-300">
+<div class="relative w-full aspect-square bg-surface-container-lowest p-2">
+<div class="absolute top-3 left-3 z-10 bg-error text-on-error font-label-sm text-[10px] px-2 py-1 rounded-full uppercase tracking-wider font-bold shadow-sm">
+                        Sale
+                    </div>
+<img alt="Airline Approved Carrier" class="w-full h-full object-contain mix-blend-darken transition-transform duration-500 group-hover:scale-105" data-alt="A bright, clean studio photograph of a premium, soft-sided pet travel carrier. The carrier is a sophisticated heathered gray color with black mesh panels. It is placed on a light gray background with subtle ambient shadows grounding the object. The lighting is high-key and professional, highlighting the zippers, padded handles, and modern design. The aesthetic is highly polished and utility-focused for a top-tier delivery app style UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0ipHQmI817cbTajzccC0_zvXkOdt6EOuMCl0fb7FFbUUGuMiQw86twslM8WkqKkflWYagr5MNIOdxfCl4YbF_w03ZqK9wkbBh2W3v4lfLCt6l58UJQQoE_qcVNCn41DozEiDKPL43F6j4cybIp-dcVmVLjygtybnMIl1VUPRaWkEn2K5FquFRv7SRqwk7O0o48a7njmhUMbjH60v_gWsuDUjQ_UVzikekYi8R4qENil-hX7ZV4IwzYAKbCB4LOCYYtIpp-eRXdpA"/>
+</div>
+<div class="p-md flex flex-col flex-grow justify-between border-t border-surface-container-low">
+<div>
+<p class="font-label-sm text-[11px] text-outline uppercase tracking-wide mb-1 truncate">Sold by: JetSet Pets</p>
+<h3 class="font-label-md text-label-md text-on-surface line-clamp-2 leading-tight mb-2 group-hover:text-primary transition-colors">Airline Approved Comfort Carrier</h3>
+<div class="flex items-center gap-1 mb-3">
+<span class="material-symbols-outlined text-secondary-container text-[16px]" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">4.5 (210)</span>
+</div>
+</div>
+<div class="flex items-center justify-between mt-auto pt-2">
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md text-on-surface">$89.00</span>
+<span class="font-label-sm text-outline line-through text-[11px] -mt-1">$110.00</span>
+</div>
+<button class="bg-primary text-on-primary rounded-lg h-8 px-4 font-label-md flex items-center justify-center hover:bg-primary-fixed-variant active:scale-95 transition-all shadow-sm">
+                            Add
+                        </button>
+</div>
+</div>
+</article>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-2 pb-safe bg-surface border-t border-outline-variant z-50">
+<!-- Home (Inactive) -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high rounded-xl transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span class="font-label-sm text-[10px]">Home</span>
+</button>
+<!-- Search (Active - Discovery/Category Context) -->
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1 active:scale-90 transition-transform duration-200 shadow-sm">
+<span class="material-symbols-outlined mb-1" data-icon="search" data-weight="fill" style="font-variation-settings: 'FILL' 1;">search</span>
+<span class="font-label-sm text-[10px] font-bold">Search</span>
+</button>
+<!-- Orders (Inactive) -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high rounded-xl transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1" data-icon="shopping_bag">shopping_bag</span>
+<span class="font-label-sm text-[10px]">Orders</span>
+</button>
+<!-- Profile (Inactive) -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high rounded-xl transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="font-label-sm text-[10px]">Profile</span>
+</button>
+</nav>
+</body></html>
