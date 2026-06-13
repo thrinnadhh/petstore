@@ -43,12 +43,21 @@ sealed class Screen {
     object MerchantMenu : Screen()
     object MerchantShopSetup : Screen()
     object SuperAdmin : Screen()
+    object SuperAdminUsers : Screen()
+    object MerchantInventory : Screen()
     object Appointments : Screen()
     object TabletsIssued : Screen()
     object Vaccinations : Screen()
     object Favourites : Screen()
     object ReportsDashboard : Screen()
     object Orders : Screen()
+    object FoodNutrition : Screen()
+    object TreatsChews : Screen()
+    object ToysEnrichment : Screen()
+    object GroomingServices : Screen()
+    object TravelApparel : Screen()
+    object FurnitureSleep : Screen()
+    object WasteManagement : Screen()
 }
 
 class PawsViewModel(application: Application) : AndroidViewModel(application) {

@@ -204,6 +204,71 @@ class PawsRepository(private val pawsDao: PawsDao) {
         )
         cities.forEach { pawsDao.insertCity(it) }
 
+        // Ensure mock_posh_paws and its products are always present
+        val poshShop = pawsDao.getShopById("mock_posh_paws")
+        if (poshShop == null) {
+            pawsDao.insertShop(
+                ShopEntity(
+                    id = "mock_posh_paws",
+                    ownerId = "merchant_posh_paws",
+                    cityId = "hyd",
+                    name = "The Posh Paws",
+                    description = "Premium Pet Supplies & Accessories",
+                    address = "123 Pet Avenue, Suite 4B, Metropolis, NY 10001",
+                    locality = "Banjara Hills",
+                    lat = 17.4150, lng = 78.4410,
+                    phone = "(555) 123-4567",
+                    email = "posh@paws.com",
+                    photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuDO-FLWT7iQKhtxei9MNj4zRn2Giyn_JLl-A7mFm14gNsSAeh5ZQIPsRHCcYiDaBMgn4OvvvYNsn2hJAGB4NJqgsCZLmfZXT1t_I0OW5B9ERTOzyv9XW-sKjBz4N3uEweZFAIoMUmBW-aTLY6bu1WNxdHdZNuJ0kS8SEc2OEVnf0y6K56nEFOuyvzkPwL3dy743debiOCvJJvce4R8i5PUGfzN8BrQkGHuTEzwSZzEtL7zRhZEPQ54M-79FGR3NHN58I-ApJ8m6BlA"),
+                    isOpen = true, opensAt = "09:00", closesAt = "20:00",
+                    rating = 4.8, totalReviews = 42,
+                    deliveryAvailable = true, isVerified = true, isActive = true, isFeatured = true,
+                    status = "active",
+                    groomingEnabled = false,
+                    vetClinicEnabled = false
+                )
+            )
+            val poshProducts = listOf(
+                ProductEntity(
+                    id = "p_posh_1", shopId = "mock_posh_paws", categoryId = "cat_food",
+                    name = "Wilderness Grain-Free Salmon Recipe",
+                    description = "Wild-caught salmon dry formula packed with omega fatty acids for brilliant coat radiance and optimal energy.",
+                    price = 45.99, mrp = 52.00,
+                    photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuCtlcUGdknbnxqoGx69Rd9xnPKdeUvT17jW2kk-D96gocFI4_VYLuy59ahTw1ZyVd-4ycyYp_u4l8gw2Zazsl9mBWfFSUwzW5nC9jGpJujfxYG0Sd1mrtuJ5RX2IzJBg7g1Xc5oxNUMGjw4ByKGrmpuoNizrd9CX4iiRPXG1-OJrNvdgP1aXYFHbIMvTyn2MZmPN8rvShuhR1YrzYoZEy1y_yvKuYvEPQVx8H0YcL6LOrE_27ZDcKosz3D0H96yQXSzi1OVjTyxgIE"),
+                    inStock = true, tags = listOf("salmon", "grainfree", "food", "dog"),
+                    brand = "Wilderness", lifeStage = "Adult", stockCount = 12
+                ),
+                ProductEntity(
+                    id = "p_posh_2", shopId = "mock_posh_paws", categoryId = "cat_toys",
+                    name = "Tough-Chew Dino Plushie (Large)",
+                    description = "Extremely resilient heavy-duty chewing toy with hollow channel to insert peanut butter treats.",
+                    price = 14.50, mrp = 18.00,
+                    photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuDlRTEgVVNx6kefg68afWQDOnsCUZhRJ2RVQbLchxXc5olgmAbed5oEcwOU8UhkAzUIPzkET36t3AD-RZXd-PSASKIpS1quqpgvu22hmMLDcc4wGZfRa197N9W33_ceAV6v_xrE4Rea8XdxremyWdjUnb8QA9J_qTVo4rxOGXixh93fTRFT2BMwCL-iZJ6wirBmOjGyGjbDMIauUdZ5doSPDdwtlwNLUrYe8_L9R8WB1svZrg5Ss7W6Ttk9vj1iV7RuzqtBY2cZLMw"),
+                    inStock = true, tags = listOf("toy", "plush", "dino", "chew"),
+                    brand = "Tough-Chew", lifeStage = "Adult", stockCount = 20
+                ),
+                ProductEntity(
+                    id = "p_posh_3", shopId = "mock_posh_paws", categoryId = "cat_treats",
+                    name = "Organic Peanut Butter Biscuits",
+                    description = "Artisanal, bone-shaped dog treats arranged elegantly. Wholesome, natural ingredients.",
+                    price = 8.99, mrp = 10.99,
+                    photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuD-SLjtkvZYh5_rI2HWJm0-m6i3KVAYNCIKguMo9gmbmyZciyCU_UViB7koR6qiMQo1Pa6fyulmb43UIWd8jvm3A0ITpUx0J02UpJ1fN1DphqhCDcN35scbFFjeVnaXXXrehFNwNlQXEUM5vo7XytTIT-cpT8BF2hjO0cL65gJ837mbyHrUfGNBv7dNdiGA9bEistsBXYnm2VpzyviTq2u0gaWzTSVkxmJW93dwmFQ1MFfTLxFZRluaf12hD1GXTdXQEwO0FLaTkiA"),
+                    inStock = true, tags = listOf("treats", "biscuits", "peanutbutter", "dog"),
+                    brand = "Organic", lifeStage = "Adult", stockCount = 15
+                ),
+                ProductEntity(
+                    id = "p_posh_4", shopId = "mock_posh_paws", categoryId = "cat_furniture",
+                    name = "Orthopedic Cloud Lounger (Medium)",
+                    description = "Soft, luxurious dog bed sitting in a bright, modern room corner. Plush fabric pressure-relief sleep cushion.",
+                    price = 85.00, mrp = 95.00,
+                    photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuD5NFqFPnKMEFbvAuBD_55W4KxuuMtl5E7NCkfO8WmnXzlrRKqFOk6qa9SrsQ-wXEP9OTFTlfm-8f-FcCOx-r98_E_CAXnWX0SdIWDmL4enTgZ_7UiZjDZa20nJ2OKAMdx5StNQlJeJzlH_DfcrzdDpdFGd2LPagPjuwUropMvzCvfJo2aDmGVH7scmv5Y93vt8D_D-dUNFIeTAd8RL3PgX9VEOahGTKa0kb3zwag3EJadUduENpj93ElQvaien90GMX8sN60-HRIE"),
+                    inStock = false, tags = listOf("bed", "furniture", "sleep", "dog"),
+                    brand = "Orthopedic", lifeStage = "Adult", stockCount = 0
+                )
+            )
+            poshProducts.forEach { pawsDao.insertProduct(it) }
+        }
+
         val hasNew = pawsDao.hasNewCategories()
         if (hasNew == 0) {
             pawsDao.clearCategories()
