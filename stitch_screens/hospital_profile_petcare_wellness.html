@@ -105,6 +105,44 @@
     body {
       min-height: max(884px, 100dvh);
     }
+    /* Floating healing crosses animation */
+    .healing-crosses-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: 10;
+    }
+    .healing-cross {
+        position: absolute;
+        bottom: -30px;
+        color: rgba(5, 150, 105, 0.45); /* Translucent healing green */
+        font-family: 'Inter', sans-serif;
+        font-size: 26px;
+        font-weight: 800;
+        line-height: 1;
+        animation: float-up var(--duration) ease-in-out infinite;
+        opacity: 0;
+    }
+    @keyframes float-up {
+        0% {
+            transform: translateY(0) scale(0.8) rotate(0deg) translateX(0);
+            opacity: 0;
+        }
+        10% {
+            opacity: 0.7;
+        }
+        90% {
+            opacity: 0.7;
+        }
+        100% {
+            transform: translateY(-300px) scale(1.3) rotate(90deg) translateX(var(--wobble));
+            opacity: 0;
+        }
+    }
   </style>
 </head>
 <body class="bg-background text-on-background antialiased md:bg-surface-container-low min-h-screen pb-24 md:pb-0">
@@ -137,6 +175,14 @@
 <!-- Hero Image -->
 <div class="relative w-full h-64 md:h-80 md:rounded-t-xl overflow-hidden md:mt-0 pt-16 md:pt-0">
 <img alt="City Pet Hospital Interior" class="w-full h-full object-cover" data-alt="A pristine, modern veterinary clinic interior bathed in bright, natural light. The aesthetic is corporate yet playful, featuring sleek white surfaces, royal blue accents, and spacious seating areas. A subtle glassmorphism effect is visible on the reception desk, and the overall mood is clean, professional, and welcoming for pet owners." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRi0uyF8gXfUmsPudBSZXetvg8HcD8VleRwq_bcpRzFzeTA649-c3LZtcjs-XnpZEj2QhEb4WOlT2Gk2b_LAzARdYB4u4BWdIqNTb5qwNc7MmGAt1RbCtaVzh9Le_OHn9hAIgMsZKzOTifvd-rJsy1iuPfP67-Z9cR56Nn_TaSXK55Ws64qFSU1S4TDBBPy8LMprC7zdnwjtjDPpDo6DVWDMGDwNUsMNPyUAqj_jVya8ipStNkkICbQ9GG2dsa3X1KteEbaz65FJM">
+<div class="healing-crosses-container">
+  <div class="healing-cross" style="left: 15%; --duration: 6s; --wobble: 15px; animation-delay: 0s;">+</div>
+  <div class="healing-cross" style="left: 30%; --duration: 8s; --wobble: -20px; animation-delay: 1.5s;">+</div>
+  <div class="healing-cross" style="left: 45%; --duration: 7s; --wobble: 10px; animation-delay: 3s;">+</div>
+  <div class="healing-cross" style="left: 60%; --duration: 9s; --wobble: -15px; animation-delay: 0.5s;">+</div>
+  <div class="healing-cross" style="left: 75%; --duration: 5s; --wobble: 25px; animation-delay: 2s;">+</div>
+  <div class="healing-cross" style="left: 88%; --duration: 7.5s; --wobble: -10px; animation-delay: 4s;">+</div>
+</div>
 <!-- Badges -->
 <div class="absolute top-20 md:top-4 left-4 flex gap-2">
 <div class="bg-surface-container-lowest/90 backdrop-blur-sm text-on-surface px-3 py-1 rounded-full font-label-sm text-label-sm flex items-center gap-1 shadow-sm">

@@ -5885,52 +5885,105 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
     }
 
     MaterialTheme(colorScheme = customColorScheme) {
-        val backgroundModifier = if (shop.groomingEnabled) {
-            Modifier
-                .fillMaxSize()
-                .drawBehind {
-                    // 1. Draw Skyblue Gradient background
-                    val gradientBrush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFFBFDBFE), // Soft Blue
-                            Color(0xFFEFF6FF), // Ice/Light Sky Blue
-                            Color.White
+        val backgroundModifier = when {
+            shop.vetClinicEnabled -> {
+                Modifier
+                    .fillMaxSize()
+                    .drawBehind {
+                        // 1. Draw Clinical Green / Cyan Gradient background
+                        val gradientBrush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color(0xFFECFEFF), // Light Cyan / Health background
+                                Color(0xFFF0FDF4), // Light Green / Health background
+                                Color.White
+                            )
                         )
-                    )
-                    drawRect(brush = gradientBrush)
-                    
-                    // 2. Draw Subtle bubbles in the background
-                    val width = size.width
-                    val height = size.height
-                    val backgroundBubbles = listOf(
-                        Triple(0.1f, 0.2f, 15.dp.toPx()),
-                        Triple(0.85f, 0.15f, 25.dp.toPx()),
-                        Triple(0.2f, 0.45f, 18.dp.toPx()),
-                        Triple(0.75f, 0.5f, 30.dp.toPx()),
-                        Triple(0.15f, 0.75f, 22.dp.toPx()),
-                        Triple(0.9f, 0.8f, 16.dp.toPx()),
-                        Triple(0.5f, 0.9f, 28.dp.toPx()),
-                        Triple(0.05f, 0.95f, 12.dp.toPx()),
-                        Triple(0.95f, 0.35f, 20.dp.toPx())
-                    )
-                    backgroundBubbles.forEach { (xPercent, yPercent, radius) ->
-                        drawCircle(
-                            color = Color(0x1538BDF8), // Translucent sky blue
-                            radius = radius,
-                            center = androidx.compose.ui.geometry.Offset(width * xPercent, height * yPercent)
+                        drawRect(brush = gradientBrush)
+
+                        // 2. Draw "+" healing symbols at random locations in the background
+                        val width = size.width
+                        val height = size.height
+                        val crossSymbols = listOf(
+                            Pair(0.12f, 0.18f),
+                            Pair(0.85f, 0.12f),
+                            Pair(0.25f, 0.38f),
+                            Pair(0.78f, 0.45f),
+                            Pair(0.15f, 0.65f),
+                            Pair(0.88f, 0.72f),
+                            Pair(0.48f, 0.88f),
+                            Pair(0.08f, 0.92f),
+                            Pair(0.92f, 0.28f)
                         )
-                        drawCircle(
-                            color = Color.White.copy(alpha = 0.25f),
-                            radius = radius,
-                            center = androidx.compose.ui.geometry.Offset(width * xPercent, height * yPercent),
-                            style = Stroke(width = 1.dp.toPx())
-                        )
+                        val crossSize = 10.dp.toPx()
+                        val strokeWidth = 2.5.dp.toPx()
+                        crossSymbols.forEach { (xPercent, yPercent) ->
+                            val cx = width * xPercent
+                            val cy = height * yPercent
+                            // Draw horizontal line of + symbol
+                            drawLine(
+                                color = Color(0x35059669), // Translucent green/teal
+                                start = androidx.compose.ui.geometry.Offset(cx - crossSize / 2, cy),
+                                end = androidx.compose.ui.geometry.Offset(cx + crossSize / 2, cy),
+                                strokeWidth = strokeWidth
+                            )
+                            // Draw vertical line of + symbol
+                            drawLine(
+                                color = Color(0x35059669),
+                                start = androidx.compose.ui.geometry.Offset(cx, cy - crossSize / 2),
+                                end = androidx.compose.ui.geometry.Offset(cx, cy + crossSize / 2),
+                                strokeWidth = strokeWidth
+                            )
+                        }
                     }
-                }
-        } else {
-            Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
+            }
+            shop.groomingEnabled -> {
+                Modifier
+                    .fillMaxSize()
+                    .drawBehind {
+                        // 1. Draw Skyblue Gradient background
+                        val gradientBrush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color(0xFFBFDBFE), // Soft Blue
+                                Color(0xFFEFF6FF), // Ice/Light Sky Blue
+                                Color.White
+                            )
+                        )
+                        drawRect(brush = gradientBrush)
+                        
+                        // 2. Draw Subtle bubbles in the background
+                        val width = size.width
+                        val height = size.height
+                        val backgroundBubbles = listOf(
+                            Triple(0.1f, 0.2f, 15.dp.toPx()),
+                            Triple(0.85f, 0.15f, 25.dp.toPx()),
+                            Triple(0.2f, 0.45f, 18.dp.toPx()),
+                            Triple(0.75f, 0.5f, 30.dp.toPx()),
+                            Triple(0.15f, 0.75f, 22.dp.toPx()),
+                            Triple(0.9f, 0.8f, 16.dp.toPx()),
+                            Triple(0.5f, 0.9f, 28.dp.toPx()),
+                            Triple(0.05f, 0.95f, 12.dp.toPx()),
+                            Triple(0.95f, 0.35f, 20.dp.toPx())
+                        )
+                        backgroundBubbles.forEach { (xPercent, yPercent, radius) ->
+                            drawCircle(
+                                color = Color(0x1538BDF8), // Translucent sky blue
+                                radius = radius,
+                                center = androidx.compose.ui.geometry.Offset(width * xPercent, height * yPercent)
+                            )
+                            drawCircle(
+                                color = Color.White.copy(alpha = 0.25f),
+                                radius = radius,
+                                center = androidx.compose.ui.geometry.Offset(width * xPercent, height * yPercent),
+                                style = Stroke(width = 1.dp.toPx())
+                            )
+                        }
+                    }
+            }
+            else -> {
+                Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+            }
         }
 
         LazyColumn(
@@ -6264,11 +6317,30 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
             ) {
                 tabs.forEach { tab ->
                     val isSelected = activeTab == tab || (tab.startsWith("Reviews") && activeTab == "Reviews")
+                    
+                    val tabColor = when {
+                        !shop.vetClinicEnabled -> MaterialTheme.colorScheme.primary
+                        tab == "Doctors" -> Color(0xFF0891B2)
+                        tab.startsWith("Consultation") -> Color(0xFF059669)
+                        tab.startsWith("Reviews") -> Color(0xFFD97706)
+                        tab.startsWith("Hospital Info") -> Color(0xFF4F46E5)
+                        else -> MaterialTheme.colorScheme.primary
+                    }
+                    
+                    val tabBgColor = when {
+                        !shop.vetClinicEnabled -> if (isSelected) MaterialTheme.colorScheme.surface else Color.Transparent
+                        tab == "Doctors" -> if (isSelected) Color(0xFFECFEFF) else Color.Transparent
+                        tab.startsWith("Consultation") -> if (isSelected) Color(0xFFD1FAE5) else Color.Transparent
+                        tab.startsWith("Reviews") -> if (isSelected) Color(0xFFFEF3C7) else Color.Transparent
+                        tab.startsWith("Hospital Info") -> if (isSelected) Color(0xFFEEF2FF) else Color.Transparent
+                        else -> if (isSelected) MaterialTheme.colorScheme.surface else Color.Transparent
+                    }
+
                     Box(
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(if (isSelected) MaterialTheme.colorScheme.surface else Color.Transparent)
+                            .background(tabBgColor)
                             .clickable {
                                 activeTab = if (tab.startsWith("Reviews")) "Reviews" else tab
                             }
@@ -6278,7 +6350,7 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
                         Text(
                             text = tab,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                            color = if (isSelected) tabColor else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                             fontSize = 11.sp
                         )
                     }
