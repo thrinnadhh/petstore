@@ -145,10 +145,25 @@ fun PawsApp(viewModel: PawsViewModel) {
                                     )
                                 },
                                 colors = NavigationBarItemDefaults.colors(
-                                    selectedIconColor = Color(0xFFFC8019),
-                                    selectedTextColor = Color(0xFFFC8019),
-                                    indicatorColor = Color(0xFFFC8019).copy(alpha = 0.12f),
-                                    unselectedIconColor = Color(0xFF8C8C8C),
+                                    selectedIconColor = when (item.label) {
+                                        "Favourites" -> Color(0xFFBA1A1A)
+                                        "Orders" -> Color(0xFF855300)
+                                        else -> Color(0xFFFC8019)
+                                    },
+                                    selectedTextColor = when (item.label) {
+                                        "Favourites" -> Color(0xFFBA1A1A)
+                                        "Orders" -> Color(0xFF855300)
+                                        else -> Color(0xFFFC8019)
+                                    },
+                                    indicatorColor = when (item.label) {
+                                        "Favourites" -> Color(0xFFBA1A1A).copy(alpha = 0.12f)
+                                        "Orders" -> Color(0xFF855300).copy(alpha = 0.12f)
+                                        else -> Color(0xFFFC8019).copy(alpha = 0.12f)
+                                    },
+                                    unselectedIconColor = when (item.label) {
+                                        "Favourites" -> Color(0xFFBA1A1A).copy(alpha = 0.6f)
+                                        else -> Color(0xFF8C8C8C)
+                                    },
                                     unselectedTextColor = Color(0xFF8C8C8C)
                                 )
                             )
@@ -5838,28 +5853,78 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
         return
     }
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 100.dp)
-    ) {
-        // Hero Photo Container with back actions
-        item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-            ) {
-                Image(
-                    painter = rememberAsyncImagePainter(shop.photos.firstOrNull()),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
+    val themePrimary = when {
+        shop.vetClinicEnabled -> Color(0xFF007D55) // Green
+        shop.groomingEnabled -> Color(0xFF0284C7) // Skyblue
+        else -> Color(0xFF004AC6) // Blue
+    }
+    
+    val currentColorScheme = MaterialTheme.colorScheme
+    val customColorScheme = remember(themePrimary, currentColorScheme) {
+        currentColorScheme.copy(
+            primary = themePrimary,
+            primaryContainer = themePrimary.copy(alpha = 0.12f),
+            onPrimaryContainer = themePrimary
+        )
+    }
+
+    MaterialTheme(colorScheme = customColorScheme) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 100.dp)
+        ) {
+            // Hero Photo Container with back actions
+            item {
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.35f))
-                )
+                        .fillMaxWidth()
+                        .height(200.dp)
+                ) {
+                    Image(
+                        painter = rememberAsyncImagePainter(shop.photos.firstOrNull()),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.35f))
+                    )
+
+                    if (shop.groomingEnabled) {
+                        androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
+                            val width = size.width
+                            val height = size.height
+                            val bubblesList = listOf(
+                                Triple(0.15f, 0.75f, 10.dp.toPx()),
+                                Triple(0.25f, 0.45f, 7.dp.toPx()),
+                                Triple(0.45f, 0.85f, 13.dp.toPx()),
+                                Triple(0.55f, 0.3f, 8.dp.toPx()),
+                                Triple(0.7f, 0.6f, 12.dp.toPx()),
+                                Triple(0.85f, 0.8f, 9.dp.toPx()),
+                                Triple(0.9f, 0.4f, 11.dp.toPx())
+                            )
+                            bubblesList.forEach { (xPercent, yPercent, radius) ->
+                                drawCircle(
+                                    color = Color(0x2238BDF8),
+                                    radius = radius,
+                                    center = androidx.compose.ui.geometry.Offset(width * xPercent, height * yPercent)
+                                )
+                                drawCircle(
+                                    color = Color.White.copy(alpha = 0.35f),
+                                    radius = radius,
+                                    center = androidx.compose.ui.geometry.Offset(width * xPercent, height * yPercent),
+                                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.dp.toPx())
+                                )
+                                drawCircle(
+                                    color = Color.White.copy(alpha = 0.5f),
+                                    radius = radius * 0.25f,
+                                    center = androidx.compose.ui.geometry.Offset(width * xPercent - radius * 0.3f, height * yPercent - radius * 0.3f)
+                                )
+                            }
+                        }
+                    }
 
                 // Top Actions Header
                 Row(
@@ -6217,6 +6282,7 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
                 }
             }
         }
+    }
     }
 }
 
@@ -18226,19 +18292,20 @@ fun PawsappHomeScreen(viewModel: PawsViewModel) {
                         .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    data class PillItem(val label: String, val icon: androidx.compose.ui.graphics.vector.ImageVector, val tint: androidx.compose.ui.graphics.Color, val screen: Screen)
                     val pills = listOf(
-                        Triple("Favourites", Icons.Default.Favorite, Screen.Favourites),
-                        Triple("Orders", Icons.Default.ShoppingCart, Screen.Orders),
-                        Triple("Reports", Icons.Default.DateRange, Screen.ReportsDashboard)
+                        PillItem("Favourites", Icons.Default.Favorite, androidx.compose.ui.graphics.Color(0xFFBA1A1A), Screen.Favourites),
+                        PillItem("Orders", Icons.Default.ShoppingCart, androidx.compose.ui.graphics.Color(0xFF855300), Screen.Orders),
+                        PillItem("Reports", Icons.Default.DateRange, androidx.compose.ui.graphics.Color(0xFF006242), Screen.ReportsDashboard)
                     )
-                    pills.forEach { (label, icon, screen) ->
+                    pills.forEach { pill ->
                         Card(
                             shape = RoundedCornerShape(12.dp),
                             border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.2f)),
                             colors = CardDefaults.cardColors(containerColor = Color.White),
                             modifier = Modifier
                                 .weight(1f)
-                                .clickable { viewModel.navigateTo(screen) }
+                                .clickable { viewModel.navigateTo(pill.screen) }
                         ) {
                             Row(
                                 modifier = Modifier
@@ -18247,9 +18314,9 @@ fun PawsappHomeScreen(viewModel: PawsViewModel) {
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(icon, null, tint = Color(0xFF004AC6), modifier = Modifier.size(16.dp))
+                                Icon(pill.icon, null, tint = pill.tint, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text(label, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B1C30))
+                                Text(pill.label, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B1C30))
                             }
                         }
                     }
