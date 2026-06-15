@@ -308,7 +308,7 @@ class PawsRepository(private val pawsDao: PawsDao) {
                     address = "Metro Station Road, Madhapur, Hyderabad",
                     locality = "Madhapur",
                     lat = 17.4350, lng = 78.3880,
-                    phone = "9876543212",
+                    phone = "+91 90000 55555",
                     email = "cityhospital@paws.com",
                     photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuB5z2g3IHBH5gz3oR6QqQl6XDHPXhUN4b482F_jJ_bPPyD_OnMLA-gnGMdyNXz7v-jaFvfwW2nZgw5KX9NdTC9YFXzkoNU1GbbdvagvvRSdasnjCk7_elM2rSKuGbzmVkaxSgZdguhWDkjbumkNBU7ppWfcO0BHE2XmNjU2nF4ild_5dbokZ4jck5r_IU4B0KaW73XkasFSbOjZBQL9xAMihZ9AWDirYg99ysJl5RAKEqRVNyjhtIeMcQILmQFS97_A-HBozb9Kz-k"),
                     isOpen = true, opensAt = "07:00", closesAt = "23:00",
@@ -334,7 +334,7 @@ class PawsRepository(private val pawsDao: PawsDao) {
                     address = "Gachibowli, Hyderabad",
                     locality = "Gachibowli",
                     lat = 17.4480, lng = 78.3740,
-                    phone = "9876543215",
+                    phone = "+91 90000 66666",
                     email = "wellness@paws.com",
                     photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuDYKJG83KcL1yNh-w9EyZpJJHjgLNuCQIwoxOy4oxO9897FscAQj38VOtNLWetFhV0UcGvbpvYFMlMNisc1N7np5cd_0qaZcKNYGqSiaBeZDsParI4mxGmOxyw6mMU4RnJGckXQcWZv9-HU08XqZzmVBHFvSqAiJicfb1bes3T14Iv-yfAJJflwwAUl-CIk_HMUPFxRcCa1f_RtBSqklHewyESVhtAzbgZgixnF5Psbz6VhIkMXq-m2KovO2SB4RSYINa5KONreaS8"),
                     isOpen = true, opensAt = "08:00", closesAt = "22:00",
@@ -932,9 +932,62 @@ class PawsRepository(private val pawsDao: PawsDao) {
                 name = "Vet General Checkup",
                 price = 500.0,
                 category = "Vet Doctor Clinic"
+            ),
+            ServiceEntity(
+                id = "service_seed_city_1",
+                shopId = "mock_city_hospital",
+                name = "Emergency Surgery Consultation",
+                price = 1200.0,
+                category = "Vet Doctor Clinic"
+            ),
+            ServiceEntity(
+                id = "service_seed_city_2",
+                shopId = "mock_city_hospital",
+                name = "General OPD Consultation",
+                price = 600.0,
+                category = "Vet Doctor Clinic"
+            ),
+            ServiceEntity(
+                id = "service_seed_city_3",
+                shopId = "mock_city_hospital",
+                name = "In-house Lab Diagnostics Checkup",
+                price = 1500.0,
+                category = "Vet Doctor Clinic"
+            ),
+            ServiceEntity(
+                id = "service_seed_wellness_1",
+                shopId = "mock_petcare_wellness",
+                name = "Routine Health Examination",
+                price = 400.0,
+                category = "Vet Doctor Clinic"
+            ),
+            ServiceEntity(
+                id = "service_seed_wellness_2",
+                shopId = "mock_petcare_wellness",
+                name = "Nutritional Consultation",
+                price = 300.0,
+                category = "Vet Doctor Clinic"
+            ),
+            ServiceEntity(
+                id = "service_seed_wellness_3",
+                shopId = "mock_petcare_wellness",
+                name = "Comprehensive Vaccination Package",
+                price = 800.0,
+                category = "Vet Doctor Clinic"
             )
         )
         seededServices.forEach { pawsDao.insertService(it) }
+
+        // Fallback to ensure services are present in existing DB instances
+        val hospitalServicesList = listOf(
+            ServiceEntity(id = "service_seed_city_1", shopId = "mock_city_hospital", name = "Emergency Surgery Consultation", price = 1200.0, category = "Vet Doctor Clinic"),
+            ServiceEntity(id = "service_seed_city_2", shopId = "mock_city_hospital", name = "General OPD Consultation", price = 600.0, category = "Vet Doctor Clinic"),
+            ServiceEntity(id = "service_seed_city_3", shopId = "mock_city_hospital", name = "In-house Lab Diagnostics Checkup", price = 1500.0, category = "Vet Doctor Clinic"),
+            ServiceEntity(id = "service_seed_wellness_1", shopId = "mock_petcare_wellness", name = "Routine Health Examination", price = 400.0, category = "Vet Doctor Clinic"),
+            ServiceEntity(id = "service_seed_wellness_2", shopId = "mock_petcare_wellness", name = "Nutritional Consultation", price = 300.0, category = "Vet Doctor Clinic"),
+            ServiceEntity(id = "service_seed_wellness_3", shopId = "mock_petcare_wellness", name = "Comprehensive Vaccination Package", price = 800.0, category = "Vet Doctor Clinic")
+        )
+        hospitalServicesList.forEach { pawsDao.insertService(it) }
 
         // 9. Seed Date Reminders for Arjun
         val seededReminders = listOf(

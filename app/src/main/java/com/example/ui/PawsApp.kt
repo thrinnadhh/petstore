@@ -5782,6 +5782,7 @@ fun EmptyShopsState() {
 // ==========================================
 // SCREEN 6: SHOP CUSTOM DETAIL & PRODUCT CATALOG
 // ==========================================
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
     val context = LocalContext.current
@@ -6063,6 +6064,93 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
                                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
                             )
                         }
+
+                        if (shop.vetClinicEnabled) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            androidx.compose.foundation.layout.FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalArrangement = Arrangement.spacedBy(6.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                val isCity = shop.id == "mock_city_hospital"
+                                
+                                // Emergency Badge
+                                val emergencyText = if (isCity) "Emergency 24/7" else "OPD Only (08:00 AM - 10:00 PM)"
+                                val emergencyBg = if (isCity) Color(0xFFFFEBEE) else Color(0xFFFFF8E1)
+                                val emergencyFg = if (isCity) Color(0xFFC62828) else Color(0xFFE65100)
+                                
+                                Box(
+                                    modifier = Modifier
+                                        .background(emergencyBg, RoundedCornerShape(12.dp))
+                                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                                ) {
+                                    Text(
+                                        text = emergencyText,
+                                        color = emergencyFg,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+
+                                // Consultation Fee Badge
+                                val feeText = if (isCity) "Fee: ₹600" else "Fee: ₹400"
+                                Box(
+                                    modifier = Modifier
+                                        .background(Color(0xFFE8F5E9), RoundedCornerShape(12.dp))
+                                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                                ) {
+                                    Text(
+                                        text = feeText,
+                                        color = Color(0xFF2E7D32),
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+
+                                // Species Treated Badge
+                                Box(
+                                    modifier = Modifier
+                                        .background(Color(0xFFE3F2FD), RoundedCornerShape(12.dp))
+                                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                                ) {
+                                    Text(
+                                        text = "Species: Dogs, Cats, Birds",
+                                        color = Color(0xFF1565C0),
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+
+                                // Lab Facility Badge
+                                val labText = if (isCity) "Inbuilt Lab: Available" else "External Lab Facility"
+                                Box(
+                                    modifier = Modifier
+                                        .background(Color(0xFFE0F2F1), RoundedCornerShape(12.dp))
+                                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                                ) {
+                                    Text(
+                                        text = labText,
+                                        color = Color(0xFF00695C),
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+
+                                // Pharmacy Badge
+                                Box(
+                                    modifier = Modifier
+                                        .background(Color(0xFFFFF3E0), RoundedCornerShape(12.dp))
+                                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                                ) {
+                                    Text(
+                                        text = "Pharmacy: In-house",
+                                        color = Color(0xFFEF6C00),
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
                     }
 
                     Row(
@@ -6100,7 +6188,7 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
                     ) {
                         Icon(Icons.Default.Call, null, tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Call Shop", color = MaterialTheme.colorScheme.onBackground, fontSize = 11.sp, maxLines = 1)
+                        Text(if (shop.vetClinicEnabled) "Call Hospital" else "Call Shop", color = MaterialTheme.colorScheme.onBackground, fontSize = 11.sp, maxLines = 1)
                     }
 
                     Button(
@@ -6115,7 +6203,7 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
                     ) {
                         Icon(Icons.Default.Email, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Chat Shop", color = MaterialTheme.colorScheme.primary, fontSize = 11.sp, maxLines = 1)
+                        Text(if (shop.vetClinicEnabled) "Chat Hospital" else "Chat Shop", color = MaterialTheme.colorScheme.primary, fontSize = 11.sp, maxLines = 1)
                     }
 
                     Button(
