@@ -1,0 +1,249 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>PawsApp - New Arrivals</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed-dim": "#b4c5ff",
+                        "outline": "#737686",
+                        "inverse-primary": "#b4c5ff",
+                        "tertiary-container": "#007d55",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "on-tertiary-container": "#bdffdb",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "inverse-on-surface": "#eaf1ff",
+                        "on-primary-fixed": "#00174b",
+                        "surface-container": "#e5eeff",
+                        "primary": "#004ac6",
+                        "outline-variant": "#c3c6d7",
+                        "surface-container-highest": "#d3e4fe",
+                        "surface-container-low": "#eff4ff",
+                        "on-background": "#0b1c30",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "on-tertiary-fixed": "#002113",
+                        "surface-dim": "#cbdbf5",
+                        "inverse-surface": "#213145",
+                        "tertiary-fixed": "#6ffbbe",
+                        "secondary-fixed": "#ffddb8",
+                        "on-secondary": "#ffffff",
+                        "primary-container": "#2563eb",
+                        "on-secondary-container": "#684000",
+                        "tertiary": "#006242",
+                        "primary-fixed": "#dbe1ff",
+                        "on-surface-variant": "#434655",
+                        "on-surface": "#0b1c30",
+                        "error-container": "#ffdad6",
+                        "secondary": "#855300",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#fea619",
+                        "surface-variant": "#d3e4fe",
+                        "on-primary": "#ffffff",
+                        "surface-container-high": "#dce9ff",
+                        "on-primary-container": "#eeefff",
+                        "error": "#ba1a1a",
+                        "on-error-container": "#93000a",
+                        "surface-bright": "#f8f9ff",
+                        "surface-tint": "#0053db",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#2a1700",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "on-tertiary": "#ffffff",
+                        "background": "#f8f9ff",
+                        "surface": "#f8f9ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "base": "4px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "xs": "8px",
+                        "md": "16px",
+                        "sm": "12px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "48px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen font-body-lg antialiased pb-[80px] md:pb-0">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md flex justify-between items-center px-margin-mobile h-16 shadow-sm border-none">
+<div class="flex items-center gap-sm">
+<button class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center shadow-md hover:bg-surface-container-high transition-all active:scale-95 shrink-0 text-on-surface">
+  <span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">PetCare</h1>
+</div>
+<button class="w-10 h-10 rounded-full hover:opacity-80 transition-opacity active:scale-95 duration-150 flex items-center justify-center text-primary dark:text-primary-fixed-dim shrink-0 bg-surface-container">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</header>
+<main class="pt-20 px-margin-mobile md:px-margin-desktop max-w-7xl mx-auto flex flex-col gap-lg">
+<!-- Header & Search -->
+<div class="flex flex-col gap-sm">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">New Arrivals</h2>
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
+<input class="w-full pl-xl pr-sm py-sm rounded-lg border-outline-variant bg-surface focus:border-primary focus:ring-1 focus:ring-primary font-body-md text-body-md text-on-surface placeholder:text-outline transition-all" placeholder="Search latest toys, treats..." type="text">
+</div>
+</div>
+<!-- Sleek Banner -->
+<div class="w-full h-48 md:h-64 rounded-xl overflow-hidden relative shadow-sm group">
+<img alt="New Pet Supplies Collection Banner" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="A cinematic, wide-angle lifestyle shot of an excited Golden Retriever looking at a box of brightly colored, premium pet toys and healthy treats. The setting is a clean, modern, light-filled living room with white walls and subtle royal blue accents. The lighting is soft, natural, and highly professional, creating a high-trust, energetic, and playful aesthetic suitable for a modern quick-commerce pet care app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBdPqB1VD-poe_QileZmxlt09oATWx2JZPRfht-yvU-VE7H9vdHhpE8uwl1hK3bzSbwUgN1YyD8Q-L1R41xD1NiL07pzHupT7pFy62jwbuYb5rv788e50oU2TEHqrCGiQXjg66gZcZqJnap5n8ffICAUotnOQx4_ynByF9CYTnkcIHkXFUa-zaSRh3x-oA7_1cX9oorIse6P7yrje6BamSADb09SfspRyk8b20VyFHxgfoPoLANVriXc08l5KsCMH3k0wixq72rFgc">
+<div class="absolute inset-0 bg-gradient-to-r from-on-background/80 to-transparent flex flex-col justify-center px-lg md:px-xl">
+<span class="font-label-sm text-label-sm text-surface-container-low uppercase tracking-wider mb-base">Fresh Drops</span>
+<h3 class="font-display-lg text-display-lg text-on-primary max-w-[200px] md:max-w-md leading-tight mb-sm">Spring Collection</h3>
+<button class="bg-primary hover:opacity-90 text-on-primary font-label-md text-label-md py-sm px-lg rounded-lg w-max transition-all shadow-md active:scale-95">Explore All</button>
+</div>
+</div>
+<!-- Categories Filters -->
+<div class="flex gap-sm overflow-x-auto pb-base no-scrollbar -mx-margin-mobile px-margin-mobile md:mx-0 md:px-0">
+<button class="px-md py-xs rounded-full bg-primary-container text-on-primary-container font-label-md text-label-md whitespace-nowrap shrink-0 transition-colors">All New</button>
+<button class="px-md py-xs rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md whitespace-nowrap shrink-0 hover:bg-surface-container-high transition-colors">Toys</button>
+<button class="px-md py-xs rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md whitespace-nowrap shrink-0 hover:bg-surface-container-high transition-colors">Treats</button>
+<button class="px-md py-xs rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md whitespace-nowrap shrink-0 hover:bg-surface-container-high transition-colors">Apparel</button>
+<button class="px-md py-xs rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md whitespace-nowrap shrink-0 hover:bg-surface-container-high transition-colors">Grooming</button>
+</div>
+<!-- Product Grid -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-md md:gap-lg">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest rounded-lg border border-surface-container hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all duration-300 flex flex-col group overflow-hidden">
+<div class="relative w-full aspect-square bg-surface-container-low p-sm flex items-center justify-center">
+<span class="absolute top-sm left-sm bg-tertiary-container text-on-tertiary-container font-label-sm text-label-sm px-xs py-0.5 rounded-sm z-10">NEW</span>
+<button class="absolute top-sm right-sm w-8 h-8 bg-surface-container-lowest rounded-full flex items-center justify-center shadow-sm text-outline hover:text-error transition-colors z-10"><span class="material-symbols-outlined text-[20px]" data-icon="favorite">favorite</span></button>
+<img alt="Chew Toy" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 mix-blend-multiply" data-alt="A high-quality product shot of a durable, royal blue and bright orange rubber chew toy for dogs. The toy is isolated against a clean, light grey background with a subtle ambient shadow. The lighting is crisp and even, highlighting the textured surface of the premium pet product, fitting a modern e-commerce platform aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBK7N1PNfHl_8oqsvA3JpjlB8R9Zeb3ZenOUBOzLvqTMUNeHaD7hqAq7aApF6OVt1LmK7BpE_PTWY60sB0mtyNpfxiPNTpdJq6pIt86JntV7LQnEAIp44-j8tpOuWLvcVMxTIqsDuSoJ49IfAVhTwztT1P7FTB-LhHDTJ2otkyxnChvNyBS5ofK5E9Ahs29_ngY8z_-XhUCkz2f36SzTlXdDaUmgKbiFTiJR00QHvc4oCGb9SEImX5tijVNpaaLj_ZtPESZgwHNFfQ">
+</div>
+<div class="p-sm flex flex-col flex-grow">
+<span class="font-label-sm text-label-sm text-outline mb-base flex items-center gap-1"><span class="material-symbols-outlined text-[14px]" data-icon="store">store</span> HappyPaws Hub</span>
+<h4 class="font-headline-md text-headline-md text-on-surface mb-xs line-clamp-2 leading-tight">Indestructible Tough Chew Ring</h4>
+<div class="mt-auto flex items-end justify-between">
+<span class="font-label-md text-label-md text-primary">$18.99</span>
+<button class="w-8 h-8 rounded-full bg-surface-container hover:bg-primary hover:text-on-primary flex items-center justify-center text-primary transition-colors border border-primary/20"><span class="material-symbols-outlined text-[20px]" data-icon="add">add</span></button>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest rounded-lg border border-surface-container hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all duration-300 flex flex-col group overflow-hidden">
+<div class="relative w-full aspect-square bg-surface-container-low p-sm flex items-center justify-center">
+<span class="absolute top-sm left-sm bg-tertiary-container text-on-tertiary-container font-label-sm text-label-sm px-xs py-0.5 rounded-sm z-10">NEW</span>
+<button class="absolute top-sm right-sm w-8 h-8 bg-surface-container-lowest rounded-full flex items-center justify-center shadow-sm text-outline hover:text-error transition-colors z-10"><span class="material-symbols-outlined text-[20px]" data-icon="favorite">favorite</span></button>
+<img alt="Dog Treats" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 mix-blend-multiply" data-alt="A premium product photography shot of a sleek, minimalist package of organic salmon dog treats. The packaging features clean white lines and a royal blue accent logo. It rests against a very soft, light surface container background. The lighting is bright and studio-quality, conveying high trust, health, and a modern corporate retail style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtlrmzapoFFULwZkSVdQbIfQhE3BK6ZnEJOGisdcr3oq46zF0QBZXqoRn-Kr3ve27knfceEivTk1srV0aWXUM9JWEJb0Qzl5ECraJkTlK9_75wnzZkbgRUhJed2EHhaDQvz74krWRjoB9zxJTNZw-lr_p7s-1pPeCcy3d4LgjDvV-M1ND8HUUnQZkzzyDzCUAdGN3k7DsvT4Cng3AdAWDEpO5GrYP7KlEavzksQG51h3dYSCv0JBjCwe6s5pNQyssUbUaJxDFOn6c">
+</div>
+<div class="p-sm flex flex-col flex-grow">
+<span class="font-label-sm text-label-sm text-outline mb-base flex items-center gap-1"><span class="material-symbols-outlined text-[14px]" data-icon="store">store</span> Organic Pet Pantry</span>
+<h4 class="font-headline-md text-headline-md text-on-surface mb-xs line-clamp-2 leading-tight">Wild Salmon Jerky Bites</h4>
+<div class="mt-auto flex items-end justify-between">
+<span class="font-label-md text-label-md text-primary">$24.00</span>
+<button class="w-8 h-8 rounded-full bg-surface-container hover:bg-primary hover:text-on-primary flex items-center justify-center text-primary transition-colors border border-primary/20"><span class="material-symbols-outlined text-[20px]" data-icon="add">add</span></button>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest rounded-lg border border-surface-container hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all duration-300 flex flex-col group overflow-hidden">
+<div class="relative w-full aspect-square bg-surface-container-low p-sm flex items-center justify-center">
+<span class="absolute top-sm left-sm bg-tertiary-container text-on-tertiary-container font-label-sm text-label-sm px-xs py-0.5 rounded-sm z-10">NEW</span>
+<button class="absolute top-sm right-sm w-8 h-8 bg-surface-container-lowest rounded-full flex items-center justify-center shadow-sm text-outline hover:text-error transition-colors z-10"><span class="material-symbols-outlined text-[20px]" data-icon="favorite">favorite</span></button>
+<img alt="Pet Sweater" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 mix-blend-multiply" data-alt="A beautifully styled flat lay product shot of a knitted dog sweater in a vibrant mustard yellow. The sweater is neatly folded on a pristine white background with very subtle soft shadows. The lighting is clear and professional, reflecting a clean, modern aesthetic similar to a high-end fashion e-commerce store, but tailored for pets." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmYG335gz-NhNS6HIAJ9P-pQJQJM4I78fccWfK6SghLhm0FbHd2U201dNvh1ENccqpZqEZA41Ic6XcazrPW2cR5j9pTHAlEWQoa8yk3WHvhgZe_7uU2S9_zhBU3PkCQ9FOGpDlKs5L8mUXDMCrF7uCGYe67gWkfCyBNHCFzyAH8A5IenLh3wBbGv4VNiJVVU98vPK0hetRJihCGHhDH6uIktoyX2R_yfLdO1oQbQ0ERcNbOsRMooSBLafZq_C9AKJhNghEqI8-YUo">
+</div>
+<div class="p-sm flex flex-col flex-grow">
+<span class="font-label-sm text-label-sm text-outline mb-base flex items-center gap-1"><span class="material-symbols-outlined text-[14px]" data-icon="store">store</span> Posh Paws Boutique</span>
+<h4 class="font-headline-md text-headline-md text-on-surface mb-xs line-clamp-2 leading-tight">Cozy Knit Autumn Sweater</h4>
+<div class="mt-auto flex items-end justify-between">
+<span class="font-label-md text-label-md text-primary">$32.50</span>
+<button class="w-8 h-8 rounded-full bg-surface-container hover:bg-primary hover:text-on-primary flex items-center justify-center text-primary transition-colors border border-primary/20"><span class="material-symbols-outlined text-[20px]" data-icon="add">add</span></button>
+</div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-container-lowest rounded-lg border border-surface-container hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all duration-300 flex flex-col group overflow-hidden">
+<div class="relative w-full aspect-square bg-surface-container-low p-sm flex items-center justify-center">
+<span class="absolute top-sm left-sm bg-tertiary-container text-on-tertiary-container font-label-sm text-label-sm px-xs py-0.5 rounded-sm z-10">NEW</span>
+<button class="absolute top-sm right-sm w-8 h-8 bg-surface-container-lowest rounded-full flex items-center justify-center shadow-sm text-outline hover:text-error transition-colors z-10"><span class="material-symbols-outlined text-[20px]" data-icon="favorite">favorite</span></button>
+<img alt="Cat Tree" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 mix-blend-multiply" data-alt="A modern, sleek cat scratching post and lounge made of light wood and premium grey fabric. It is photographed on a clean, bright background. The design of the product is highly aesthetic and Scandinavian in style. The lighting is soft and ambient, creating a high-end, uncluttered look perfect for a modern delivery app interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmHpHLJFweQr8YCs-bXpwGCUJGkUqDzb-csJBnlaiiT00VEGmGXtXrGY3lX1n2sjtc7H43SY-YG4NdWH6f7iJksI5rkS-sy3giTMbrgNB3-VMeoPqVhyVYPXhFd09S6IQvsYAIUGOE3WmBZRUTK0Bu2IiNMNbRDCfNkUxK8U2tacJOhedK2OiGZVjEtvfpjnI4-twmsg26czqdGtNO4x0RDFRXIQ_xoePgKJRegKNQv4WjKB72jYjauafQzl8PJ0WDuNcC6AgS188">
+</div>
+<div class="p-sm flex flex-col flex-grow">
+<span class="font-label-sm text-label-sm text-outline mb-base flex items-center gap-1"><span class="material-symbols-outlined text-[14px]" data-icon="store">store</span> Feline Fine Supplies</span>
+<h4 class="font-headline-md text-headline-md text-on-surface mb-xs line-clamp-2 leading-tight">Minimalist Cat Lounge &amp; Scratcher</h4>
+<div class="mt-auto flex items-end justify-between">
+<span class="font-label-md text-label-md text-primary">$85.00</span>
+<button class="w-8 h-8 rounded-full bg-surface-container hover:bg-primary hover:text-on-primary flex items-center justify-center text-primary transition-colors border border-primary/20"><span class="material-symbols-outlined text-[20px]" data-icon="add">add</span></button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-md rounded-full z-50 shadow-lg dark:shadow-none bg-surface/95 dark:bg-inverse-surface/95 backdrop-blur-md flex justify-around items-center py-2 px-2 border-none">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline px-5 py-2 hover:text-primary active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-sm text-label-sm mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container/10 text-primary font-bold rounded-full px-5 py-2 active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="storefront" style="font-variation-settings: 'FILL' 1;">storefront</span>
+<span class="font-label-sm text-label-sm mt-1">Shop</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline px-5 py-2 hover:text-primary active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="medical_services">medical_services</span>
+<span class="font-label-sm text-label-sm mt-1">Health</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline px-5 py-2 hover:text-primary active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-label-sm text-label-sm mt-1">Orders</span>
+</a>
+</nav>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+
+
+
+
+</body></html>

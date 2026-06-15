@@ -1,0 +1,320 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>The Healthy Hound - Shop Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#434655",
+                        "on-error": "#ffffff",
+                        "surface-tint": "#0053db",
+                        "surface-container-high": "#dce9ff",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "surface-variant": "#d3e4fe",
+                        "on-surface": "#0b1c30",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#0b1c30",
+                        "surface-dim": "#cbdbf5",
+                        "surface-container-low": "#eff4ff",
+                        "surface-bright": "#f8f9ff",
+                        "secondary-fixed": "#ffddb8",
+                        "primary": "#004ac6",
+                        "inverse-on-surface": "#eaf1ff",
+                        "tertiary-container": "#007d55",
+                        "secondary": "#855300",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "outline-variant": "#c3c6d7",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "on-tertiary-container": "#bdffdb",
+                        "surface": "#f8f9ff",
+                        "inverse-surface": "#213145",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "on-secondary-fixed": "#2a1700",
+                        "outline": "#737686",
+                        "surface-container": "#e5eeff",
+                        "primary-container": "#2563eb",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed": "#002113",
+                        "inverse-primary": "#b4c5ff",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "tertiary": "#006242",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-primary-fixed": "#00174b",
+                        "on-secondary-container": "#684000",
+                        "background": "#f8f9ff",
+                        "secondary-container": "#fea619",
+                        "primary-fixed": "#dbe1ff",
+                        "on-primary-container": "#eeefff",
+                        "surface-container-highest": "#d3e4fe",
+                        "tertiary-fixed": "#6ffbbe",
+                        "error": "#ba1a1a",
+                        "error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "base": "4px",
+                        "xs": "8px",
+                        "xl": "32px",
+                        "md": "16px",
+                        "margin-desktop": "48px",
+                        "sm": "12px",
+                        "margin-mobile": "16px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #F8FAFC; /* Level 0 Background */
+        }
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom, 20px);
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-background font-body-md antialiased pb-24 md:pb-0 relative">
+<!-- TopAppBar (Web) / Suppressed on mobile due to BottomNavBar -->
+<header class="hidden md:flex justify-between items-center w-full px-margin-desktop py-md max-w-7xl mx-auto bg-surface dark:bg-background z-50 sticky top-0">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed" style="font-variation-settings: 'FILL' 1;">location_on</span>
+<span class="font-display-lg text-headline-md font-bold text-primary dark:text-primary-fixed">PawsApp</span>
+</div>
+<nav class="flex gap-lg items-center">
+<a class="text-primary dark:text-primary-fixed-dim font-bold flex flex-col items-center hover:bg-surface-container-low transition-colors px-4 py-2 rounded-lg" href="#">
+<span class="material-symbols-outlined mb-1">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<a class="text-on-surface-variant dark:text-outline-variant flex flex-col items-center hover:bg-surface-container-low transition-colors px-4 py-2 rounded-lg" href="#">
+<span class="material-symbols-outlined mb-1">search</span>
+<span class="font-label-md text-label-md">Search</span>
+</a>
+<a class="text-on-surface-variant dark:text-outline-variant flex flex-col items-center hover:bg-surface-container-low transition-colors px-4 py-2 rounded-lg" href="#">
+<span class="material-symbols-outlined mb-1">shopping_bag</span>
+<span class="font-label-md text-label-md">Orders</span>
+</a>
+<a class="text-on-surface-variant dark:text-outline-variant flex flex-col items-center hover:bg-surface-container-low transition-colors px-4 py-2 rounded-lg" href="#">
+<span class="material-symbols-outlined mb-1">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+</nav>
+<div class="w-10 h-10 rounded-full border-2 border-secondary-container overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A close up portrait of a smiling person, used as a user profile avatar placeholder. Warm lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAn2LMbNYuqvAlSJ3Vsv3UiJVRa9B9YUYi39ShyxYeRMqbb6gwbm_4Iotbu_QZm-5pxwrOvETau5MJVPL3XcKNg6qJVbEke8w6buRQkmUgagREG15ZIZTBzIbtKGwCVgqAao1NSa_ZZsJpM9KgiC_VrK9O7aF2eMr6Gc5ES_fCKqnlSM8pjQ43E5RjzkRFt3L-lFoX38HEPBd99oYiAvt9cFIUV6eaqq44WCx2QdvoFE-V8XtAwCc_uwI9A53BXcQdxiXfZv7X09sw">
+</div>
+</header>
+<!-- Mobile Header (Back button + Actions) -->
+<div class="md:hidden flex items-center justify-between px-margin-mobile py-sm absolute top-0 w-full z-10">
+<button class="w-10 h-10 rounded-full bg-surface-container-lowest/80 backdrop-blur flex items-center justify-center shadow-sm text-on-surface">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="flex gap-xs">
+<button class="w-10 h-10 rounded-full bg-surface-container-lowest/80 backdrop-blur flex items-center justify-center shadow-sm text-on-surface">
+<span class="material-symbols-outlined">favorite_border</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-surface-container-lowest/80 backdrop-blur flex items-center justify-center shadow-sm text-on-surface">
+<span class="material-symbols-outlined">share</span>
+</button>
+</div>
+</div>
+<!-- Main Content Canvas -->
+<main class="max-w-7xl mx-auto md:px-margin-desktop md:py-lg md:grid md:grid-cols-12 md:gap-lg">
+<!-- Left Column: Shop Info & Header -->
+<div class="md:col-span-4 lg:col-span-3 flex flex-col gap-md">
+<!-- Shop Header Image (Mobile Edge-to-Edge, Desktop Rounded) -->
+<div class="relative h-64 md:h-80 w-full md:rounded-xl overflow-hidden shadow-sm">
+<img alt="Natural pet food store interior" class="w-full h-full object-cover" data-alt="A warm, inviting interior of a natural pet food store. Wooden shelves are neatly stocked with premium pet nutrition products and organic treats. Soft, natural lighting illuminates the space, creating a clean, high-end, and welcoming atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRnVj0Aq7Ia0bYKY3BK8o4h6c5XtK38lYBWqtYsdbWWH0sGtyn4x-VV5J8LX7rdUSDZaI7rqblOHRzpCaHpv5Hx6pGrzTq4k-W9Cg-dC3NXBLwm2pCL6IE6eDLR4RDByb5JUNCgq8mgSjANT-n_60dSnP_jJuUGvH9OW2Mo1PKzMDZV8bBmx7HPGxLnQQT_sLJ11pqUSn8hsGkmWVOj2CFLiZTQgKEtflAMtMKk8_ywUzdNdgTcg0T6XZgq2PE-DE8-D3Z2yLtjVM">
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent md:hidden"></div>
+</div>
+<!-- Shop Details Card -->
+<div class="bg-surface-container-lowest rounded-xl p-md shadow-sm border border-outline-variant/30 -mt-8 mx-margin-mobile relative z-10 md:mt-0 md:mx-0">
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-on-surface mb-1">The Healthy Hound</h1>
+<p class="font-body-md text-on-surface-variant mb-4">Premium nutrition &amp; organic treats</p>
+<div class="flex items-center gap-sm mb-4">
+<div class="flex items-center gap-1 bg-surface-container text-on-surface font-label-sm px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-[16px] text-secondary-container" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="">4.9 (128)</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant font-label-sm">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="">2.4 km away</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant font-label-sm">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span class="">Open till 8 PM</span>
+</div>
+</div>
+<div class="flex gap-xs">
+<button class="flex-1 bg-primary text-on-primary font-label-md py-2 rounded-lg shadow-sm hover:shadow-md transition-shadow">Order Now</button>
+<button class="flex-1 border border-primary text-primary font-label-md py-2 rounded-lg hover:bg-surface-container-low transition-colors">Book Grooming</button>
+</div>
+</div>
+<!-- Categories / Quick Links -->
+<div class="px-margin-mobile md:px-0">
+<h3 class="font-headline-md text-on-surface mb-sm">Categories</h3>
+<div class="flex gap-sm overflow-x-auto hide-scrollbar pb-2">
+<button class="flex-shrink-0 bg-primary-container text-on-primary-container font-label-sm px-4 py-2 rounded-full whitespace-nowrap">All Items</button>
+<button class="flex-shrink-0 bg-surface text-on-surface-variant border border-outline-variant/50 font-label-sm px-4 py-2 rounded-full whitespace-nowrap hover:bg-surface-container-low">Dry Food</button>
+<button class="flex-shrink-0 bg-surface text-on-surface-variant border border-outline-variant/50 font-label-sm px-4 py-2 rounded-full whitespace-nowrap hover:bg-surface-container-low">Treats</button>
+<button class="flex-shrink-0 bg-surface text-on-surface-variant border border-outline-variant/50 font-label-sm px-4 py-2 rounded-full whitespace-nowrap hover:bg-surface-container-low">Dental</button>
+</div>
+</div>
+</div>
+<!-- Right Column: Product Grid -->
+<div class="md:col-span-8 lg:col-span-9 px-margin-mobile md:px-0 mt-lg md:mt-0">
+<div class="flex justify-between items-center mb-md">
+<h2 class="font-headline-md text-on-surface">Popular Products</h2>
+<button class="text-primary font-label-md flex items-center">
+                    Filter <span class="material-symbols-outlined text-[18px] ml-1">tune</span>
+</button>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-md">
+<!-- Product Card 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-sm shadow-sm border border-outline-variant/30 hover:shadow-md transition-shadow group cursor-pointer flex flex-col h-full relative">
+<div class="absolute top-2 left-2 bg-secondary-container text-on-secondary-container font-label-sm px-2 py-0.5 rounded-full z-10 text-[10px]">Best Seller</div>
+<div class="aspect-square bg-surface-container-low rounded-lg mb-sm overflow-hidden relative flex items-center justify-center p-2">
+<img alt="Organic Grain-Free Salmon Kibble" class="object-cover w-full h-full rounded-md mix-blend-multiply group-hover:scale-105 transition-transform" data-alt="A bowl filled with small, round, brown kibble pieces mixed with tiny green and orange dehydrated vegetable bits. The kibble is lit by warm, natural sunlight, creating a high-quality, premium look typical of organic, grain-free pet food." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtNznnk9EkqOOSz_yw8E_CiIsug673jCKGyHpn_cYJUW6VBLE3d5RONwML9gLqioxUGZB6tYzua2csGskRO6ZZKh1Kgpvny92P-moIWDtz2D0liLpC4TdYc5chsBLcfk1TGjddIRau7blN1yZQsj5DHW6_ujvS5Fddds37fH3FKmUlZuLxPzmm2XZHZi3K4dDIzjUt6ejIHyTc19hbYtPgChwVCNqBhMTGVmkQh6K4QohUXGKqdFhwVsZlKJcls-8JBu5AE9nyag4">
+<button class="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-surface-container-lowest shadow-sm flex items-center justify-center text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+<div class="flex flex-col flex-grow">
+<p class="font-label-sm text-on-surface-variant mb-1 line-clamp-2">Organic Grain-Free Salmon Kibble</p>
+<div class="mt-auto flex items-center justify-between">
+<span class="font-label-md text-on-surface">$24.99</span>
+<span class="text-xs text-on-surface-variant">2kg</span>
+</div>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-sm shadow-sm border border-outline-variant/30 hover:shadow-md transition-shadow group cursor-pointer flex flex-col h-full relative">
+<div class="aspect-square bg-surface-container-low rounded-lg mb-sm overflow-hidden relative flex items-center justify-center p-2">
+<div class="w-full h-full rounded-md flex items-center justify-center text-outline-variant">
+<img alt="Wild Salmon Jerky Bites" class="object-cover w-full h-full rounded-md mix-blend-multiply group-hover:scale-105 transition-transform" data-alt="A close-up shot of several pieces of dark reddish-brown, slightly textured jerky bites for dogs. They are arranged on a light, neutral background, emphasizing their premium, meaty quality. The lighting is soft and studio-like." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDv5KBjEXUtjHTiMAIB83kF1yhv_KFns5uW5A0nI8gJwU8doR65y57ZhYmV6bdtlnmmRoEMT8nJ7gfXIHj6xIUjZ1uoP6dJeKyntp6vvIQC2IhB41j6SRCJSAYaqoUtKuLz6jGTi3Gpd0AeX6YsF_a_4M5EdbHT-xxqA8euaAoQNatP9JsDXhMpZMmc96aGKMli9cbxNv4hKQpRdbGWp1ZD3D5HncS5KBJDtwXNnrlUZc3ySiACyjHCDPDY4SfchlqrbBBum18HRiI">
+</div>
+<button class="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-surface-container-lowest shadow-sm flex items-center justify-center text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+<div class="flex flex-col flex-grow">
+<p class="font-label-sm text-on-surface-variant mb-1 line-clamp-2">Wild Salmon Jerky Bites</p>
+<div class="mt-auto flex items-center justify-between">
+<span class="font-label-md text-on-surface">$12.50</span>
+<span class="text-xs text-on-surface-variant">150g</span>
+</div>
+</div>
+</div>
+<!-- Product Card 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-sm shadow-sm border border-outline-variant/30 hover:shadow-md transition-shadow group cursor-pointer flex flex-col h-full relative">
+<div class="absolute top-2 left-2 bg-error-container text-on-error-container font-label-sm px-2 py-0.5 rounded-full z-10 text-[10px]">Sale</div>
+<div class="aspect-square bg-surface-container-low rounded-lg mb-sm overflow-hidden relative flex items-center justify-center p-2">
+<img alt="Rawhide-Free Dental Chews" class="object-cover w-full h-full rounded-md mix-blend-multiply group-hover:scale-105 transition-transform" data-alt="A highly detailed close-up of a single, textured dental chew for dogs. It has a greenish-brown hue and a ridged, bone-like shape designed for cleaning teeth. The chew sits on a soft beige surface under clean, modern lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAV5WlBBNurOa9RLdLsLnjeSwixAesDcAa_L5CpPIezIXJDSwbWhv9UekI2FkKQu2UtJCUChbCCYJGlze6loL0KljrD4A0nqelvkidGsylmrxeDzoK7CeSqajzCZhPZ1Y747NYtg5J-d9Ec-SMVddf6JKAPfI6rLJWcpejjTNl7plPXt5o2xQEgY2DAqbImNblGuf30Yz6Hj8B2tUH9mpDP4P-xDXb_I0vl1sTS8k9ZSn-t-GSoUtmf93wNvldv165NElv3oBZRsIE">
+<button class="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-surface-container-lowest shadow-sm flex items-center justify-center text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+<div class="flex flex-col flex-grow">
+<p class="font-label-sm text-on-surface-variant mb-1 line-clamp-2">Rawhide-Free Dental Chews</p>
+<div class="mt-auto flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-md text-error">$8.99</span>
+<span class="text-[10px] text-outline line-through">$10.99</span>
+</div>
+<span class="text-xs text-on-surface-variant">10 pack</span>
+</div>
+</div>
+</div>
+<!-- Product Card 4 Placeholder -->
+<div class="bg-surface-container-lowest rounded-xl p-sm shadow-sm border border-outline-variant/30 hover:shadow-md transition-shadow group cursor-pointer flex flex-col h-full relative">
+<div class="aspect-square bg-surface-container-low rounded-lg mb-sm overflow-hidden relative flex items-center justify-center p-2">
+<div class="w-full h-full rounded-md flex items-center justify-center bg-surface-variant text-outline">
+<span class="material-symbols-outlined text-4xl">pets</span>
+</div>
+<button class="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-surface-container-lowest shadow-sm flex items-center justify-center text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+<div class="flex flex-col flex-grow">
+<p class="font-label-sm text-on-surface-variant mb-1 line-clamp-2">Organic Chicken Bone Broth</p>
+<div class="mt-auto flex items-center justify-between">
+<span class="font-label-md text-on-surface">$14.00</span>
+<span class="text-xs text-on-surface-variant">500ml</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-xs pb-safe py-base shadow-sm bg-surface-container-lowest dark:bg-surface-container-lowest rounded-t-xl shadow-[0_-4px_16px_rgba(0,0,0,0.05)] border-t border-outline-variant/10">
+<a class="flex flex-col items-center justify-center flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">search</span>
+<span class="font-label-sm text-label-sm mt-1 font-bold">Search</span>
+</a>
+<a class="flex flex-col items-center justify-center flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined">shopping_bag</span>
+<span class="font-label-sm text-label-sm mt-1">Orders</span>
+</a>
+<!-- Active State Logic applied to 'Profile' as requested by the prompt context (Shop Profile implies navigating a profile context, though 'Home' could also be argued for a top-level shop view. Given the prompt specificies 'Shop Profile', we will subtly highlight the context or leave inactive. Let's assume browsing a shop falls under 'Home' exploration for a delivery app, but to strictly follow the "closest match" rule for a "Profile" page context, we highlight Profile. Let's highlight Home as it's a storefront.) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm mt-1">Profile</span>
+</a>
+</nav>
+
+
+</body></html>

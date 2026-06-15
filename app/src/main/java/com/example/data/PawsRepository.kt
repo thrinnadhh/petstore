@@ -269,6 +269,136 @@ class PawsRepository(private val pawsDao: PawsDao) {
             poshProducts.forEach { pawsDao.insertProduct(it) }
         }
 
+        // Ensure mock_healthy_hounds is seeded
+        val healthyShop = pawsDao.getShopById("mock_healthy_hounds")
+        if (healthyShop == null) {
+            pawsDao.insertShop(
+                ShopEntity(
+                    id = "mock_healthy_hounds",
+                    ownerId = "merchant_healthy_hounds",
+                    cityId = "hyd",
+                    name = "Healthy Hounds Pantry",
+                    description = "Organic & Raw Diet Specialist",
+                    address = "Road No 12, Banjara Hills, Hyderabad",
+                    locality = "Banjara Hills",
+                    lat = 17.4120, lng = 78.4480,
+                    phone = "9876543211",
+                    email = "healthy@paws.com",
+                    photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuASfM4FE2gFaBN0OhgeTBOjES2tuJHOL72sgaRGgO-tENBpVYDnBud9une2vRaHplLerDL25aSx0vh9cJz69DTuFIW1egWGJvltzY6_RQn4GF_mmvas_iU801N87_y6-JFB3H3zQFxvQwyYXfEgQuQ8JQuV0F3BI5heqbe6Fn_zOitcCR1esBTCKNBI4NVMHkzRxgVe8mC0fGuNb2htuR3f91sz8odhN4x_vfPmxh9MBA5fDQuWEqnrBtDvcw7nJsN8Qi7g7AzJId8"),
+                    isOpen = true, opensAt = "09:00", closesAt = "21:00",
+                    rating = 4.5, totalReviews = 88,
+                    deliveryAvailable = true, isVerified = true, isActive = true, isFeatured = true,
+                    status = "active",
+                    groomingEnabled = false,
+                    vetClinicEnabled = false
+                )
+            )
+        }
+
+        // Ensure mock_city_hospital is seeded
+        val cityHospital = pawsDao.getShopById("mock_city_hospital")
+        if (cityHospital == null) {
+            pawsDao.insertShop(
+                ShopEntity(
+                    id = "mock_city_hospital",
+                    ownerId = "system",
+                    cityId = "hyd",
+                    name = "City Pet Hospital",
+                    description = "Emergency & General Care",
+                    address = "Metro Station Road, Madhapur, Hyderabad",
+                    locality = "Madhapur",
+                    lat = 17.4350, lng = 78.3880,
+                    phone = "9876543212",
+                    email = "cityhospital@paws.com",
+                    photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuB5z2g3IHBH5gz3oR6QqQl6XDHPXhUN4b482F_jJ_bPPyD_OnMLA-gnGMdyNXz7v-jaFvfwW2nZgw5KX9NdTC9YFXzkoNU1GbbdvagvvRSdasnjCk7_elM2rSKuGbzmVkaxSgZdguhWDkjbumkNBU7ppWfcO0BHE2XmNjU2nF4ild_5dbokZ4jck5r_IU4B0KaW73XkasFSbOjZBQL9xAMihZ9AWDirYg99ysJl5RAKEqRVNyjhtIeMcQILmQFS97_A-HBozb9Kz-k"),
+                    isOpen = true, opensAt = "07:00", closesAt = "23:00",
+                    rating = 4.9, totalReviews = 19,
+                    deliveryAvailable = true, isVerified = true, isActive = true, isFeatured = false,
+                    status = "active",
+                    groomingEnabled = false,
+                    vetClinicEnabled = true
+                )
+            )
+        }
+
+        // Ensure mock_petcare_wellness is seeded
+        val wellnessCenter = pawsDao.getShopById("mock_petcare_wellness")
+        if (wellnessCenter == null) {
+            pawsDao.insertShop(
+                ShopEntity(
+                    id = "mock_petcare_wellness",
+                    ownerId = "system",
+                    cityId = "hyd",
+                    name = "PetCare Wellness Center",
+                    description = "Specialized Veterinary Services",
+                    address = "Gachibowli, Hyderabad",
+                    locality = "Gachibowli",
+                    lat = 17.4480, lng = 78.3740,
+                    phone = "9876543215",
+                    email = "wellness@paws.com",
+                    photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuDYKJG83KcL1yNh-w9EyZpJJHjgLNuCQIwoxOy4oxO9897FscAQj38VOtNLWetFhV0UcGvbpvYFMlMNisc1N7np5cd_0qaZcKNYGqSiaBeZDsParI4mxGmOxyw6mMU4RnJGckXQcWZv9-HU08XqZzmVBHFvSqAiJicfb1bes3T14Iv-yfAJJflwwAUl-CIk_HMUPFxRcCa1f_RtBSqklHewyESVhtAzbgZgixnF5Psbz6VhIkMXq-m2KovO2SB4RSYINa5KONreaS8"),
+                    isOpen = true, opensAt = "08:00", closesAt = "22:00",
+                    rating = 4.7, totalReviews = 34,
+                    deliveryAvailable = true, isVerified = true, isActive = true, isFeatured = false,
+                    status = "active",
+                    groomingEnabled = false,
+                    vetClinicEnabled = true
+                )
+            )
+        }
+
+        // Ensure mock_paws_bubbles is seeded
+        val bubblesSpa = pawsDao.getShopById("mock_paws_bubbles")
+        if (bubblesSpa == null) {
+            pawsDao.insertShop(
+                ShopEntity(
+                    id = "mock_paws_bubbles",
+                    ownerId = "system",
+                    cityId = "hyd",
+                    name = "Paws & Bubbles Spa",
+                    description = "Luxury Grooming & Styling",
+                    address = "Kondapur, Hyderabad",
+                    locality = "Kondapur",
+                    lat = 17.4620, lng = 78.3560,
+                    phone = "9876543216",
+                    email = "bubbles@paws.com",
+                    photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuCLDcsiQzTJ35jcCpCNHSC0CPGtsB--0Xdb-LVHpAoteDtktABgPSTQMMPGcfAgwvMEa22Twz_PWoxMANUVHDlfmcOgn53ytuQl7eHMq2kD2oBJX8mNowGEJjxAIHOdSyARgHYwDg6TFxoXYoYnVogC8c3QqEQxzKXQHBhPxhv1VK3mWc1o8kwr-eyteIwsACN_yi3C9LZwRdXcVVbk_7sQFr6t-JFQsx7yaIuZTVNVZeEEPbhBBDvdW00lu99huqxwo4ClJpdhVnY"),
+                    isOpen = true, opensAt = "09:00", closesAt = "21:00",
+                    rating = 4.8, totalReviews = 42,
+                    deliveryAvailable = true, isVerified = true, isActive = true, isFeatured = false,
+                    status = "active",
+                    groomingEnabled = true,
+                    vetClinicEnabled = false
+                )
+            )
+        }
+
+        // Ensure mock_grooming_room is seeded
+        val groomingRoom = pawsDao.getShopById("mock_grooming_room")
+        if (groomingRoom == null) {
+            pawsDao.insertShop(
+                ShopEntity(
+                    id = "mock_grooming_room",
+                    ownerId = "system",
+                    cityId = "hyd",
+                    name = "The Grooming Room",
+                    description = "Professional Pet Grooming",
+                    address = "Jubilee Hills, Hyderabad",
+                    locality = "Jubilee Hills",
+                    lat = 17.4300, lng = 78.4000,
+                    phone = "9876543217",
+                    email = "groomingroom@paws.com",
+                    photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuA8-OnbYbH6ervRc4iDKjRxKLt6mO6wKvK8uA3YF7QqP3s6MzG7DILE7cEzhjoG1QhhOujkvk6kROOkrlX_HL2AqoacPYkIXR9PWO8eOCuNrkd24m2rUzV3v_SsO_Tt-eng-sTQpDJE-rHj2Ksx8Qw8uGaUZB-6jpIsSfhmFTkAVrxBXvue6givMDI98jjybom420pH3sbIUeml2Io6RygcKD0Xk279U3oRRXPXcZSjpIgZMptmDBLqWFDLWZce7mlSIJJ-aZXYgOs"),
+                    isOpen = true, opensAt = "09:00", closesAt = "20:00",
+                    rating = 4.6, totalReviews = 27,
+                    deliveryAvailable = true, isVerified = true, isActive = true, isFeatured = false,
+                    status = "active",
+                    groomingEnabled = true,
+                    vetClinicEnabled = false
+                )
+            )
+        }
+
         val hasNew = pawsDao.hasNewCategories()
         if (hasNew == 0) {
             pawsDao.clearCategories()

@@ -1,13 +1,11 @@
-<!DOCTYPE html>
-
-<html lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport">
 <title>Treats &amp; Chews - PawsApp</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -128,7 +126,7 @@
 <!-- TopAppBar JSON Component -->
 <header class="fixed top-0 w-full z-50 bg-surface dark:bg-on-background shadow-sm dark:bg-surface-container-low pt-safe">
 <div class="flex items-center justify-between px-margin-mobile h-16 w-full">
-<button aria-label="Go back" class="flex items-center justify-center w-10 h-10 rounded-full hover:opacity-80 transition-opacity active:scale-95 transition-transform text-primary dark:text-primary-fixed">
+<button aria-label="Go back" class="flex items-center justify-center w-10 h-10 rounded-full bg-surface-container-lowest shadow-sm hover:bg-surface-container-low transition-all active:scale-95 text-on-surface">
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
 </button>
 <h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed truncate px-4">Treats &amp; Chews</h1>
@@ -139,52 +137,6 @@
 </header>
 <main class="pt-[calc(64px+env(safe-area-inset-top,0px))] md:pt-24 max-w-7xl mx-auto">
 <!-- Category Chips -->
-<section class="py-sm px-margin-mobile md:px-margin-desktop bg-surface sticky top-[calc(64px+env(safe-area-inset-top,0px))] z-40 shadow-sm border-b border-outline-variant/30">
-<div class="flex overflow-x-auto hide-scrollbar gap-sm pb-1">
-<!-- All Chip (Active) -->
-<button class="flex-shrink-0 flex flex-col items-center gap-2 group">
-<div class="w-16 h-16 rounded-full bg-primary-container flex items-center justify-center border-2 border-primary">
-<span class="font-label-md text-label-md text-on-primary-container">All</span>
-</div>
-<span class="font-label-sm text-label-sm text-primary">All Treats</span>
-</button>
-<!-- Biscuits -->
-<button class="flex-shrink-0 flex flex-col items-center gap-2 group">
-<div class="w-16 h-16 rounded-full bg-surface-container-high overflow-hidden border-2 border-transparent group-hover:border-primary-fixed transition-colors">
-<img alt="Dog biscuits category" class="w-full h-full object-cover" data-alt="A close-up studio shot of assorted crunchy dog biscuits in shapes of bones and hearts, resting on a clean white surface. The lighting is bright and even, casting soft shadows, highlighting the textured, baked surface of the treats. The overall mood is appealing and appetizing for pets, fitting a premium pet food brand aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOps8AnyTzPPSpLxzJCtksHUhj9JO8eOziN2D8_mGGPm2WJ_hKMFmVRP-KRm_MweqPRrBNv8M_n7ucAvYYPcZ3yf8HyPC9KUh5kX-1RiCcrnv7IdBVZ0wZDlAaFEDIT-PzJbo1pHaJTBw2SFEa4VkSlkb6xdBi-xKZ77nbIulP9jtkwHht8cQNZbd4hwB0Cq1i7b_NJT3v-T74y8sMorNvtFJu1CfxBuOsulUL80EufSwX36ZfDJkyLdKrSw9ZUvhXyPOkKWhUrnQ"/>
-</div>
-<span class="font-label-sm text-label-sm text-on-surface-variant group-hover:text-on-surface">Biscuits</span>
-</button>
-<!-- Dental -->
-<button class="flex-shrink-0 flex flex-col items-center gap-2 group">
-<div class="w-16 h-16 rounded-full bg-surface-container-high overflow-hidden border-2 border-transparent group-hover:border-primary-fixed transition-colors">
-<img alt="Dental chews category" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AP1WRLu2j9XUv_Re8vRJWJIq3otI7IoX2NgLk7u6dz-Q8YcKZM56ZhlEEG2hhVjR_8a8TLk1hk-4Tl9pMOlZyJGEzTBYJn_bkhNE9uLeijZ6EWFbm_jLi4gI6TBl8Gw26ZsyNvJfA59F0JWB29hKlzMIleF_-IFt7EarCxyfY7nXTlogfRnnfkUY63uBoXugR7m67gBg3tiS5d5irmOdJvPRSbNWfAdde8rkOop9HKp5a_RfrM4tCAPcR1ICVDY"/>
-</div>
-<span class="font-label-sm text-label-sm text-on-surface-variant group-hover:text-on-surface">Dental</span>
-</button>
-<!-- Jerky -->
-<button class="flex-shrink-0 flex flex-col items-center gap-2 group">
-<div class="w-16 h-16 rounded-full bg-surface-container-high overflow-hidden border-2 border-transparent group-hover:border-primary-fixed transition-colors">
-<img alt="Jerky treats category" class="w-full h-full object-cover" data-alt="Strips of dark, dried meat jerky arranged neatly on a light gray slate background. The texture of the dried meat is highly detailed, showing natural variations in color and grain. Soft, natural lighting enhances the rich, savory appearance of these premium pet treats. The composition is clean and modern, suitable for a high-end e-commerce platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1LsCqZae6WHZ_DyMPocb2L4zhbz8oNQSN2_TR8LsSedLCx22EDma5pJFMX1zgQGpQiYNgLXF2SUAF91QxXNXHdXiY0Qr6fYFUxwxWR8MXXTDIoQNe-f62c8iddyX9b4uCcf2VVkgWnDb7ljyuWNybt-vbC0FjtdAylfmtJs75jHZgc7q1mGpn-neoOttbXEZ72979RE5PIy1uX_QMhG_v8a2bWWYtT6Nw6hMe3g7X_siHHx82ikst98FRgzAzX33l0DWFdYnOuu8"/>
-</div>
-<span class="font-label-sm text-label-sm text-on-surface-variant group-hover:text-on-surface">Jerky</span>
-</button>
-<!-- Rawhide -->
-<button class="flex-shrink-0 flex flex-col items-center gap-2 group">
-<div class="w-16 h-16 rounded-full bg-surface-container-high overflow-hidden border-2 border-transparent group-hover:border-primary-fixed transition-colors">
-<img alt="Rawhide chews category" class="w-full h-full object-cover" data-alt="A knotted, natural rawhide dog bone sitting isolated on a pristine white background. The rawhide has a smooth, pale tan color with realistic folds and knots at the ends. The lighting is studio-quality, creating subtle highlights and a soft drop shadow, conveying a clean, safe, and durable chewing product for dogs." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzN-4DOjRYqTG1cAeYDmWD2-If0-zgUQfwY44b0IrWu23o1_kbzqMdW48OKBqO3QSIhYlwxFDrhBDyd5qBH4B7Jo39Xa_a-mmt-Boi4QjQ-nmsxRiN9Ajdg9yYfqOjC8tHUePJhpSwnWsU3vKnh7DfDSfQvW5pcLL3PA2eMQX4AWq7L-9d11qOifS5fiTAsyb7cQILpKSPu0q74JG3ngl9EzJYIljLuHiW7TodILNn8MTnxM7_II3GoNj0JU4M-z_j63G2eLP2L6A"/>
-</div>
-<span class="font-label-sm text-label-sm text-on-surface-variant group-hover:text-on-surface">Rawhide</span>
-</button>
-<!-- Natural -->
-<button class="flex-shrink-0 flex flex-col items-center gap-2 group">
-<div class="w-16 h-16 rounded-full bg-surface-container-high overflow-hidden border-2 border-transparent group-hover:border-primary-fixed transition-colors">
-<img alt="Natural treats category" class="w-full h-full object-cover" data-alt="A small pile of natural, freeze-dried liver treats for dogs, photographed macro against a soft, out-of-focus pastel background. The treats appear porous and light, emphasizing their natural, single-ingredient quality. The lighting is warm and inviting, suggesting a healthy, holistic approach to pet nutrition in a modern retail setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTVOz5bM-_A1YoHGzWiOWlxaNNh3u49iK6bdqr8U7TJpWDksdPyL4NzX0rcL9EgJNGIY5QF5kU8w0jBB3Yaa02GTSNO_aYmcH8mH2BaujkeAWRgbUqfzbG_ITXFn0vbRDWeXRozlwkUI9ki1kC4FClm-iwKtQA55iu4gM5uO3M3HfdZkaPCyC_M1Jsfnvzsag3-u1rP1wqZOp9qL8Mc3S4xfnjOjG-gsbCG4p4cxuFTYHPSFOv5pdOz-JLFUjKbKzgxzW8I7GOUn0"/>
-</div>
-<span class="font-label-sm text-label-sm text-on-surface-variant group-hover:text-on-surface">Natural</span>
-</button>
-</div>
-</section>
 <!-- Sort & Filter Row -->
 <section class="py-sm px-margin-mobile md:px-margin-desktop flex items-center justify-between bg-surface-bright">
 <span class="font-body-sm text-on-surface-variant">32 products</span>
@@ -210,7 +162,7 @@
 </div>
 <!-- Image -->
 <div class="w-full aspect-square bg-surface-container-low rounded-md overflow-hidden mb-2 relative">
-<img alt="Orijen High-Protein Biscuits" class="w-full h-full object-cover mix-blend-multiply" data-alt="A premium bag of Orijen High-Protein dog biscuits standing upright on a clean, light-colored surface. The packaging is vibrant with clear branding, and a few loose, dark brown, round biscuits are scattered appealingly at the base. The lighting is crisp, highlighting the high-quality texture of the treats and the professional packaging design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBH7YeUXJ96VO2zzK5bp1QXpwRu7YNTyiRCVVT0-e83V1rLkfGijcJE3web3Ogc1WU6iBJZtXAkuAL8k4Bm9uGcleOi9M-fH1VMzQSxIJsqSZTrDxe9v97xyUhq_MgJnTbbElcO3LQ4DfUzcQiTyCCrEaJk0r6B9IadZLsmgBmpbgKrNTil1Zkbp3yEvYyj-DI6xS8aZBhoLIldS6WKkLXZGvRVnIiUnisirs3llTO8796kRpVGdOX0iORj5iTiV18g0n0m5RHqWMs"/>
+<img alt="Orijen High-Protein Biscuits" class="w-full h-full object-cover mix-blend-multiply" data-alt="A premium bag of Orijen High-Protein dog biscuits standing upright on a clean, light-colored surface. The packaging is vibrant with clear branding, and a few loose, dark brown, round biscuits are scattered appealingly at the base. The lighting is crisp, highlighting the high-quality texture of the treats and the professional packaging design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBH7YeUXJ96VO2zzK5bp1QXpwRu7YNTyiRCVVT0-e83V1rLkfGijcJE3web3Ogc1WU6iBJZtXAkuAL8k4Bm9uGcleOi9M-fH1VMzQSxIJsqSZTrDxe9v97xyUhq_MgJnTbbElcO3LQ4DfUzcQiTyCCrEaJk0r6B9IadZLsmgBmpbgKrNTil1Zkbp3yEvYyj-DI6xS8aZBhoLIldS6WKkLXZGvRVnIiUnisirs3llTO8796kRpVGdOX0iORj5iTiV18g0n0m5RHqWMs">
 </div>
 <!-- Content -->
 <div class="flex flex-col flex-grow">
@@ -239,7 +191,7 @@
 </div>
 <!-- Image -->
 <div class="w-full aspect-square bg-surface-container-low rounded-md overflow-hidden mb-2 relative">
-<img alt="Pedigree Dentastix" class="w-full h-full object-cover mix-blend-multiply" src="https://lh3.googleusercontent.com/aida/AP1WRLu2j9XUv_Re8vRJWJIq3otI7IoX2NgLk7u6dz-Q8YcKZM56ZhlEEG2hhVjR_8a8TLk1hk-4Tl9pMOlZyJGEzTBYJn_bkhNE9uLeijZ6EWFbm_jLi4gI6TBl8Gw26ZsyNvJfA59F0JWB29hKlzMIleF_-IFt7EarCxyfY7nXTlogfRnnfkUY63uBoXugR7m67gBg3tiS5d5irmOdJvPRSbNWfAdde8rkOop9HKp5a_RfrM4tCAPcR1ICVDY"/>
+<img alt="Pedigree Dentastix" class="w-full h-full object-cover mix-blend-multiply" src="https://lh3.googleusercontent.com/aida/AP1WRLu2j9XUv_Re8vRJWJIq3otI7IoX2NgLk7u6dz-Q8YcKZM56ZhlEEG2hhVjR_8a8TLk1hk-4Tl9pMOlZyJGEzTBYJn_bkhNE9uLeijZ6EWFbm_jLi4gI6TBl8Gw26ZsyNvJfA59F0JWB29hKlzMIleF_-IFt7EarCxyfY7nXTlogfRnnfkUY63uBoXugR7m67gBg3tiS5d5irmOdJvPRSbNWfAdde8rkOop9HKp5a_RfrM4tCAPcR1ICVDY">
 </div>
 <!-- Content -->
 <div class="flex flex-col flex-grow">
@@ -264,7 +216,7 @@
 <div class="bg-surface-container-lowest rounded-lg border border-outline-variant/50 p-2 flex flex-col relative group hover:shadow-md transition-shadow">
 <!-- Image -->
 <div class="w-full aspect-square bg-surface-container-low rounded-md overflow-hidden mb-2 relative">
-<img alt="Hills Healthy Mobility Treats" class="w-full h-full object-cover mix-blend-multiply" data-alt="A stylized product shot of Hill's Healthy Mobility dog treats in their distinctive packaging, set against a pristine, bright background. Beside the bag, a few small, bone-shaped treats are neatly arranged to show texture. The lighting is soft but bright, creating an clinical, trustworthy, and premium veterinary aesthetic suitable for an upscale pet pharmacy or store." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSBZQjs5eKzrCGdFsmvuYlxWl5wP38L9RoLUNkdYcLxeYcPQhw9xhzDCgy8eNSxczcabhKSFAxAwghevpBto4jhGekPFtFllV4AjoH8cRZ1qzH12MOi9keSmXEpKzBSlLuz-plmZZAAj5zem-3KwA2WqyvmB33AIXo_Ap7H8LrjKVYN0Y1sfXEBBZlDQ0ewf4kRJMQ6EZtA9uH2JSCUcoKtG4sb3hKuaxx5W9n1Vljae2g4qoyNYEGMCL7FXlHqffddxqNv1OW2QA"/>
+<img alt="Hills Healthy Mobility Treats" class="w-full h-full object-cover mix-blend-multiply" data-alt="A stylized product shot of Hill's Healthy Mobility dog treats in their distinctive packaging, set against a pristine, bright background. Beside the bag, a few small, bone-shaped treats are neatly arranged to show texture. The lighting is soft but bright, creating an clinical, trustworthy, and premium veterinary aesthetic suitable for an upscale pet pharmacy or store." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSBZQjs5eKzrCGdFsmvuYlxWl5wP38L9RoLUNkdYcLxeYcPQhw9xhzDCgy8eNSxczcabhKSFAxAwghevpBto4jhGekPFtFllV4AjoH8cRZ1qzH12MOi9keSmXEpKzBSlLuz-plmZZAAj5zem-3KwA2WqyvmB33AIXo_Ap7H8LrjKVYN0Y1sfXEBBZlDQ0ewf4kRJMQ6EZtA9uH2JSCUcoKtG4sb3hKuaxx5W9n1Vljae2g4qoyNYEGMCL7FXlHqffddxqNv1OW2QA">
 </div>
 <!-- Content -->
 <div class="flex flex-col flex-grow">
@@ -289,7 +241,7 @@
 <div class="bg-surface-container-lowest rounded-lg border border-outline-variant/50 p-2 flex flex-col relative group hover:shadow-md transition-shadow">
 <!-- Image -->
 <div class="w-full aspect-square bg-surface-container-low rounded-md overflow-hidden mb-2 relative">
-<img alt="Barking Heads Chews" class="w-full h-full object-cover mix-blend-multiply" data-alt="A vibrant package of organic dog chew treats resting on a light wooden tabletop. Next to the colourful bag are several twisted, natural-looking chews. Bright, sunny lighting from the side casts warm, soft shadows, evoking a wholesome, natural, and joyful feeling appropriate for an eco-friendly pet brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6heK9zKhK9CQnrHlcVs0nsFrVcG4dVag5Q3qWWSQjpzX3FxCe2Ku5sDJKbVa0oAmNOIoQqDrtm59DRTjM_tSof16oJkLH09oeS3EZFm3jUl8no1S3gPGM281DYtdwtCfXDhoH29dOf4FQXco69KowvXGlq-rByr1aq9iyV5xEPjtdlrOY0w0Qbb5_Mj1ONvaA7FQ-AUDznmnUJRpr5zna1C6AGoCiQfxrMU05fLa5kgTefywfLpxkezwylHDK6inWnigkEG0dfYc"/>
+<img alt="Barking Heads Chews" class="w-full h-full object-cover mix-blend-multiply" data-alt="A vibrant package of organic dog chew treats resting on a light wooden tabletop. Next to the colourful bag are several twisted, natural-looking chews. Bright, sunny lighting from the side casts warm, soft shadows, evoking a wholesome, natural, and joyful feeling appropriate for an eco-friendly pet brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6heK9zKhK9CQnrHlcVs0nsFrVcG4dVag5Q3qWWSQjpzX3FxCe2Ku5sDJKbVa0oAmNOIoQqDrtm59DRTjM_tSof16oJkLH09oeS3EZFm3jUl8no1S3gPGM281DYtdwtCfXDhoH29dOf4FQXco69KowvXGlq-rByr1aq9iyV5xEPjtdlrOY0w0Qbb5_Mj1ONvaA7FQ-AUDznmnUJRpr5zna1C6AGoCiQfxrMU05fLa5kgTefywfLpxkezwylHDK6inWnigkEG0dfYc">
 </div>
 <!-- Content -->
 <div class="flex flex-col flex-grow">
@@ -316,9 +268,9 @@
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">home</span>
 <span class="font-label-md text-label-md mt-1">Home</span>
 </a>
-<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-xl px-3 py-1 hover:bg-surface-container-high dark:hover:bg-surface-variant transition-colors active:scale-90 transition-transform duration-200" href="#">
-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">search</span>
-<span class="font-label-md text-label-md mt-1">Search</span>
+<a class="flex flex-col items-center justify-center bg-primary-container/10 text-primary font-bold rounded-xl px-3 py-1 hover:bg-surface-container-high dark:hover:bg-surface-variant transition-colors active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">search</span>
+<span class="font-label-md text-label-md mt-1" style="font-variation-settings: &quot;FILL&quot; 1;">Search</span>
 </a>
 <a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1 hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-xl transition-colors active:scale-90 transition-transform duration-200" href="#">
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">shopping_bag</span>
@@ -330,4 +282,8 @@
 </a>
 </div>
 </nav>
+
+
+
+
 </body></html>

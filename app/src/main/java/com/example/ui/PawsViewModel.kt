@@ -263,6 +263,10 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
         else flowOf(emptyList())
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
+    // All products (for favourites screen and global searches)
+    val products = repository.allProductsFlow
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
     // Chats State Flows
     private val _activeChatShopId = MutableStateFlow<String?>(null)
     val activeChatShopId: StateFlow<String?> = _activeChatShopId.asStateFlow()

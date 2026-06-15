@@ -173,7 +173,7 @@
 <body class="bg-surface text-on-surface font-body-md min-h-screen pb-24 antialiased">
 <!-- TopAppBar -->
 <header class="fixed top-0 w-full z-50 shadow-sm bg-surface dark:bg-on-background flex items-center justify-between px-margin-mobile h-16 w-full">
-<button class="flex items-center justify-center p-2 rounded-full hover:opacity-80 transition-opacity active:scale-95 transition-transform text-on-surface-variant dark:text-outline-variant">
+<button class="flex items-center justify-center w-12 h-12 rounded-full bg-surface-container-lowest shadow-sm hover:bg-surface-container-high transition-all active:scale-95 text-on-surface-variant">
 <span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
 </button>
 <h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">PawsApp</h1>
@@ -197,45 +197,7 @@
 </div>
 </div>
 <!-- Filter Chips (Circular Image Based) -->
-<div class="overflow-x-auto pb-4 mb-lg -mx-margin-mobile px-margin-mobile hide-scrollbar">
-<div class="flex space-x-lg w-max">
-<!-- Filter: All (Active) -->
-<div class="flex flex-col items-center gap-2 cursor-pointer group">
-<div class="w-16 h-16 rounded-full border-2 border-primary overflow-hidden shadow-sm p-0.5 bg-surface-container-low flex items-center justify-center">
-<span class="material-symbols-outlined text-primary text-3xl">widgets</span>
-</div>
-<span class="font-label-sm text-label-sm text-primary font-bold">All</span>
-</div>
-<!-- Filter: Dry Food -->
-<div class="flex flex-col items-center gap-2 cursor-pointer group hover:opacity-80 transition-opacity">
-<div class="w-16 h-16 rounded-full border-2 border-transparent overflow-hidden shadow-sm bg-surface-container-low flex items-center justify-center">
-<img alt="Dry pet food kibble in a bowl. Close up shot of premium dry food. Natural lighting, high quality." class="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-300" data-alt="A close-up, high-resolution shot of premium dry pet food kibble neatly arranged in a modern, minimalist bowl. The lighting is soft and natural, emphasizing the texture and quality of the dry food. The setting suggests a clean, upscale pet care environment, aligning with a corporate modern and playful aesthetic. Warm, inviting tones dominate the scene." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaMcJIVCpMDAryThufnqIu7D7lVvv7DQZozbM5bBJP76CSyNO6_lD2-p5XffQ8R8_3fjOunxk33lAXLIiF-iX_icpAK32P8bMf3d72NJDAQAU4KKOijGVZ2ijzvEpG2_Yb1kjzYyIA7rofOLqctqJ--ccjq1QgeORABUppYOf_PJ-iM9cacu1OPKIw18xhBIy17gu41K7ilF5W04ZIxno5M9zCbgfCMY8-ote6eQZE0yIj27bNQunYA_xHnQuuwnmeksASk84c8rA">
-</div>
-<span class="font-label-sm text-label-sm text-on-surface-variant">Dry Food</span>
-</div>
-<!-- Filter: Wet Food -->
-<div class="flex flex-col items-center gap-2 cursor-pointer group hover:opacity-80 transition-opacity">
-<div class="w-16 h-16 rounded-full border-2 border-transparent overflow-hidden shadow-sm bg-surface-container-low flex items-center justify-center">
-<img alt="Wet pet food in a tin can." class="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-300" data-alt="A macro shot of rich, high-quality wet pet food freshly opened from a sleek tin can. The lighting is bright and even, highlighting the moisture and appealing texture of the food. The background is a soft, blurred white, reflecting a clean, utility-first quick-commerce design aesthetic. The overall mood is fresh and premium." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZy7gL7akW0RbMjB6o-_yq6zVuuhqdZJBcTEX_CG4v1Jn4qLIWgzNlmLkmBhU_vGlbcAAVmXfUFBavIyayRmHt-_QJLlCsDXAIecmSPmU3b9Ye8SGr_SejNo4JIuzcVUqj9koe03E3RhCc9QIKTbnZ4lvwHhQUZXaVQIYeX5tldG4f1T7deoobjF6Wu87OXIEziz15NHHH4KY-Y78lUWw-f07r3-aD-j2oj2JLGyQ_bE_rDzTf4imsA3Z9uPQ_TASpMo-HZAL_k3k">
-</div>
-<span class="font-label-sm text-label-sm text-on-surface-variant">Wet Food</span>
-</div>
-<!-- Filter: Puppy -->
-<div class="flex flex-col items-center gap-2 cursor-pointer group hover:opacity-80 transition-opacity">
-<div class="w-16 h-16 rounded-full border-2 border-transparent overflow-hidden shadow-sm bg-surface-container-low flex items-center justify-center">
-<img alt="A cute golden retriever puppy looking up." class="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-300" data-alt="An adorable, vibrant portrait of a young Golden Retriever puppy looking upward with bright, energetic eyes. The image is set against a clean, light-colored background, embodying a high-energy, playful yet refined brand identity. Soft studio lighting ensures the puppy's fur looks pristine and soft, appealing directly to discerning pet owners." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmubYy_3TutaMx8F-iGy1rTiTh9Mgsle_aXKV01Krqp67x10PE-FKrHx8XiZiz0qs2CXbwtTT8ApJGqUnN6SiH6CbnQ269Y78W83b6dXyFTpKYfaAPkYxbe1vKv6HrzN5BB8IQGqhQWuTTyV62x88XKObifTHmfHMfA4cHzRryGfNmnGQJPkUdO55okvDq_bToNaxbWl1Bll4Zf44mamDUx31CALZmgsiTMxb_BgawB_7lU8LKs_mSHcTLusRKoHiUbATt_CoskCY">
-</div>
-<span class="font-label-sm text-label-sm text-on-surface-variant">Puppy</span>
-</div>
-<!-- Filter: Adult -->
-<div class="flex flex-col items-center gap-2 cursor-pointer group hover:opacity-80 transition-opacity">
-<div class="w-16 h-16 rounded-full border-2 border-transparent overflow-hidden shadow-sm bg-surface-container-low flex items-center justify-center">
-<img alt="A healthy adult dog running in a park." class="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-300" data-alt="A dynamic action shot of a healthy, athletic adult dog running happily through a pristine, sunlit park. The scene exudes vitality, trust, and premium care. The colors are vibrant yet sophisticated, aligning with a corporate modern style that avoids juvenile tropes. The lighting is bright and natural, capturing peak energy." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjN_IZ-uk5uuHO7oyQucHRDac-jIF26JLbL_YmoLXVjQIBUA1jzdVBnR22Yt8Njy4IdG4Ey7P8q3hbEvtgMw1p7b8vzF9MRi2BxeDn1wD0cPTBloyInW5QyGuxac0iBN8U0KfJgx_yiqx5YHNlkhiguLMySI9vgpnsAdxtamSJmxBZ5mDpEc6go2k9ULISpgK84pXIykfGUK_KEOiJ1qMH3X7L_w9PAuBwQp14LtokOk3Tzzu629XREmzYcaQwRs2r_2XCVAgvWns">
-</div>
-<span class="font-label-sm text-label-sm text-on-surface-variant">Adult</span>
-</div>
-</div>
-</div>
+
 <!-- Section Title -->
 <h2 class="font-headline-md text-headline-md mb-md text-on-surface">Trending Nutrition</h2>
 <!-- Product Grid -->
@@ -360,6 +322,10 @@
             scrollbar-width: none;  /* Firefox */
         }
     </style>
+
+
+
+
 
 
 </body></html>

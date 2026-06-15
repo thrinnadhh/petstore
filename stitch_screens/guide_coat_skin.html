@@ -1,0 +1,346 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Coat &amp; Skin Health - PawsApp</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#434655",
+                        "background": "#f8f9ff",
+                        "secondary-fixed": "#ffddb8",
+                        "primary": "#004ac6",
+                        "surface-container": "#e5eeff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#00174b",
+                        "surface-bright": "#f8f9ff",
+                        "surface": "#f8f9ff",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "tertiary-container": "#007d55",
+                        "on-primary-container": "#eeefff",
+                        "on-background": "#0b1c30",
+                        "on-surface": "#0b1c30",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "secondary-container": "#fea619",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "surface-container-high": "#dce9ff",
+                        "primary-fixed": "#dbe1ff",
+                        "outline-variant": "#c3c6d7",
+                        "on-tertiary-container": "#bdffdb",
+                        "on-secondary-fixed": "#2a1700",
+                        "secondary": "#855300",
+                        "surface-container-highest": "#d3e4fe",
+                        "inverse-on-surface": "#eaf1ff",
+                        "outline": "#737686",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "tertiary-fixed": "#6ffbbe",
+                        "surface-dim": "#cbdbf5",
+                        "on-secondary-container": "#684000",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "surface-tint": "#0053db",
+                        "surface-container-low": "#eff4ff",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#213145",
+                        "error": "#ba1a1a",
+                        "inverse-primary": "#b4c5ff",
+                        "on-tertiary": "#ffffff",
+                        "primary-container": "#2563eb",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface-variant": "#d3e4fe",
+                        "on-primary": "#ffffff",
+                        "tertiary": "#006242",
+                        "on-tertiary-fixed": "#002113",
+                        "on-error": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "2xl": "1.5rem"
+                    },
+                    "spacing": {
+                        "xs": "8px",
+                        "gutter": "16px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "48px",
+                        "base": "4px",
+                        "sm": "12px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "md": "16px",
+                        "2xl": "48px",
+                        "3xl": "64px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased min-h-screen flex flex-col pt-16 pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md flex items-center justify-between px-margin-mobile h-16 w-full">
+<button aria-label="Go back" class="bg-white text-on-surface shadow-sm hover:bg-surface-container transition-all active:scale-95 duration-150 flex items-center justify-center w-10 h-10 rounded-full">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary tracking-tight">Coat &amp; Skin Health</h1>
+<button aria-label="Favorite" class="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 duration-150 flex items-center justify-center p-2 -mr-2 rounded-full">
+<span class="material-symbols-outlined text-[24px]">favorite</span>
+</button>
+</header>
+<main class="flex-grow w-full max-w-7xl mx-auto md:px-margin-desktop">
+<!-- Hero Section -->
+<section class="w-full relative bg-surface-container-lowest md:rounded-2xl md:mt-6 overflow-hidden shadow-sm border border-outline-variant/20 mb-8">
+<div class="w-full h-64 md:h-96 relative">
+<img alt="Macro shot of healthy dog fur showing shiny texture and clean skin" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AP1WRLuowPBxD7nv2CkzLwBLJxA4rrimHMOtvbhRHc867MTfkKJAXRDONplyqMl9qXQtRU3MTG5cuulFhBp74EPHn0F9tzTrSvB6CqJ3lWF7b4t959TyUAVDicUUw6HdhjD-hzSvigDCsbRFj0yCkY3TqKnlJgXz-bQ_MSWuxgbvR8BpDC_Yhs4O2l9HkxugRe2NVFKW5lw8db534LBYZfFEOJNQ8by5FodDMOuv0_VBkfczSFUy8ccx4A7tNKM">
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-6 md:p-8 w-full">
+<span class="inline-block px-3 py-1 bg-primary/20 backdrop-blur-md text-white font-label-sm text-label-sm rounded-full mb-3 border border-white/20">Health Guide</span>
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-white mb-2">The Foundation of Radiance</h2>
+<p class="font-body-md text-body-md text-white/90 max-w-2xl">A shiny coat isn't just about looks; it's a direct reflection of your dog's overall internal health and well-being.</p>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6 px-margin-mobile md:px-0">
+<!-- Main Content Column -->
+<div class="md:col-span-8 space-y-8">
+<!-- Signs of Health -->
+<section class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-outline-variant/20">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined">verified</span>
+</div>
+<h3 class="font-headline-md text-headline-md">Signs of a Healthy Coat</h3>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="flex gap-4 items-start p-4 bg-surface-container-low rounded-xl">
+<span class="material-symbols-outlined text-tertiary-container mt-1">flare</span>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface mb-1">Natural Shine</h4>
+<p class="font-body-md text-sm text-on-surface-variant">Hair should have a natural luster, indicating proper oil production from the skin.</p>
+</div>
+</div>
+<div class="flex gap-4 items-start p-4 bg-surface-container-low rounded-xl">
+<span class="material-symbols-outlined text-tertiary-container mt-1">touch_app</span>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface mb-1">Smooth Texture</h4>
+<p class="font-body-md text-sm text-on-surface-variant">The coat should feel smooth and pliable, not brittle, coarse, or greasy to the touch.</p>
+</div>
+</div>
+<div class="flex gap-4 items-start p-4 bg-surface-container-low rounded-xl">
+<span class="material-symbols-outlined text-tertiary-container mt-1">clean_hands</span>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface mb-1">Clean Skin</h4>
+<p class="font-body-md text-sm text-on-surface-variant">Skin beneath the fur should be clear, free of flakes (dandruff), bumps, or excessive redness.</p>
+</div>
+</div>
+<div class="flex gap-4 items-start p-4 bg-surface-container-low rounded-xl">
+<span class="material-symbols-outlined text-tertiary-container mt-1">psychology</span>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface mb-1">No Odor</h4>
+<p class="font-body-md text-sm text-on-surface-variant">A healthy dog should not have a strong, lingering 'doggy' or yeasty smell immediately after washing.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Nutrition & Omega 3 -->
+<section class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-outline-variant/20">
+<div class="flex flex-col md:flex-row gap-6 items-center">
+<div class="w-full md:w-1/3 aspect-square rounded-xl overflow-hidden bg-surface-variant relative flex-shrink-0">
+<img alt="High quality dog food with fresh salmon representing omega 3 sources on a clean white background. Bright lighting, professional studio shot emphasizing premium pet nutrition." class="w-full h-full object-cover" data-alt="A macro studio shot of premium dog kibble neatly arranged next to a fresh, raw slice of salmon and a drizzle of golden fish oil on a pristine white marble surface. The lighting is bright and high-key, emphasizing the fresh, high-quality ingredients. The aesthetic is clean, modern, and clinical, reflecting a premium pet health brand in a light-mode UI context." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqh-mkBYBgt5vzsQCUpl5kJsDvl2AMr4-owCdGCbeG_I1ZLsdaCKAYwg_IV3JEz1uOyclE7S_mCzkrHr7xprhltZe__023jWAxNMCqtoYAT8qP2F4qGibsbdpNuZlL49UIJ8rAY6eYl9iDrVcBEX-Ri8Sq6tE2Lw_7Y6KDqx4JrbAvgXlBT6yKkp64pI_MHJB8ZMVndDezrIwoIR6-hyDHMOnQxelFmHTBFBC45INsZyXJuKYPWvpRSDuTHKSGhKQrUBMAml39zP0">
+</div>
+<div class="w-full md:w-2/3">
+<div class="inline-flex items-center gap-2 px-3 py-1 bg-secondary-container/20 text-secondary-container font-label-sm text-label-sm rounded-full mb-4">
+<span class="material-symbols-outlined text-[16px]">set_meal</span>
+                                Nutrition Focus
+                            </div>
+<h3 class="font-headline-md text-headline-md mb-3">The Role of Omega-3s</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4">
+                                Essential fatty acids, particularly Omega-3s (EPA and DHA), are crucial for managing inflammation and maintaining the skin's lipid barrier. They prevent dryness, reduce itching, and give the coat its characteristic shine.
+                            </p>
+<ul class="space-y-2 mb-6">
+<li class="flex items-center gap-2 font-body-md text-sm text-on-surface">
+<span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+                                    Soothes dry, itchy skin
+                                </li>
+<li class="flex items-center gap-2 font-body-md text-sm text-on-surface">
+<span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+                                    Reduces shedding and dander
+                                </li>
+</ul>
+<button class="w-full sm:w-auto px-6 py-3 bg-surface border border-outline-variant text-primary font-label-md text-label-md rounded-lg hover:bg-surface-container-low transition-colors duration-200">
+                                Shop Omega Supplements
+                            </button>
+</div>
+</div>
+</section>
+<!-- Irritants & Routine (Bento Style) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Irritants -->
+<section class="bg-error-container/20 p-6 rounded-2xl border border-error-container">
+<div class="flex items-center gap-2 mb-4 text-error">
+<span class="material-symbols-outlined">warning</span>
+<h3 class="font-headline-md text-[18px] font-semibold">Common Irritants</h3>
+</div>
+<ul class="space-y-3">
+<li class="flex flex-col border-b border-error/10 pb-2 last:border-0">
+<span class="font-label-md text-label-md text-on-surface">Environmental Allergens</span>
+<span class="font-body-md text-sm text-on-surface-variant">Pollen, dust mites, and mold spores.</span>
+</li>
+<li class="flex flex-col border-b border-error/10 pb-2 last:border-0">
+<span class="font-label-md text-label-md text-on-surface">Harsh Shampoos</span>
+<span class="font-body-md text-sm text-on-surface-variant">Human shampoos strip natural oils. Use pH-balanced dog formulas.</span>
+</li>
+<li class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Parasites</span>
+<span class="font-body-md text-sm text-on-surface-variant">Fleas and ticks cause severe allergic dermatitis.</span>
+</li>
+</ul>
+</section>
+<!-- Frequency -->
+<section class="bg-primary-container/10 p-6 rounded-2xl border border-primary-container/20">
+<div class="flex items-center gap-2 mb-4 text-primary">
+<span class="material-symbols-outlined">calendar_month</span>
+<h3 class="font-headline-md text-[18px] font-semibold">Grooming Frequency</h3>
+</div>
+<div class="space-y-4">
+<div class="bg-surface-container-lowest p-3 rounded-lg flex justify-between items-center shadow-sm">
+<span class="font-label-md text-label-md">Brushing</span>
+<span class="font-body-md text-sm text-on-surface-variant">2-3 times/week</span>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-lg flex justify-between items-center shadow-sm">
+<span class="font-label-md text-label-md">Bathing</span>
+<span class="font-body-md text-sm text-on-surface-variant">Every 4-6 weeks</span>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-lg flex justify-between items-center shadow-sm">
+<span class="font-label-md text-label-md">Nail Trimming</span>
+<span class="font-body-md text-sm text-on-surface-variant">Every 3-4 weeks</span>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- Sidebar / Shop Context Column -->
+<div class="md:col-span-4 space-y-6">
+<!-- Step by Step Routine -->
+<div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/20 sticky top-24">
+<h3 class="font-headline-md text-headline-md mb-6">Grooming Routine</h3>
+<div class="relative pl-6 border-l-2 border-surface-variant space-y-6">
+<!-- Step 1 -->
+<div class="relative">
+<div class="absolute -left-[35px] top-0 w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center font-label-sm text-[10px] ring-4 ring-surface-container-lowest">1</div>
+<h4 class="font-label-md text-label-md mb-1">Pre-Bath Brush</h4>
+<p class="font-body-md text-sm text-on-surface-variant mb-3">Remove mats and loose fur before getting wet to prevent tightening.</p>
+<!-- Product Suggestion -->
+<div class="flex items-center gap-3 p-2 bg-surface-container-low rounded-lg hover:bg-surface-container transition-colors cursor-pointer group">
+<div class="w-12 h-12 bg-white rounded-md overflow-hidden flex-shrink-0 border border-outline-variant/10">
+<img alt="Professional slicker brush for dogs" class="w-full h-full object-cover" data-alt="A high-quality dog slicker brush with an ergonomic wooden handle and fine metal bristles, resting on a clean, light grey studio background. The lighting is soft and even, highlighting the premium texture of the brush materials. The image feels bright, modern, and perfectly suited for a light-mode e-commerce interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEfseIsOXbytRq_pnIyOMu61c8LQ4DZuA370sBQBkvoLPV33K3ywQx80JrUnz1xLVV6HIK8t3Ef9HdH0TVMZagHRfMx6uAyScicpyaErG_gpq5UUqXF6sLI9ygvvWHZSIPEM-XNQWU8-ypJHgBCqcpPMKtAKw_Vwiy4ZnywMcS2176uDEBOhRv8NpAybFYjhZ-f1DTFtqxlgxYEMQW26xE_QSKeBpiG4IfrWGee1BpfrNz6T_YaaNhkTQZWg5dMdUMKDzyt7n91A8">
+</div>
+<div class="flex-grow">
+<span class="block font-label-md text-[13px] text-on-surface group-hover:text-primary transition-colors">Premium Slicker Brush</span>
+<span class="block font-body-md text-[12px] text-on-surface-variant">$24.99</span>
+</div>
+<span class="material-symbols-outlined text-primary opacity-0 group-hover:opacity-100 transition-opacity">add_shopping_cart</span>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="relative">
+<div class="absolute -left-[35px] top-0 w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center font-label-sm text-[10px] ring-4 ring-surface-container-lowest">2</div>
+<h4 class="font-label-md text-label-md mb-1">Gentle Lather</h4>
+<p class="font-body-md text-sm text-on-surface-variant mb-3">Use lukewarm water and massage a hypoallergenic shampoo into the coat.</p>
+<!-- Product Suggestion -->
+<div class="flex items-center gap-3 p-2 bg-surface-container-low rounded-lg hover:bg-surface-container transition-colors cursor-pointer group">
+<div class="w-12 h-12 bg-white rounded-md overflow-hidden flex-shrink-0 border border-outline-variant/10 p-1">
+<img alt="Bottle of natural oatmeal dog shampoo" class="w-full h-full object-contain" data-alt="A sleek, minimalist bottle of dog shampoo with a clean white label featuring subtle green botanical accents, sitting on a bright white surface. The lighting is crisp and airy, emphasizing the natural and hypoallergenic qualities of the product. The overall aesthetic is premium, modern, and aligned with a sophisticated light-mode digital retail environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDavMeQWE-9_DpuGHWpbt2fSRhjRjTse1jRyZ10TZorpD8PB-bDFj8Yyo4sRucv8qVbORhDSYHzFziqVUoMd8Pr5hEw3-iEU9IPgjw9bY0tZANX9tqaHm7Fu0rFhigjVmhsMPoFvsNoI7U3RBM9Ff56tbtvErNsGaQNBko8E83pzRg595Ob0KR4mHGa16c3QfE2_QAOHXkNp7KfmUijOJr_YiV-jO_aRtd13R4w_BSuFigdB3UoOSE2sj5u_bRmL9bq8nRfL1Zdsoo">
+</div>
+<div class="flex-grow">
+<span class="block font-label-md text-[13px] text-on-surface group-hover:text-primary transition-colors">Oatmeal Soothing Wash</span>
+<span class="block font-body-md text-[12px] text-on-surface-variant">$18.50</span>
+</div>
+<span class="material-symbols-outlined text-primary opacity-0 group-hover:opacity-100 transition-opacity">add_shopping_cart</span>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="relative">
+<div class="absolute -left-[35px] top-0 w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center font-label-sm text-[10px] ring-4 ring-surface-container-lowest">3</div>
+<h4 class="font-label-md text-label-md mb-1">Thorough Rinse</h4>
+<p class="font-body-md text-sm text-on-surface-variant">Ensure all soap is removed to prevent skin irritation. Towel dry gently.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Hidden on Web, visible on Mobile) -->
+<nav class="fixed bottom-0 w-full px-margin-mobile pb-6 pt-4 flex justify-around items-center bg-surface border-t border-outline-variant/10 z-50 md:hidden pb-safe">
+<!-- Assuming this guide was accessed from the 'Health' section based on context, though not explicitly a top-level tab in standard ecomm, Health maps best to the intent -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1.5 hover:bg-surface-container active:scale-90 transition-all duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1">home</span>
+<span class="font-label-sm text-[10px] font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1.5 hover:bg-surface-container active:scale-90 transition-all duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1">search</span>
+<span class="font-label-sm text-[10px] font-medium">Search</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container/10 text-primary px-3 py-1.5 active:scale-90 transition-all duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1 fill">pets</span>
+<span class="font-label-sm text-[10px] font-bold">Health</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1.5 hover:bg-surface-container active:scale-90 transition-all duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1">receipt_long</span>
+<span class="font-label-sm text-[10px] font-medium">Orders</span>
+</a>
+</nav>
+<!-- CSS safe area padding for modern mobile browsers -->
+<style>
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1.5rem); }
+    </style>
+
+
+
+
+</body></html>

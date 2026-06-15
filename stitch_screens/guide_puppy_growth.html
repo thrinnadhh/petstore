@@ -1,0 +1,266 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>PawsApp - Puppy Growth (2-12 mo)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#434655",
+                        "background": "#f8f9ff",
+                        "secondary-fixed": "#ffddb8",
+                        "primary": "#004ac6",
+                        "surface-container": "#e5eeff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#00174b",
+                        "surface-bright": "#f8f9ff",
+                        "surface": "#f8f9ff",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "tertiary-container": "#007d55",
+                        "on-primary-container": "#eeefff",
+                        "on-background": "#0b1c30",
+                        "on-surface": "#0b1c30",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "secondary-container": "#fea619",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "surface-container-high": "#dce9ff",
+                        "primary-fixed": "#dbe1ff",
+                        "outline-variant": "#c3c6d7",
+                        "on-tertiary-container": "#bdffdb",
+                        "on-secondary-fixed": "#2a1700",
+                        "secondary": "#855300",
+                        "surface-container-highest": "#d3e4fe",
+                        "inverse-on-surface": "#eaf1ff",
+                        "outline": "#737686",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "tertiary-fixed": "#6ffbbe",
+                        "surface-dim": "#cbdbf5",
+                        "on-secondary-container": "#684000",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "surface-tint": "#0053db",
+                        "surface-container-low": "#eff4ff",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#213145",
+                        "error": "#ba1a1a",
+                        "inverse-primary": "#b4c5ff",
+                        "on-tertiary": "#ffffff",
+                        "primary-container": "#2563eb",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface-variant": "#d3e4fe",
+                        "on-primary": "#ffffff",
+                        "tertiary": "#006242",
+                        "on-tertiary-fixed": "#002113",
+                        "on-error": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "8px",
+                        "gutter": "16px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "48px",
+                        "base": "4px",
+                        "sm": "12px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md dark:bg-on-background/80 flex items-center justify-between px-margin-mobile h-16 shadow-sm border-b border-outline-variant/20 md:hidden">
+<button class="w-10 h-10 flex items-center justify-center bg-surface-container-lowest text-on-surface-variant rounded-full shadow-md hover:shadow-lg transition-all active:scale-95 duration-150">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">PawsApp</h1>
+<button class="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 duration-150">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+</header>
+<!-- Main Content -->
+<main class="pt-16 md:pt-0 max-w-7xl mx-auto md:px-margin-desktop">
+<!-- Hero Section -->
+<section class="relative w-full h-[40vh] md:h-[50vh] md:mt-8 md:rounded-xl overflow-hidden shadow-lg">
+<img alt="Hero Image" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AP1WRLtCwqqEi81qSRRmlDFnX9RQAm4pHUSrjPgdlY1TC1osJkitHZxhE1yesWOMrMmOnrHD5JNUMjpP71FtQVGzrt-FrKudHGRKjVcoUNyMT22vnTZmFBAelrh_uYTww8uWy8KOPsEduZMeIfp-aEoG-7Quvfe0PF5-9nVp3c3H3Ag6Ki7Susd-6vgYq-43K3kEykg8cRQnS5wS4tCegjbGKutcJgEKxIlS3z3Atujhta_WiP-9FC7HsEFQ7w">
+<div class="absolute inset-0 bg-gradient-to-t from-on-background/80 to-transparent flex flex-col justify-end p-margin-mobile md:p-xl">
+<div class="inline-flex items-center bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-label-sm text-label-sm w-fit mb-sm">
+<span class="material-symbols-outlined text-[16px] mr-1">pets</span> Health Guide
+                </div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-primary mb-xs">Puppy Growth (2-12 mo)</h1>
+<p class="font-body-md text-body-md text-surface-container-low max-w-2xl">Your comprehensive guide to navigating the crucial first year of your puppy's life. From nutrition to training, we've got you covered.</p>
+</div>
+</section>
+<!-- Bento Grid Layout -->
+<div class="px-margin-mobile mt-lg grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Milestone Tracking -->
+<div class="bg-surface-container-lowest rounded-xl p-md shadow-sm border border-outline-variant/20 md:col-span-2 hover:shadow-md transition-shadow duration-300">
+<div class="flex items-center justify-between mb-sm">
+<h2 class="font-headline-md text-headline-md text-primary flex items-center">
+<span class="material-symbols-outlined mr-2">monitor_weight</span> Milestone Tracking
+                    </h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">Monitor your puppy's development closely. Rapid growth happens in the first 6 months. Ensure they are on a steady curve appropriate for their breed.</p>
+<div class="grid grid-cols-2 gap-sm">
+<div class="bg-surface-container p-sm rounded-lg flex flex-col justify-center items-center">
+<span class="material-symbols-outlined text-primary mb-1">scale</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Avg. Weight Gain</span>
+<span class="font-headline-md text-headline-md text-on-surface">1-2 lbs/wk</span>
+</div>
+<div class="bg-surface-container p-sm rounded-lg flex flex-col justify-center items-center">
+<span class="material-symbols-outlined text-primary mb-1">straighten</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Height Growth</span>
+<span class="font-headline-md text-headline-md text-on-surface">Steady</span>
+</div>
+</div>
+</div>
+<!-- Health Concerns -->
+<div class="bg-error-container/30 rounded-xl p-md shadow-sm border border-error/20 hover:shadow-md transition-shadow duration-300">
+<h2 class="font-headline-md text-headline-md text-error flex items-center mb-sm">
+<span class="material-symbols-outlined mr-2 text-error">healing</span> Health Watch
+                </h2>
+<ul class="space-y-sm">
+<li class="flex items-start">
+<span class="material-symbols-outlined text-error text-[20px] mr-2 mt-0.5">warning</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Watch for signs of Parvovirus (lethargy, vomiting).</span>
+</li>
+<li class="flex items-start">
+<span class="material-symbols-outlined text-error text-[20px] mr-2 mt-0.5">warning</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Ensure core vaccinations are completed by 16 weeks.</span>
+</li>
+<li class="flex items-start">
+<span class="material-symbols-outlined text-error text-[20px] mr-2 mt-0.5">warning</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Monitor teething and provide safe chew toys.</span>
+</li>
+</ul>
+</div>
+<!-- Socialization & Training -->
+<div class="bg-surface-container-highest rounded-xl p-md shadow-sm border border-outline-variant/20 md:col-span-1 hover:shadow-md transition-shadow duration-300">
+<h2 class="font-headline-md text-headline-md text-primary flex items-center mb-sm">
+<span class="material-symbols-outlined mr-2">group_add</span> Socialization
+                </h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">The critical window closes around 16 weeks. Introduce them to various sounds, surfaces, and people positively.</p>
+<div class="space-y-xs">
+<div class="bg-surface-container-lowest p-xs rounded border border-outline-variant/30 flex items-center">
+<span class="material-symbols-outlined text-tertiary-container mr-2">check_circle</span>
+<span class="font-label-md text-label-md">Meet 100 new people</span>
+</div>
+<div class="bg-surface-container-lowest p-xs rounded border border-outline-variant/30 flex items-center">
+<span class="material-symbols-outlined text-tertiary-container mr-2">check_circle</span>
+<span class="font-label-md text-label-md">Explore 5 different environments</span>
+</div>
+</div>
+</div>
+<!-- Checklist -->
+<div class="bg-surface-container-lowest rounded-xl p-md shadow-sm border border-outline-variant/20 md:col-span-2 hover:shadow-md transition-shadow duration-300">
+<h2 class="font-headline-md text-headline-md text-primary flex items-center mb-sm">
+<span class="material-symbols-outlined mr-2">fact_check</span> Checklist for Success
+                </h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-sm">
+<label class="flex items-center space-x-3 p-sm bg-surface-container rounded-lg cursor-pointer hover:bg-surface-variant transition-colors">
+<input class="form-checkbox h-5 w-5 text-primary border-outline rounded focus:ring-primary focus:ring-offset-surface-container" type="checkbox">
+<span class="font-body-md text-body-md text-on-surface">Schedule 12-week vaccinations</span>
+</label>
+<label class="flex items-center space-x-3 p-sm bg-surface-container rounded-lg cursor-pointer hover:bg-surface-variant transition-colors">
+<input class="form-checkbox h-5 w-5 text-primary border-outline rounded focus:ring-primary focus:ring-offset-surface-container" type="checkbox">
+<span class="font-body-md text-body-md text-on-surface">Start basic obedience training</span>
+</label>
+<label class="flex items-center space-x-3 p-sm bg-surface-container rounded-lg cursor-pointer hover:bg-surface-variant transition-colors">
+<input class="form-checkbox h-5 w-5 text-primary border-outline rounded focus:ring-primary focus:ring-offset-surface-container" type="checkbox">
+<span class="font-body-md text-body-md text-on-surface">Switch to high-quality puppy food</span>
+</label>
+<label class="flex items-center space-x-3 p-sm bg-surface-container rounded-lg cursor-pointer hover:bg-surface-variant transition-colors">
+<input class="form-checkbox h-5 w-5 text-primary border-outline rounded focus:ring-primary focus:ring-offset-surface-container" type="checkbox">
+<span class="font-body-md text-body-md text-on-surface">Purchase appropriate size crate</span>
+</label>
+</div>
+</div>
+</div>
+<!-- CTA Section -->
+<section class="px-margin-mobile mt-xl mb-xl">
+<div class="bg-primary-container rounded-2xl p-lg flex flex-col md:flex-row items-center justify-between shadow-md">
+<div class="mb-md md:mb-0 md:mr-lg text-center md:text-left">
+<h3 class="font-headline-md text-headline-md text-on-primary-container mb-xs">Need Professional Advice?</h3>
+<p class="font-body-md text-body-md text-on-primary-container/80 max-w-md">Book a growth checkup with our network of certified veterinarians to ensure your puppy is on the right track.</p>
+</div>
+<button class="bg-primary text-on-primary font-label-md text-label-md px-6 py-3 rounded-lg shadow-sm hover:shadow-md hover:bg-primary/90 active:scale-95 transition-all w-full md:w-auto whitespace-nowrap">
+                    Book Consultation
+                </button>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full px-margin-mobile pb-6 flex justify-around items-center bg-surface dark:bg-on-background shadow-lg shadow-sm border border-outline-variant/20 md:hidden z-50 rounded-t-xl md:rounded-xl md:bottom-4 md:left-4 md:right-4 md:w-auto">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1.5 hover:bg-surface-container dark:hover:bg-surface-variant/10 active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1.5 hover:bg-surface-container dark:hover:bg-surface-variant/10 active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="font-label-sm text-label-sm mt-1">Search</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary px-3 py-1.5 hover:bg-surface-container dark:hover:bg-surface-variant/10 active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">pets</span>
+<span class="font-label-sm text-label-sm mt-1 font-bold">Health</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1.5 hover:bg-surface-container dark:hover:bg-surface-variant/10 active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-sm text-label-sm mt-1">Orders</span>
+</a>
+</nav>
+<!-- Desktop Nav (Hidden on mobile) -->
+<nav class="hidden md:flex fixed top-0 w-full bg-surface/90 backdrop-blur-md border-b border-outline-variant/20 z-50 px-margin-desktop h-16 items-center justify-between">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">PawsApp</h1>
+<div class="flex space-x-lg">
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Home</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Search</a>
+<a class="font-label-md text-label-md text-primary border-b-2 border-primary pb-1" href="#">Health Guide</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Orders</a>
+</div>
+<div class="w-[88px]"></div> <!-- Spacer for balance -->
+</nav>
+
+
+
+
+</body></html>

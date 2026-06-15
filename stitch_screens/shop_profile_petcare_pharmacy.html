@@ -1,0 +1,310 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>PetCare Pharmacy - Shop Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-surface-variant": "#434655",
+                      "on-error": "#ffffff",
+                      "surface-tint": "#0053db",
+                      "surface-container-high": "#dce9ff",
+                      "on-tertiary": "#ffffff",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "surface-variant": "#d3e4fe",
+                      "on-surface": "#0b1c30",
+                      "on-secondary": "#ffffff",
+                      "on-background": "#0b1c30",
+                      "surface-dim": "#cbdbf5",
+                      "surface-container-low": "#eff4ff",
+                      "surface-bright": "#f8f9ff",
+                      "secondary-fixed": "#ffddb8",
+                      "primary": "#004ac6",
+                      "inverse-on-surface": "#eaf1ff",
+                      "tertiary-container": "#007d55",
+                      "secondary": "#855300",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "outline-variant": "#c3c6d7",
+                      "secondary-fixed-dim": "#ffb95f",
+                      "on-tertiary-container": "#bdffdb",
+                      "surface": "#f8f9ff",
+                      "inverse-surface": "#213145",
+                      "on-secondary-fixed-variant": "#653e00",
+                      "on-secondary-fixed": "#2a1700",
+                      "outline": "#737686",
+                      "surface-container": "#e5eeff",
+                      "primary-container": "#2563eb",
+                      "on-error-container": "#93000a",
+                      "on-tertiary-fixed": "#002113",
+                      "inverse-primary": "#b4c5ff",
+                      "on-primary-fixed-variant": "#003ea8",
+                      "tertiary": "#006242",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary": "#ffffff",
+                      "primary-fixed-dim": "#b4c5ff",
+                      "on-primary-fixed": "#00174b",
+                      "on-secondary-container": "#684000",
+                      "background": "#f8f9ff",
+                      "secondary-container": "#fea619",
+                      "primary-fixed": "#dbe1ff",
+                      "on-primary-container": "#eeefff",
+                      "surface-container-highest": "#d3e4fe",
+                      "tertiary-fixed": "#6ffbbe",
+                      "error": "#ba1a1a",
+                      "error-container": "#ffdad6"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "lg": "24px",
+                      "base": "4px",
+                      "xs": "8px",
+                      "xl": "32px",
+                      "md": "16px",
+                      "margin-desktop": "48px",
+                      "sm": "12px",
+                      "margin-mobile": "16px",
+                      "gutter": "16px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-24">
+<header class="bg-surface dark:bg-background flex justify-between items-center w-full px-margin-mobile py-xs max-w-7xl mx-auto docked full-width top-0 z-40 sticky shadow-sm">
+<button class="text-on-surface-variant hover:bg-surface-container-low transition-colors p-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="font-display-lg text-headline-md font-bold text-primary dark:text-primary-fixed">PawsApp</div>
+<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-secondary-container">
+<img alt="User Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBT5ErbZE34PrwsulcWscKJ_B29WnP6Zwmi5Sz2EjhV5cvCCn_K2U7urMNkV264lKZSPFKFcFuZM1moXeoBQ1_wXXUxPhnv2akkA5rSWnMpbYXSbGtRW4Csd4PAET2wQzCHCmsbbjs3pnqzj5iLiW9dnhR2xdBtKzLoWSQAk0YXYRQozbUch0dnnnCH92O28KO5zYUrY3imnc5gx2YoYxndhvxmKULayQWn2kzoDyfz3E924jYVICJx2V11prYiqbH_d-YBqXRsnxs">
+</div>
+</header>
+<main class="max-w-7xl mx-auto">
+<section class="relative w-full h-64 md:h-80 lg:h-96">
+<img alt="Veterinary Clinic Interior" class="w-full h-full object-cover" data-alt="A pristine, brightly lit interior of a modern veterinary pharmacy. The space features clean white shelving lined with organized pet medications and care products. A sleek, light-wood counter sits in the foreground. Soft, natural light floods the room, creating a sterile yet welcoming, high-trust environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvhz-t7e5HaVLmaKUBDqnd5fMMFcDkhoHQ31_OQcwunBLSBDV17F3h3wfu1mDs3OJ4S5oN-r2GtStK5kICGC5pkUchIKos6lgb5vdmbhgss_C0BI5Cmfm7mzbntHamw4-X7DIzn68iR9Y4b2tLNz6xGqzvSxjeVnMIfl-x9dVEyRhE625s2VlH9E3WeRJ_Q0nxhLoXFjrDk334nnGCxs_GjlPSgcLK9Sis_g63Wow5_YeqlIvptWkU4g2HUqfWTNUdYxRM6yCN8dA">
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+</section>
+<section class="relative -mt-10 bg-surface rounded-t-3xl px-margin-mobile py-lg shadow-sm z-10 md:mx-md md:rounded-3xl">
+<div class="flex justify-between items-start">
+<div>
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-on-surface">PetCare Pharmacy</h1>
+<div class="flex items-center gap-4 mt-2">
+<div class="flex items-center gap-1 text-secondary-container">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-md text-on-surface-variant">4.7 (128 reviews)</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+<span class="font-label-md">1.8 km away</span>
+</div>
+</div>
+</div>
+<button class="bg-surface-container-low text-primary p-3 rounded-full shadow-sm hover:shadow-md transition-shadow">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+</div>
+<div class="flex gap-2 mt-6 overflow-x-auto pb-2 scrollbar-hide">
+<div class="bg-surface-container-low text-primary px-4 py-1.5 rounded-full font-label-sm border border-outline-variant/30 flex items-center gap-1 whitespace-nowrap">
+<span class="material-symbols-outlined text-[16px]">medical_services</span> Medicine
+                </div>
+<div class="bg-surface-container-low text-primary px-4 py-1.5 rounded-full font-label-sm border border-outline-variant/30 flex items-center gap-1 whitespace-nowrap">
+<span class="material-symbols-outlined text-[16px]">local_hospital</span> Hospitals
+                </div>
+<div class="bg-surface-container-low text-primary px-4 py-1.5 rounded-full font-label-sm border border-outline-variant/30 flex items-center gap-1 whitespace-nowrap">
+<span class="material-symbols-outlined text-[16px]">content_cut</span> Grooming
+                </div>
+</div>
+<p class="mt-4 font-body-md text-on-surface-variant">
+                Premium veterinary pharmacy offering top-tier medications, professional consultations, and specialized care products for your beloved pets.
+            </p>
+</section>
+<section class="px-margin-mobile mt-lg mb-xl md:px-md">
+<div class="flex justify-between items-end mb-6">
+<h2 class="font-headline-md text-on-surface">Featured Products</h2>
+<button class="font-label-md text-primary hover:underline">View All</button>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+<div class="bg-surface rounded-xl overflow-hidden shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] border border-outline-variant/20 hover:shadow-[0_8px_16px_-4px_rgba(0,0,0,0.1)] transition-all group flex flex-col">
+<div class="relative aspect-square bg-surface-container-low p-4 flex items-center justify-center">
+<img alt="NexGard Spectra Tablet" class="w-full h-full object-contain mix-blend-multiply transition-transform group-hover:scale-105" data-alt="A clean, isolated studio shot of a small, rectangular medication box labeled 'NexGard Spectra' resting on a soft blue background. The packaging is crisp and professional, conveying a sense of medical reliability and premium quality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJoOasdBsU-nFfDcskRD6-k-M2EwH_itPlLNAic0L2DVzIAo_D10W1unOcuwMux3g54NeO9_5Ts5GbsJ6vIc5Z0nezTtqhl0mVDtlONeudzRuOV4rvvPAhQXAjn6GSqsplxA_ENMctFeT2DvRG4CmkbQ-wnnt0aEKsbdV5jIyfEL4fRpSkxR7w5-xk1nsK6hINEvE2D5-E1_1avHR4WlQuiDGTgFbdzK6F0vW6CL0SHIDCBR7We5cOWEA8_IWrTymvBTHtSh_lA0w">
+<div class="absolute top-2 left-2 bg-secondary text-on-secondary font-label-sm px-2 py-0.5 rounded-full">Bestseller</div>
+</div>
+<div class="p-3 flex flex-col flex-grow">
+<h3 class="font-label-md text-on-surface line-clamp-2 mb-1">NexGard Spectra Tablet</h3>
+<p class="font-label-sm text-on-surface-variant mb-3 flex-grow">Flea &amp; Tick Prevention</p>
+<div class="flex justify-between items-center mt-auto">
+<span class="font-headline-md text-primary">$45.00</span>
+<button class="bg-primary-container text-on-primary-container w-8 h-8 rounded-full flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+</div>
+<div class="bg-surface rounded-xl overflow-hidden shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] border border-outline-variant/20 hover:shadow-[0_8px_16px_-4px_rgba(0,0,0,0.1)] transition-all group flex flex-col">
+<div class="relative aspect-square bg-surface-container-low p-4 flex items-center justify-center">
+<img alt="Ear Cleaning Solution" class="w-full h-full object-contain mix-blend-multiply transition-transform group-hover:scale-105" data-alt="A sleek, white plastic bottle with a precise applicator tip, standing upright against a light, clinical background. The bottle suggests a high-quality pharmaceutical liquid, ideal for representing an ear cleaning solution for pets." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxqf1ifwlQcYK7I0ZjvWjeCcqqR7rzyB1ZbSFoet-KKEzx6WUKqN3bgcGHvIMWoq2oD-2zoct_23iV8fRU_0tzOPUfV_xtuI5Mi2niW5LgZquj6-bHCe3nIkfcxGNAqj_mKFSAw9mqT452BZiVa-TOqh353OwZ8FlgVLFfd4adqfQtfwAOdNYvHqrCdVyIikN4gb_lNMxJpRN2JZ2qNsWKV3jxA06FjKAoTZ__DE-4-Fio7nNjogl3i5iGdtsESR9jgTLkEAMCHpU">
+</div>
+<div class="p-3 flex flex-col flex-grow">
+<h3 class="font-label-md text-on-surface line-clamp-2 mb-1">Ear Cleaning Solution</h3>
+<p class="font-label-sm text-on-surface-variant mb-3 flex-grow">Gentle Veterinary Formula</p>
+<div class="flex justify-between items-center mt-auto">
+<span class="font-headline-md text-primary">$18.50</span>
+<button class="bg-primary-container text-on-primary-container w-8 h-8 rounded-full flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+</div>
+<div class="bg-surface rounded-xl overflow-hidden shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] border border-outline-variant/20 hover:shadow-[0_8px_16px_-4px_rgba(0,0,0,0.1)] transition-all group flex flex-col">
+<div class="relative aspect-square bg-surface-container-low p-4 flex items-center justify-center">
+<img alt="Heartworm Prevention Kit" class="w-full h-full object-contain mix-blend-multiply transition-transform group-hover:scale-105" data-alt="A collection of small medical vials and a syringe neatly arranged on a sterile white surface. The items are lit with bright, cool lighting to emphasize a clinical, safe, and professional healthcare environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIvzNzx_akw8Kd_hIidL9VnTEj-XH5tAIMBz1NWYlPIt9naIQaHrB8lkooc1Hdf0MJIiT5zmztjFaKGkt-t07TWONsrHqfMwBMlTlixg7VIOm7pip88GKXHRvAjrupihqSWxmHC2X430f85G-RuqEbm5_-PCEmyrNUhhGKc4Q0yNnL9ka5uUGQm_eCD5cPFMQu6n0ludn-B7McTEJwi2YIqwXXhQdT7lgm2LZAHjkJlXAyZEUutnHLURfbx6mHoqO_r92EdlOvFsY">
+<div class="absolute top-2 left-2 bg-error text-on-error font-label-sm px-2 py-0.5 rounded-full">-10%</div>
+</div>
+<div class="p-3 flex flex-col flex-grow">
+<h3 class="font-label-md text-on-surface line-clamp-2 mb-1">Heartworm Prevention Kit</h3>
+<p class="font-label-sm text-on-surface-variant mb-3 flex-grow">Monthly Treatment</p>
+<div class="flex justify-between items-center mt-auto">
+<div class="flex flex-col">
+<span class="font-headline-md text-primary">$32.00</span>
+<span class="font-label-sm text-outline line-through">$35.50</span>
+</div>
+<button class="bg-primary-container text-on-primary-container w-8 h-8 rounded-full flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<nav class="bg-surface-container-lowest dark:bg-surface-container-lowest fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-xs pb-safe py-base shadow-lg rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed px-4 py-1 transition-colors bg-primary-container/10" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">search</span>
+<span class="font-label-sm text-label-sm mt-1 font-bold">Search</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined">shopping_bag</span>
+<span class="font-label-sm text-label-sm mt-1">Orders</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm mt-1">Profile</span>
+</a>
+</nav>
+
+
+</body></html>

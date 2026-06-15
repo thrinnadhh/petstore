@@ -1,0 +1,244 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>PawsApp - Grooming Boutique Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#dbe1ff",
+                        "primary": "#004ac6",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "on-secondary": "#ffffff",
+                        "surface-dim": "#cbdbf5",
+                        "error": "#ba1a1a",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-surface": "#213145",
+                        "tertiary-fixed": "#6ffbbe",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "surface-variant": "#d3e4fe",
+                        "surface-container-highest": "#d3e4fe",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed": "#2a1700",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#eaf1ff",
+                        "secondary-container": "#fea619",
+                        "surface-container": "#e5eeff",
+                        "on-primary-container": "#eeefff",
+                        "surface-tint": "#0053db",
+                        "surface-bright": "#f8f9ff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "surface": "#f8f9ff",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "on-primary-fixed": "#00174b",
+                        "outline": "#737686",
+                        "on-tertiary-container": "#bdffdb",
+                        "secondary": "#855300",
+                        "on-surface-variant": "#434655",
+                        "on-background": "#0b1c30",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "primary-container": "#2563eb",
+                        "on-secondary-container": "#684000",
+                        "on-surface": "#0b1c30",
+                        "inverse-primary": "#b4c5ff",
+                        "on-tertiary-fixed": "#002113",
+                        "tertiary-container": "#007d55",
+                        "background": "#f8f9ff",
+                        "surface-container-low": "#eff4ff",
+                        "outline-variant": "#c3c6d7",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "secondary-fixed": "#ffddb8",
+                        "on-primary": "#ffffff",
+                        "tertiary": "#006242",
+                        "surface-container-high": "#dce9ff",
+                        "on-tertiary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "base": "4px",
+                        "xl": "32px",
+                        "margin-desktop": "48px",
+                        "md": "16px",
+                        "sm": "12px",
+                        "xs": "8px",
+                        "gutter": "16px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md antialiased pb-24">
+<!-- Top App Bar (Hidden Nav Shell logic: Profile screen is a sub-page, but requires back nav) -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md flex items-center justify-between px-margin-mobile h-16 w-full">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-lowest shadow-md hover:bg-surface-variant transition-all active:scale-95 duration-150 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<span class="font-headline-md text-headline-md font-bold text-primary">Boutique Profile</span>
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container hover:opacity-80 transition-opacity active:scale-95 duration-150 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+</button>
+</header>
+<main class="w-full max-w-4xl mx-auto md:pt-20">
+<!-- Hero Section -->
+<section class="relative w-full h-[309px] min-h-[300px] md:h-[397px] md:rounded-b-2xl overflow-hidden shadow-sm">
+<img alt="Paws &amp; Bubbles Spa Interior" class="w-full h-full object-cover" data-alt="A brightly lit, luxurious pet grooming boutique with pristine white tiled walls, modern copper plumbing fixtures, and deep royal blue accents. A clean, stainless steel grooming tub sits in the center, surrounded by neatly organized premium pet shampoos and soft fluffy towels. The aesthetic is extremely clean, modern, and high-end, conveying a high-trust professional pet spa environment in natural daylight." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiXOqgwlQHKcrmcugBicmHyn3pqMt5hr_iUojYhCpiBmTuE10LgLCX6NqrDGRWDBP9UdMc3vsXoeh5p381WgNcLRgoneRsAQMRzvxTlpLCj2EABh7WToKLUrEBwqcfy6vtqJU3M9tpzbyarI-oqaDsHGDJUM35CdU2Skx0dr0LSuy3-PwKIX3-5AjGkUOxPFLxy3X1dSt5YYF-lUlARWrzJCka8IRlyfqPLRhcl9tyaQZnJNhoiVDk-ec6bzZ0cFhz5hFdU5zo0Tw">
+<!-- Gradient Overlay for text legibility -->
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+<!-- Hero Content Overlay -->
+<div class="absolute bottom-0 left-0 w-full p-margin-mobile md:p-margin-desktop text-white">
+<div class="flex items-center gap-sm mb-2">
+<span class="bg-secondary-container text-on-secondary-container px-2 py-1 rounded-full font-label-sm text-label-sm inline-flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                        4.8 (180+ reviews)
+                    </span>
+<span class="bg-surface/20 backdrop-blur-md px-2 py-1 rounded-full font-label-sm text-label-sm flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                        0.8 km away
+                    </span>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-white mb-1">Paws &amp; Bubbles Spa</h1>
+<p class="font-body-md text-white/90 flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim"></span>
+                    Open until 7 PM
+                </p>
+</div>
+</section>
+<!-- Main Content Canvas -->
+<div class="px-margin-mobile md:px-margin-desktop pt-lg pb-xl space-y-xl">
+<!-- Action Buttons (Bento Grid Style) -->
+<div class="grid grid-cols-2 md:grid-cols-3 gap-sm">
+<button class="col-span-2 md:col-span-1 bg-primary text-on-primary font-label-md text-label-md py-4 rounded-xl shadow-md hover:bg-primary-fixed-dim hover:text-on-primary-fixed transition-colors flex items-center justify-center gap-2 active:scale-95 duration-150">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">calendar_month</span>
+                    Book Session
+                </button>
+<button class="bg-surface-container text-on-surface font-label-md text-label-md py-4 rounded-xl border border-outline-variant/20 hover:bg-surface-variant transition-colors flex items-center justify-center gap-2 active:scale-95 duration-150">
+<span class="material-symbols-outlined">chat_bubble</span>
+                    Message
+                </button>
+<button class="bg-surface-container text-on-surface font-label-md text-label-md py-4 rounded-xl border border-outline-variant/20 hover:bg-surface-variant transition-colors flex items-center justify-center gap-2 active:scale-95 duration-150">
+<span class="material-symbols-outlined">photo_library</span>
+                    View Gallery
+                </button>
+</div>
+<!-- Horizontal Scroll Tabs -->
+<div class="-mx-margin-mobile px-margin-mobile md:mx-0 md:px-0 overflow-x-auto pb-2 scrollbar-hide">
+<div class="flex gap-sm w-max">
+<button class="bg-primary-container text-on-primary-container px-4 py-2 rounded-full font-label-md text-label-md whitespace-nowrap shadow-sm">
+                        Full Grooming
+                    </button>
+<button class="bg-surface-container text-on-surface-variant px-4 py-2 rounded-full font-label-md text-label-md whitespace-nowrap border border-outline-variant/20 hover:bg-surface-variant transition-colors">
+                        Bath &amp; Dry
+                    </button>
+<button class="bg-surface-container text-on-surface-variant px-4 py-2 rounded-full font-label-md text-label-md whitespace-nowrap border border-outline-variant/20 hover:bg-surface-variant transition-colors">
+                        Styling
+                    </button>
+<button class="bg-surface-container text-on-surface-variant px-4 py-2 rounded-full font-label-md text-label-md whitespace-nowrap border border-outline-variant/20 hover:bg-surface-variant transition-colors">
+                        Spa Treatments
+                    </button>
+</div>
+</div>
+<!-- Service Menu List -->
+<section class="space-y-sm">
+<h2 class="font-headline-md text-headline-md text-on-background mb-md">Grooming Packages</h2>
+<!-- Service Card 1 -->
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant/10 flex justify-between items-center hover:shadow-md transition-shadow">
+<div>
+<h3 class="font-label-md text-label-md text-on-background mb-1">Full Grooming</h3>
+<p class="font-body-md text-on-surface-variant text-[14px]">Bath, cut, nails, ears &amp; cologne.</p>
+<div class="flex items-center gap-2 mt-2 font-label-sm text-label-sm text-outline">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">schedule</span> 90 mins</span>
+</div>
+</div>
+<div class="text-right">
+<span class="block font-headline-md text-headline-md text-primary mb-1">$45</span>
+<button class="bg-primary-fixed text-on-primary-fixed-variant px-3 py-1.5 rounded-lg font-label-sm text-label-sm hover:bg-primary-fixed-dim transition-colors">Select</button>
+</div>
+</div>
+<!-- Service Card 2 -->
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant/10 flex justify-between items-center hover:shadow-md transition-shadow">
+<div>
+<h3 class="font-label-md text-label-md text-on-background mb-1">Puppy Trim (Under 6mo)</h3>
+<p class="font-body-md text-on-surface-variant text-[14px]">Gentle intro to grooming.</p>
+<div class="flex items-center gap-2 mt-2 font-label-sm text-label-sm text-outline">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">schedule</span> 45 mins</span>
+</div>
+</div>
+<div class="text-right">
+<span class="block font-headline-md text-headline-md text-primary mb-1">$30</span>
+<button class="bg-primary-fixed text-on-primary-fixed-variant px-3 py-1.5 rounded-lg font-label-sm text-label-sm hover:bg-primary-fixed-dim transition-colors">Select</button>
+</div>
+</div>
+</section>
+<!-- Meet the Groomers (Glassmorphism / Bento) -->
+<section class="mt-xl">
+<h2 class="font-headline-md text-headline-md text-on-background mb-md">Meet the Groomers</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-md">
+<!-- Groomer Profile 1 -->
+<div class="bg-surface-container p-md rounded-xl flex items-center gap-md border border-outline-variant/20">
+<div class="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border-2 border-surface">
+<img alt="Sarah - Lead Stylist" class="w-full h-full object-cover" data-alt="A portrait of a friendly female pet groomer in a clean, modern royal blue grooming apron. She is smiling warmly in a bright, well-lit studio environment. The lighting is soft and flattering, emphasizing a trustworthy and professional demeanor." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvHQLPYte1aZMx4uZycFIocMCpoCcyQnleHxbFPv7Udv5PMt3AldcMep-lV9onef9X7VQeJmuVQbRMwRGki4xY1q6ZtAYB5pHDZ9k3WpcZ60shDMcssM8YX4n0m7sJuMKx2Xir6mykK9VmVxS5lZ4cbJiqQef02Hnvojec6MrWC5nRF6sWNwZrtWskqyuYMDea5ShDvEdqPfkrlhHWmwpokG4LJ81GLZkWsMw7aM248CUOI0PHMajc7AYLBR_4wDzFZevDx51u-c0">
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-on-background">Sarah J.</h4>
+<p class="font-body-md text-[14px] text-on-surface-variant">Lead Stylist</p>
+<p class="font-label-sm text-label-sm text-primary mt-1 bg-primary-fixed inline-block px-2 py-0.5 rounded-md">8 Years Exp.</p>
+</div>
+</div>
+<!-- Groomer Profile 2 -->
+<div class="bg-surface-container p-md rounded-xl flex items-center gap-md border border-outline-variant/20">
+<div class="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border-2 border-surface">
+<img alt="Mike - Spa Specialist" class="w-full h-full object-cover" data-alt="A portrait of a male pet groomer in a clean, modern royal blue grooming apron. He is smiling warmly in a bright, well-lit studio environment. The lighting is soft and flattering, emphasizing a trustworthy and professional demeanor." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbV8e3E_G_4h0xcq0RQrg-h1hIROqnrcr_yUp8qlh1Vj7A1SlBeaxN0JlFkahpEUofMf7tYA9cwbJd2qeNDvxxDdez8wOz-PKiAC_e9L5QrSYShk4z9IX9jJpYIbYGeKQElShV0LQdywRtpaGe8uix1c1a4Aax86Jk5-dlYBsY_HIOx3OFaQuKgrPS7wamsnoOKe6FZLk4pU1tr1CzbbK7_ml0Hp8Z8QwhR_CpIh7oEtyFlUIlsxAzDtTDBX-3nsMk_aXXPGb5kXw">
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-on-background">Mike T.</h4>
+<p class="font-body-md text-[14px] text-on-surface-variant">Spa Specialist</p>
+<p class="font-label-sm text-label-sm text-primary mt-1 bg-primary-fixed inline-block px-2 py-0.5 rounded-md">5 Years Exp.</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+
+
+</body></html>
