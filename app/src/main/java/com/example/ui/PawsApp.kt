@@ -54,6 +54,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -2890,7 +2891,11 @@ fun OriginalHomeScreen(viewModel: PawsViewModel) {
                                     modifier = Modifier
                                         .size(64.dp)
                                         .background(
-                                            color = if (isSelected) Color(0xFF2563EB) else Color(0xFFD3E4FE),
+                                            color = if (isSelected) {
+                                                if (category.id == "cat_groom") Color(0xFF1E3A8A) else Color(0xFF2563EB)
+                                            } else {
+                                                if (category.id == "cat_groom") Color(0xFFEFF6FF) else Color(0xFFD3E4FE)
+                                            },
                                             shape = CircleShape
                                         )
                                         .padding(4.dp),
@@ -2908,7 +2913,11 @@ fun OriginalHomeScreen(viewModel: PawsViewModel) {
                                     text = category.name,
                                     fontSize = 10.sp,
                                     fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Bold,
-                                    color = if (isSelected) Color(0xFFFC8019) else Color(0xFF434655),
+                                    color = if (isSelected) {
+                                        if (category.id == "cat_groom") Color(0xFF1E3A8A) else Color(0xFFFC8019)
+                                    } else {
+                                        if (category.id == "cat_groom") Color(0xFF1E40AF) else Color(0xFF434655)
+                                    },
                                     maxLines = 2,
                                     minLines = 2,
                                     textAlign = TextAlign.Center,
@@ -5778,10 +5787,16 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
     val context = LocalContext.current
     val selectedCatIds by viewModel.selectedCategoryIds.collectAsState()
     val firstSelectedCatId = remember(selectedCatIds) { selectedCatIds.firstOrNull() }
-    var activeTab by remember(firstSelectedCatId) { 
-        mutableStateOf(if (firstSelectedCatId == "cat_groom") "Grooming & Vet Slots" else "Menu") 
-    }
     var shopState = remember { mutableStateOf<ShopEntity?>(null) }
+    var activeTab by remember(shopState.value?.id, firstSelectedCatId) { 
+        mutableStateOf(
+            when {
+                shopState.value?.vetClinicEnabled == true -> "Doctors"
+                shopState.value?.groomingEnabled == true -> "Groomers"
+                else -> "Menu"
+            }
+        ) 
+    }
     var productsList by remember { mutableStateOf<List<ProductEntity>>(emptyList()) }
     var selectedConcernTag by remember { mutableStateOf<String?>(null) }
     val categoryList by viewModel.categories.collectAsState()
@@ -5855,7 +5870,7 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
 
     val themePrimary = when {
         shop.vetClinicEnabled -> Color(0xFF007D55) // Green
-        shop.groomingEnabled -> Color(0xFF0284C7) // Skyblue
+        shop.groomingEnabled -> Color(0xFF1E3A8A) // Navy/Deep Blue for Grooming
         else -> Color(0xFF004AC6) // Blue
     }
     
@@ -5869,8 +5884,56 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
     }
 
     MaterialTheme(colorScheme = customColorScheme) {
+        val backgroundModifier = if (shop.groomingEnabled) {
+            Modifier
+                .fillMaxSize()
+                .drawBehind {
+                    // 1. Draw Skyblue Gradient background
+                    val gradientBrush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFFBFDBFE), // Soft Blue
+                            Color(0xFFEFF6FF), // Ice/Light Sky Blue
+                            Color.White
+                        )
+                    )
+                    drawRect(brush = gradientBrush)
+                    
+                    // 2. Draw Subtle bubbles in the background
+                    val width = size.width
+                    val height = size.height
+                    val backgroundBubbles = listOf(
+                        Triple(0.1f, 0.2f, 15.dp.toPx()),
+                        Triple(0.85f, 0.15f, 25.dp.toPx()),
+                        Triple(0.2f, 0.45f, 18.dp.toPx()),
+                        Triple(0.75f, 0.5f, 30.dp.toPx()),
+                        Triple(0.15f, 0.75f, 22.dp.toPx()),
+                        Triple(0.9f, 0.8f, 16.dp.toPx()),
+                        Triple(0.5f, 0.9f, 28.dp.toPx()),
+                        Triple(0.05f, 0.95f, 12.dp.toPx()),
+                        Triple(0.95f, 0.35f, 20.dp.toPx())
+                    )
+                    backgroundBubbles.forEach { (xPercent, yPercent, radius) ->
+                        drawCircle(
+                            color = Color(0x1538BDF8), // Translucent sky blue
+                            radius = radius,
+                            center = androidx.compose.ui.geometry.Offset(width * xPercent, height * yPercent)
+                        )
+                        drawCircle(
+                            color = Color.White.copy(alpha = 0.25f),
+                            radius = radius,
+                            center = androidx.compose.ui.geometry.Offset(width * xPercent, height * yPercent),
+                            style = Stroke(width = 1.dp.toPx())
+                        )
+                    }
+                }
+        } else {
+            Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        }
+
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = backgroundModifier,
             contentPadding = PaddingValues(bottom = 100.dp)
         ) {
             // Hero Photo Container with back actions
@@ -5975,6 +6038,31 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                             modifier = Modifier.padding(top = 4.dp)
                         )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(top = 8.dp)
+                        ) {
+                            val statusColor = if (shop.isOpen) Color(0xFF4CAF50) else Color(0xFFE53935)
+                            val statusText = if (shop.isOpen) "Open Now" else "Closed"
+                            Box(
+                                modifier = Modifier
+                                    .background(statusColor.copy(alpha = 0.12f), RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = statusText,
+                                    color = statusColor,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Hours: ${shop.opensAt} - ${shop.closesAt}",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                            )
+                        }
                     }
 
                     Row(
@@ -6059,18 +6147,22 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
         // Segment Tab Layout
         item {
             val tabs = remember(shop.groomingEnabled, shop.vetClinicEnabled, reviewsList.size) {
-                val list = mutableListOf("Menu")
-                if (shop.groomingEnabled || shop.vetClinicEnabled) {
-                    list.add("Grooming & Vet Slots")
+                when {
+                    shop.vetClinicEnabled -> {
+                        listOf("Doctors", "Consultation Slots", "Reviews (${reviewsList.size})", "Hospital Info")
+                    }
+                    shop.groomingEnabled -> {
+                        listOf("Groomers", "Grooming Packages", "Reviews (${reviewsList.size})", "Salon Info")
+                    }
+                    else -> {
+                        listOf("Menu", "Reviews (${reviewsList.size})", "Store Info")
+                    }
                 }
-                list.add("Reviews (${reviewsList.size})")
-                list.add("Store Info")
-                list
             }
             
             LaunchedEffect(tabs) {
                 if (activeTab !in tabs && !activeTab.startsWith("Reviews")) {
-                    activeTab = "Menu"
+                    activeTab = tabs.firstOrNull() ?: "Menu"
                 }
             }
 
@@ -6242,8 +6334,151 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
                 }
             }
 
-            "Grooming & Vet Slots" -> {
+            "Groomers" -> {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp)
+                    ) {
+                        Text("Available Groomers", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        val groomers = listOf(
+                            Triple("Rohan Sharma", "Master Stylist (Haircuts & Styling, 8 years exp)", "https://lh3.googleusercontent.com/aida-public/AB6AXuAn2LMbNYuqvAlSJ3Vsv3UiJVRa9B9YUYi39ShyxYeRMqbb6gwbm_4Iotbu_QZm-5pxwrOvETau5MJVPL3XcKNg6qJVbEke8w6buRQkmUgagREG15ZIZTBzIbtKGwCVgqAao1NSa_ZZsJpM9KgiC_VrK9O7aF2eMr6Gc5ES_fCKqnlSM8pjQ43E5RjzkRFt3L-lFoX38HEPBd99oYiAvt9cFIUV6eaqq44WCx2QdvoFE-V8XtAwCc_uwI9A53BXcQdxiXfZv7X09sw"),
+                            Triple("Emily Davis", "Medicated Bath Specialist (Skin & Coat Care, 5 years exp)", "https://lh3.googleusercontent.com/aida-public/AB6AXuAXx7J-sz-fV3Y_VS7BUI6xREHCtu84yd5izEqlWLTC8qY3WVnPddQFvYVf1Uguayi9ZhyWEQqeq7VVZ8JBry3BUH8fQZe9pYp60LQlAR5WW6EqklajhvhlVd5UfSEbAEEdBxS2KPuNI2uYuzXZDjavgaQPJdIW6hobWpxBmcbsK-_aYymv4nOhGWpCChcYO1573y__YOHNSOI3lnkq3dbHgykjeQTBzaa7j5UA6cZ14CiudAIZpXucpgIZNwKuerA1rpKJ82bpAXk"),
+                            Triple("Vikram Singh", "Puppy Grooming Specialist (Gentle Handling, 4 years exp)", "https://lh3.googleusercontent.com/aida-public/AB6AXuAKwIVhg0jtyF9l-ZpnLelxtm7dPs0cNiFMAyw_WbKRSfJ-i0uLTr96yc3YnkabFFIt0-hMNtQHjQbpSi78KFLnVwvykST98Q7q0yq-VpxoJsmDMPV-o5KN9bm1J7OvZmRRt5brgcoASNXXfKdmBQQQhUfDC321lcBVF-97a8rpivLlEdfo5BOwTnpqhCSm8jeONbNd_hZQynrJzMvK0xF-OekAviLapXfyl7_GJi-uwVhc2mIOs3PLunPO4AZkbC_lh_X_RficrVc"),
+                            Triple("Jessica Mercer", "Nail & Paw Care Expert (De-shedding & Trim, 6 years exp)", "https://lh3.googleusercontent.com/aida-public/AB6AXuBT5ErbZE34PrwsulcWscKJ_B29WnP6Zwmi5Sz2EjhV5cvCCn_K2U7urMNkV264lKZSPFKFcFuZM1moXeoBQ1_wXXUxPhnv2akkA5rSWnMpbYXSbGtRW4Csd4PAET2wQzCHCmsbbjs3pnqzj5iLiW9dnhR2xdBtKzLoWSQAk0YXYRQozbUch0dnnnCH92O28KO5zYUrY3imnc5gx2YoYxndhvxmKULayQWn2kzoDyfz3E924jYVICJx2V11prYiqbH_d-YBqXRsnxs")
+                        )
+                        
+                        groomers.forEach { (name, specialty, imgUrl) ->
+                            Card(
+                                shape = RoundedCornerShape(16.dp),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 6.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Image(
+                                        painter = rememberAsyncImagePainter(imgUrl),
+                                        contentDescription = name,
+                                        modifier = Modifier
+                                            .size(56.dp)
+                                            .clip(CircleShape),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                    Spacer(modifier = Modifier.width(16.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(name, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                        Text(specialty, fontSize = 12.sp, color = Color.Gray)
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(8.dp)
+                                                    .background(Color(0xFF4CAF50), CircleShape)
+                                            )
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text("Available", fontSize = 11.sp, color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
+                                        }
+                                    }
+                                    IconButton(
+                                        onClick = { activeTab = "Grooming Packages" },
+                                        modifier = Modifier.background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.ArrowForward,
+                                            contentDescription = "Book Package",
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            "Doctors" -> {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp)
+                    ) {
+                        Text("Available Doctors", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        val doctors = listOf(
+                            Triple("Dr. Sarah Jenkins", "Emergency Surgery", "https://lh3.googleusercontent.com/aida-public/AB6AXuAXx7J-sz-fV3Y_VS7BUI6xREHCtu84yd5izEqlWLTC8qY3WVnPddQFvYVf1Uguayi9ZhyWEQqeq7VVZ8JBry3BUH8fQZe9pYp60LQlAR5WW6EqklajhvhlVd5UfSEbAEEdBxS2KPuNI2uYuzXZDjavgaQPJdIW6hobWpxBmcbsK-_aYymv4nOhGWpCChcYO1573y__YOHNSOI3lnkq3dbHgykjeQTBzaa7j5UA6cZ14CiudAIZpXucpgIZNwKuerA1rpKJ82bpAXk"),
+                            Triple("Dr. Elena Rossi", "Holistic Medicine & General Care", "https://lh3.googleusercontent.com/aida-public/AB6AXuAn2LMbNYuqvAlSJ3Vsv3UiJVRa9B9YUYi39ShyxYeRMqbb6gwbm_4Iotbu_QZm-5pxwrOvETau5MJVPL3XcKNg6qJVbEke8w6buRQkmUgagREG15ZIZTBzIbtKGwCVgqAao1NSa_ZZsJpM9KgiC_VrK9O7aF2eMr6Gc5ES_fCKqnlSM8pjQ43E5RjzkRFt3L-lFoX38HEPBd99oYiAvt9cFIUV6eaqq44WCx2QdvoFE-V8XtAwCc_uwI9A53BXcQdxiXfZv7X09sw"),
+                            Triple("Dr. Michael Chang", "Internal Medicine", "https://lh3.googleusercontent.com/aida-public/AB6AXuAKwIVhg0jtyF9l-ZpnLelxtm7dPs0cNiFMAyw_WbKRSfJ-i0uLTr96yc3YnkabFFIt0-hMNtQHjQbpSi78KFLnVwvykST98Q7q0yq-VpxoJsmDMPV-o5KN9bm1J7OvZmRRt5brgcoASNXXfKdmBQQQhUfDC321lcBVF-97a8rpivLlEdfo5BOwTnpqhCSm8jeONbNd_hZQynrJzMvK0xF-OekAviLapXfyl7_GJi-uwVhc2mIOs3PLunPO4AZkbC_lh_X_RficrVc"),
+                            Triple("Dr. James Wilson", "Preventive Care & Diagnostics", "https://lh3.googleusercontent.com/aida-public/AB6AXuBT5ErbZE34PrwsulcWscKJ_B29WnP6Zwmi5Sz2EjhV5cvCCn_K2U7urMNkV264lKZSPFKFcFuZM1moXeoBQ1_wXXUxPhnv2akkA5rSWnMpbYXSbGtRW4Csd4PAET2wQzCHCmsbbjs3pnqzj5iLiW9dnhR2xdBtKzLoWSQAk0YXYRQozbUch0dnnnCH92O28KO5zYUrY3imnc5gx2YoYxndhvxmKULayQWn2kzoDyfz3E924jYVICJx2V11prYiqbH_d-YBqXRsnxs")
+                        )
+                        
+                        doctors.forEach { (name, specialty, imgUrl) ->
+                            Card(
+                                shape = RoundedCornerShape(16.dp),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 6.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Image(
+                                        painter = rememberAsyncImagePainter(imgUrl),
+                                        contentDescription = name,
+                                        modifier = Modifier
+                                            .size(56.dp)
+                                            .clip(CircleShape),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                    Spacer(modifier = Modifier.width(16.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(name, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                        Text(specialty, fontSize = 12.sp, color = Color.Gray)
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(8.dp)
+                                                    .background(Color(0xFF4CAF50), CircleShape)
+                                            )
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text("Available", fontSize = 11.sp, color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
+                                        }
+                                    }
+                                    IconButton(
+                                        onClick = { activeTab = "Consultation Slots" },
+                                        modifier = Modifier.background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.ArrowForward,
+                                            contentDescription = "Book Consultation",
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
+            "Consultation Slots", "Grooming Packages", "Grooming & Vet Slots" -> {
                 if (filteredServicesList.isEmpty()) {
                     item {
                         Column(
@@ -6256,6 +6491,15 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
                         }
                     }
                 } else {
+                    item {
+                        val headerText = if (activeTab == "Consultation Slots") "Veterinary Consultation Services" else "Grooming Packages & Services"
+                        Text(
+                            text = headerText,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
+                        )
+                    }
                     items(filteredServicesList) { service ->
                         ServiceCatalogRow(
                             service = service,
@@ -6273,6 +6517,94 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
                         shopId = shop.id,
                         onSubmitReview = { rating, comment -> viewModel.submitReview(shop.id, rating, comment) }
                     )
+                }
+            }
+
+            "Hospital Info" -> {
+                item {
+                    StoreInfoTabScreen(shop = shop)
+                }
+                item {
+                    Card(
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 12.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text("Hospital Facilities", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Spacer(modifier = Modifier.height(12.dp))
+                            val facilities = listOf(
+                                Pair(Icons.Default.Info, "X-Ray & Imaging"),
+                                Pair(Icons.Default.Favorite, "ICU Intensive Care"),
+                                Pair(Icons.Default.DateRange, "In-house Diagnostics Lab"),
+                                Pair(Icons.Default.ShoppingCart, "Veterinary Pharmacy")
+                            )
+                            facilities.forEach { (icon, name) ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = icon,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text(name, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            "Salon Info" -> {
+                item {
+                    StoreInfoTabScreen(shop = shop)
+                }
+                item {
+                    Card(
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 12.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text("Salon Features & Facilities", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Spacer(modifier = Modifier.height(12.dp))
+                            val features = listOf(
+                                Pair(Icons.Default.Star, "Luxury Bubble Bath Tubs"),
+                                Pair(Icons.Default.Info, "Professional Hair Styling"),
+                                Pair(Icons.Default.CheckCircle, "Gentle Nail Care & Trimming"),
+                                Pair(Icons.Default.Favorite, "Aromatherapy Pet Spa")
+                            )
+                            features.forEach { (icon, name) ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = icon,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text(name, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -12662,8 +12994,40 @@ fun AppointmentCard(
     onReschedule: () -> Unit,
     onCancel: () -> Unit
 ) {
-    val doctorName = if (appointment.shopId == "shop_hyd_1") "Dr. Sarah Jenkins" else "Dr. Michael Chen"
-    val clinicName = if (appointment.shopId == "shop_hyd_1") "City Paws Veterinary Clinic" else "Downtown Animal Hospital"
+    val isGrooming = appointment.serviceName.contains("Grooming", ignoreCase = true) ||
+                     appointment.serviceName.contains("Bath", ignoreCase = true) ||
+                     appointment.serviceName.contains("Styling", ignoreCase = true) ||
+                     appointment.serviceName.contains("Trim", ignoreCase = true) ||
+                     appointment.serviceName.contains("Spa", ignoreCase = true) ||
+                     appointment.shopId == "mock_paws_bubbles" ||
+                     appointment.shopId == "mock_grooming_room" ||
+                     appointment.shopId == "shop_hyd_2"
+
+    val doctorName = if (isGrooming) {
+        when {
+            appointment.serviceName.contains("Styling", ignoreCase = true) -> "Rohan Sharma (Master Stylist)"
+            appointment.serviceName.contains("Bath", ignoreCase = true) -> "Emily Davis (Bath Specialist)"
+            appointment.serviceName.contains("Trim", ignoreCase = true) -> "Vikram Singh (Puppy Specialist)"
+            else -> "Jessica Mercer (Nail & Paw Care Expert)"
+        }
+    } else {
+        when (appointment.shopId) {
+            "shop_hyd_1" -> "Dr. Sarah Jenkins"
+            "mock_petcare_wellness" -> "Dr. Elena Rossi"
+            "mock_city_hospital" -> "Dr. Michael Chang"
+            else -> "Dr. James Wilson"
+        }
+    }
+
+    val clinicName = when (appointment.shopId) {
+        "shop_hyd_1" -> "Royal Canine Hub"
+        "shop_hyd_2" -> "Puppy Love Groomers"
+        "mock_paws_bubbles" -> "Paws & Bubbles Spa"
+        "mock_grooming_room" -> "The Grooming Room"
+        "mock_city_hospital" -> "City Pet Hospital"
+        "mock_petcare_wellness" -> "PetCare Wellness Center"
+        else -> "PawsApp Care Partner"
+    }
     val dateParts = appointment.appointmentDate.split("-")
     val monthStr = if (dateParts.size >= 2) {
         when (dateParts[1]) {
@@ -15928,14 +16292,57 @@ fun GroomingServicesScreen(viewModel: PawsViewModel) {
         }
     }
     
-    Box(modifier = Modifier.fillMaxSize().background(Color(0xFFF8F9FF))) {
+    val backgroundModifier = remember {
+        Modifier
+            .fillMaxSize()
+            .drawBehind {
+                // 1. Draw Skyblue Gradient background
+                val gradientBrush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFFBFDBFE), // Soft Blue
+                        Color(0xFFEFF6FF), // Ice/Light Sky Blue
+                        Color.White
+                    )
+                )
+                drawRect(brush = gradientBrush)
+                
+                // 2. Draw Subtle bubbles in the background
+                val width = size.width
+                val height = size.height
+                val backgroundBubbles = listOf(
+                    Triple(0.08f, 0.15f, 12.dp.toPx()),
+                    Triple(0.88f, 0.12f, 22.dp.toPx()),
+                    Triple(0.18f, 0.40f, 15.dp.toPx()),
+                    Triple(0.80f, 0.45f, 28.dp.toPx()),
+                    Triple(0.12f, 0.70f, 20.dp.toPx()),
+                    Triple(0.85f, 0.75f, 14.dp.toPx()),
+                    Triple(0.48f, 0.85f, 26.dp.toPx()),
+                    Triple(0.92f, 0.30f, 18.dp.toPx())
+                )
+                backgroundBubbles.forEach { (xPercent, yPercent, radius) ->
+                    drawCircle(
+                        color = Color(0x1538BDF8), // Translucent sky blue
+                        radius = radius,
+                        center = androidx.compose.ui.geometry.Offset(width * xPercent, height * yPercent)
+                    )
+                    drawCircle(
+                        color = Color.White.copy(alpha = 0.25f),
+                        radius = radius,
+                        center = androidx.compose.ui.geometry.Offset(width * xPercent, height * yPercent),
+                        style = Stroke(width = 1.dp.toPx())
+                    )
+                }
+            }
+    }
+    
+    Box(modifier = backgroundModifier) {
         Column(modifier = Modifier.fillMaxSize()) {
             // Header Bar
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(64.dp)
-                    .background(Color.White)
+                    .background(Color.White.copy(alpha = 0.85f))
                     .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -15943,7 +16350,7 @@ fun GroomingServicesScreen(viewModel: PawsViewModel) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back",
-                        tint = Color(0xFF004AC6)
+                        tint = Color(0xFF1E3A8A)
                     )
                 }
                 
@@ -16015,9 +16422,9 @@ fun GroomingServicesScreen(viewModel: PawsViewModel) {
                                 .height(52.dp),
                             shape = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedContainerColor = Color(0xFFEFF4FF),
-                                unfocusedContainerColor = Color(0xFFEFF4FF),
-                                focusedBorderColor = Color(0xFF004AC6),
+                                focusedContainerColor = Color.White.copy(alpha = 0.8f),
+                                unfocusedContainerColor = Color.White.copy(alpha = 0.8f),
+                                focusedBorderColor = Color(0xFF3B82F6),
                                 unfocusedBorderColor = Color.Transparent
                             ),
                             singleLine = true
@@ -16046,10 +16453,10 @@ fun GroomingServicesScreen(viewModel: PawsViewModel) {
                             Row(
                                 modifier = Modifier
                                     .height(40.dp)
-                                    .background(Color.White, CircleShape)
+                                    .background(Color.White.copy(alpha = 0.8f), CircleShape)
                                     .border(
                                         width = if (isSelected) 2.dp else 1.dp,
-                                        color = if (isSelected) Color(0xFF004AC6) else Color(0xFFC3C6D7),
+                                        color = if (isSelected) Color(0xFF1E3A8A) else Color(0xFFC3C6D7),
                                         shape = CircleShape
                                     )
                                     .clickable { selectedCategoryChip = label }
@@ -16059,7 +16466,7 @@ fun GroomingServicesScreen(viewModel: PawsViewModel) {
                                 Card(
                                     shape = CircleShape,
                                     modifier = Modifier.size(32.dp),
-                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFEFF4FF))
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFEFF6FF))
                                 ) {
                                     if (imageUrl.isEmpty()) {
                                         Box(
@@ -16070,7 +16477,7 @@ fun GroomingServicesScreen(viewModel: PawsViewModel) {
                                                 text = "All",
                                                 fontSize = 11.sp,
                                                 fontWeight = FontWeight.Bold,
-                                                color = Color(0xFF004AC6)
+                                                color = Color(0xFF1E3A8A)
                                             )
                                         }
                                     } else {
@@ -16087,7 +16494,7 @@ fun GroomingServicesScreen(viewModel: PawsViewModel) {
                                     text = label,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isSelected) Color(0xFF004AC6) else Color(0xFF0B1C30)
+                                    color = if (isSelected) Color(0xFF1E3A8A) else Color(0xFF0B1C30)
                                 )
                             }
                         }
@@ -16256,12 +16663,12 @@ fun GroomingServicesScreen(viewModel: PawsViewModel) {
                                         .weight(1f)
                                         .height(44.dp)
                                         .background(
-                                            color = if (isSelected) Color(0xFFE5EEFF) else Color(0xFFF8F9FF),
+                                            color = if (isSelected) Color(0xFFEFF6FF) else Color(0xFFF8F9FF),
                                             shape = RoundedCornerShape(10.dp)
                                         )
                                         .border(
                                             width = if (isSelected) 2.dp else 1.dp,
-                                            color = if (isSelected) Color(0xFF004AC6) else Color(0xFFC3C6D7),
+                                            color = if (isSelected) Color(0xFF1E3A8A) else Color(0xFFC3C6D7),
                                             shape = RoundedCornerShape(10.dp)
                                         )
                                         .clickable { selectedDurationFilter = dur },
@@ -16271,7 +16678,7 @@ fun GroomingServicesScreen(viewModel: PawsViewModel) {
                                         text = dur,
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = if (isSelected) Color(0xFF004AC6) else Color(0xFF0B1C30),
+                                        color = if (isSelected) Color(0xFF1E3A8A) else Color(0xFF0B1C30),
                                         textAlign = TextAlign.Center,
                                         lineHeight = 12.sp
                                     )
@@ -16295,7 +16702,7 @@ fun GroomingServicesScreen(viewModel: PawsViewModel) {
                                         .weight(1f)
                                         .height(44.dp)
                                         .background(
-                                            color = if (isSelected) Color(0xFF004AC6) else Color(0xFFF8F9FF),
+                                            color = if (isSelected) Color(0xFF1E3A8A) else Color(0xFFF8F9FF),
                                             shape = RoundedCornerShape(10.dp)
                                         )
                                         .border(
@@ -16334,9 +16741,9 @@ fun GroomingServicesScreen(viewModel: PawsViewModel) {
                             onValueChange = { priceRange = it },
                             valueRange = 0f..5000f,
                             colors = SliderDefaults.colors(
-                                activeTrackColor = Color(0xFF004AC6),
-                                inactiveTrackColor = Color(0xFFE5EEFF),
-                                thumbColor = Color(0xFF004AC6)
+                                activeTrackColor = Color(0xFF1E3A8A),
+                                inactiveTrackColor = Color(0xFFEFF6FF),
+                                thumbColor = Color(0xFF1E3A8A)
                             )
                         )
                         Row(
@@ -16363,7 +16770,7 @@ fun GroomingServicesScreen(viewModel: PawsViewModel) {
                                 .fillMaxWidth()
                                 .height(52.dp),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004AC6))
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF97316))
                         ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -16511,7 +16918,7 @@ fun GroomingServiceGridCard(
                     .fillMaxWidth()
                     .height(36.dp),
                 shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004AC6)),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF97316)),
                 contentPadding = PaddingValues(0.dp)
             ) {
                 Text(

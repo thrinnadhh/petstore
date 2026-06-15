@@ -18,29 +18,29 @@
                         "on-secondary-fixed": "#2a1700",
                         "inverse-surface": "#213145",
                         "surface-container": "#e5eeff",
-                        "inverse-primary": "#b4c5ff",
+                        "inverse-primary": "#93c5fd",
                         "outline-variant": "#c3c6d7",
                         "tertiary": "#006242",
                         "surface-container-lowest": "#ffffff",
-                        "primary-container": "#2563eb",
+                        "primary-container": "#eff6ff",
                         "tertiary-container": "#007d55",
                         "background": "#f8f9ff",
                         "surface-container-low": "#eff4ff",
-                        "on-primary-fixed-variant": "#003ea8",
+                        "on-primary-fixed-variant": "#1e40af",
                         "inverse-on-surface": "#eaf1ff",
                         "on-tertiary-fixed-variant": "#005236",
                         "surface-variant": "#d3e4fe",
-                        "surface-tint": "#0053db",
+                        "surface-tint": "#3b82f6",
                         "on-tertiary": "#ffffff",
                         "surface-bright": "#f8f9ff",
                         "on-tertiary-container": "#bdffdb",
                         "surface-container-highest": "#d3e4fe",
-                        "on-primary-container": "#eeefff",
-                        "primary": "#004ac6",
+                        "on-primary-container": "#1e40af",
+                        "primary": "#1e3a8a",
                         "error": "#ba1a1a",
                         "secondary-fixed-dim": "#ffb95f",
-                        "primary-fixed-dim": "#b4c5ff",
-                        "on-primary-fixed": "#00174b",
+                        "primary-fixed-dim": "#93c5fd",
+                        "on-primary-fixed": "#1e40af",
                         "tertiary-fixed-dim": "#4edea3",
                         "on-tertiary-fixed": "#002113",
                         "secondary-container": "#fea619",
@@ -48,7 +48,7 @@
                         "on-error": "#ffffff",
                         "on-secondary-fixed-variant": "#653e00",
                         "surface": "#f8f9ff",
-                        "primary-fixed": "#dbe1ff",
+                        "primary-fixed": "#eff6ff",
                         "on-secondary-container": "#684000",
                         "secondary-fixed": "#ffddb8",
                         "secondary": "#855300",
@@ -109,6 +109,42 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+        /* Floating bubbles animation */
+        .bubbles-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .bubble {
+            position: absolute;
+            bottom: -20px;
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float-up var(--duration) ease-in-out infinite;
+            opacity: 0;
+        }
+        @keyframes float-up {
+            0% {
+                transform: translateY(0) scale(1) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-200px) scale(1.2) translateX(var(--wobble));
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body class="bg-background text-on-background font-body-md antialiased min-h-screen pt-16 pb-20 md:pb-8">
@@ -124,6 +160,18 @@
 </button>
 </header>
 <main class="max-w-7xl mx-auto md:px-margin-desktop">
+<!-- Water & Bubbles Hero Banner -->
+<div class="relative overflow-hidden rounded-2xl mx-margin-mobile md:mx-0 mt-4 p-6 text-white shadow-md h-32 flex flex-col justify-center" style="background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);">
+  <div class="bubbles-container">
+    <div class="bubble" style="left: 10%; width: 10px; height: 10px; --duration: 5s; --wobble: 10px; animation-delay: 0s;"></div>
+    <div class="bubble" style="left: 30%; width: 6px; height: 6px; --duration: 7s; --wobble: -15px; animation-delay: 1s;"></div>
+    <div class="bubble" style="left: 50%; width: 12px; height: 12px; --duration: 6s; --wobble: 12px; animation-delay: 2s;"></div>
+    <div class="bubble" style="left: 70%; width: 8px; height: 8px; --duration: 8s; --wobble: -10px; animation-delay: 1.5s;"></div>
+    <div class="bubble" style="left: 90%; width: 10px; height: 10px; --duration: 5.5s; --wobble: 8px; animation-delay: 0.5s;"></div>
+  </div>
+  <h2 class="font-headline-lg-mobile md:font-headline-lg font-extrabold relative z-10 text-white">Premium Grooming</h2>
+  <p class="font-body-md text-white/90 relative z-10">Refresh, pamper, and bubbly-wash your pet!</p>
+</div>
 <!-- Category Chips -->
 <section class="mt-4 px-margin-mobile md:px-0">
 <div class="flex overflow-x-auto gap-3 no-scrollbar py-2">
@@ -185,7 +233,7 @@
 <div class="flex items-center justify-between mt-auto">
 <span class="font-headline-md text-headline-md font-bold text-primary">₹1200</span>
 </div>
-<button class="mt-3 w-full bg-primary text-on-primary font-label-md text-label-md py-2 rounded-lg hover:bg-primary-fixed-variant transition-colors active:scale-95 shadow-sm">
+<button class="mt-3 w-full bg-[#f97316] text-white font-label-md text-label-md py-2 rounded-lg hover:bg-[#ea580c] transition-colors active:scale-95 shadow-sm">
                         Book Now
                     </button>
 </div>
@@ -204,7 +252,7 @@
 <div class="flex items-center justify-between mt-auto">
 <span class="font-headline-md text-headline-md font-bold text-primary">₹2500</span>
 </div>
-<button class="mt-3 w-full bg-primary text-on-primary font-label-md text-label-md py-2 rounded-lg hover:bg-primary-fixed-variant transition-colors active:scale-95 shadow-sm">
+<button class="mt-3 w-full bg-[#f97316] text-white font-label-md text-label-md py-2 rounded-lg hover:bg-[#ea580c] transition-colors active:scale-95 shadow-sm">
                         Book Now
                     </button>
 </div>
@@ -227,7 +275,7 @@
 <span class="font-headline-md text-headline-md font-bold text-primary">₹3500</span>
 <span class="text-xs text-outline-variant line-through">₹4000</span>
 </div>
-<button class="mt-3 w-full bg-primary text-on-primary font-label-md text-label-md py-2 rounded-lg hover:bg-primary-fixed-variant transition-colors active:scale-95 shadow-sm">
+<button class="mt-3 w-full bg-[#f97316] text-white font-label-md text-label-md py-2 rounded-lg hover:bg-[#ea580c] transition-colors active:scale-95 shadow-sm">
                         Book Now
                     </button>
 </div>
@@ -246,7 +294,7 @@
 <div class="flex items-center justify-between mt-auto">
 <span class="font-headline-md text-headline-md font-bold text-primary">₹900</span>
 </div>
-<button class="mt-3 w-full bg-primary text-on-primary font-label-md text-label-md py-2 rounded-lg hover:bg-primary-fixed-variant transition-colors active:scale-95 shadow-sm">
+<button class="mt-3 w-full bg-[#f97316] text-white font-label-md text-label-md py-2 rounded-lg hover:bg-[#ea580c] transition-colors active:scale-95 shadow-sm">
                         Book Now
                     </button>
 </div>
@@ -263,5 +311,158 @@
 
 
 
+
+
+
+
+
+<!-- Navigation Interceptor for Web Simulator -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('click', (e) => {
+        // 1. Back button detection
+        const backBtn = e.target.closest('button, a, span');
+        if (backBtn && (
+            backBtn.innerText.includes('arrow_back') || 
+            backBtn.textContent.includes('arrow_back') ||
+            backBtn.id === 'back-btn' ||
+            backBtn.classList.contains('back-button')
+        )) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.parent.postMessage({ type: 'back' }, '*');
+            return;
+        }
+
+        // 2. Helper to check text content of target or its parent elements
+        const findText = (text) => {
+            let el = e.target;
+            while (el && el !== document.body) {
+                if (el.textContent && el.textContent.toLowerCase().includes(text.toLowerCase())) {
+                    return true;
+                }
+                el = el.parentElement;
+            }
+            return false;
+        };
+
+        // 3. Map categories
+        if (findText('Food & Nutrition')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'food_nutrition' }, '*');
+            return;
+        }
+        if (findText('Treats & Chews')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'treats_chews' }, '*');
+            return;
+        }
+        if (findText('Toys & Mental') || findText('Toys & Enrichment')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'toys_enrichment' }, '*');
+            return;
+        }
+        if (findText('Grooming Services')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'grooming_services' }, '*');
+            return;
+        }
+        if (findText('Travel, Leashes') || findText('Travel & Apparel')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'travel_apparel' }, '*');
+            return;
+        }
+        if (findText('Furniture & Sleep')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'furniture_sleep' }, '*');
+            return;
+        }
+        if (findText('Waste Management') || findText('Litter')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'waste_management' }, '*');
+            return;
+        }
+
+        // 4. Map shops/profiles using navigateShop
+        if (findText('The Posh Paws') || findText('Posh Paws')) {
+            window.parent.postMessage({ type: 'navigateShop', shopId: 'posh_paws' }, '*');
+            return;
+        }
+        if (findText('Healthy Hounds') || findText('Healthy Hound')) {
+            window.parent.postMessage({ type: 'navigateShop', shopId: 'healthy_hound' }, '*');
+            return;
+        }
+        if (findText('PetCare Pharmacy')) {
+            window.parent.postMessage({ type: 'navigateShop', shopId: 'petcare_pharmacy' }, '*');
+            return;
+        }
+        if (findText('City Pet Hospital') || findText('City Pet')) {
+            window.parent.postMessage({ type: 'navigateShop', shopId: 'city_pet' }, '*');
+            return;
+        }
+        if (findText('PetCare Wellness')) {
+            window.parent.postMessage({ type: 'navigateShop', shopId: 'petcare_wellness' }, '*');
+            return;
+        }
+        if (findText('Paws & Bubbles')) {
+            window.parent.postMessage({ type: 'navigateShop', shopId: 'paws_bubbles' }, '*');
+            return;
+        }
+
+        // 5. Health Passport
+        if (findText('Vaccinations')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'vaccinations' }, '*');
+            return;
+        }
+        if (findText('Reports') || findText('Medical Reports')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'medical-reports' }, '*');
+            return;
+        }
+        if (findText('Appointments')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'appointments' }, '*');
+            return;
+        }
+
+        // 6. Quick Action Pills / Navigation tabs
+        if (findText('Favourites') || findText('Favorite')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'favourites' }, '*');
+            return;
+        }
+        if (findText('Orders') || findText('Receipt')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'orders' }, '*');
+            return;
+        }
+        if (findText('New Arrivals')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'new_arrivals' }, '*');
+            return;
+        }
+
+        // 7. Guides
+        if (findText('Puppy Nutrition (0-2 mo)')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'guide_puppy_nutrition' }, '*');
+            return;
+        }
+        if (findText('Puppy Growth (2-12 mo)')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'guide_puppy_growth' }, '*');
+            return;
+        }
+        if (findText('Hair & Coat') || findText('Coat & Skin')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'guide_coat_skin' }, '*');
+            return;
+        }
+
+        // 8. Bottom Nav Tab clicks
+        const navBtn = e.target.closest('a, button');
+        if (navBtn) {
+            const text = navBtn.textContent.toLowerCase();
+            if (text.includes('home')) {
+                window.parent.postMessage({ type: 'navigate', screenId: 'home' }, '*');
+                return;
+            }
+            if (text.includes('search')) {
+                window.parent.postMessage({ type: 'navigate', screenId: 'food_nutrition' }, '*');
+                return;
+            }
+            if (text.includes('profile')) {
+                window.parent.postMessage({ type: 'navigate', screenId: 'profile' }, '*');
+                return;
+            }
+        }
+    });
+});
+</script>
 
 </body></html>

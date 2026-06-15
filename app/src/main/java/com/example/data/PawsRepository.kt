@@ -587,7 +587,7 @@ class PawsRepository(private val pawsDao: PawsDao) {
                 deliveryAvailable = false, isVerified = true, isActive = true, isFeatured = false,
                 status = "active",
                 groomingEnabled = true,
-                vetClinicEnabled = true
+                vetClinicEnabled = false
             ),
             ShopEntity(
                 id = "shop_blr_1",

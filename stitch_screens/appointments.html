@@ -283,4 +283,272 @@
 
 
 
+
+
+
+
+<!-- Navigation Interceptor for Web Simulator -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('click', (e) => {
+        // 1. Back button detection
+        const backBtn = e.target.closest('button, a, span');
+        if (backBtn && (
+            backBtn.innerText.includes('arrow_back') || 
+            backBtn.textContent.includes('arrow_back') ||
+            backBtn.id === 'back-btn' ||
+            backBtn.classList.contains('back-button')
+        )) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.parent.postMessage({ type: 'back' }, '*');
+            return;
+        }
+
+        // 2. Helper to check text content of target or its parent elements
+        const findText = (text) => {
+            let el = e.target;
+            while (el && el !== document.body) {
+                if (el.textContent && el.textContent.toLowerCase().includes(text.toLowerCase())) {
+                    return true;
+                }
+                el = el.parentElement;
+            }
+            return false;
+        };
+
+        // 3. Map categories
+        if (findText('Food & Nutrition')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'food_nutrition' }, '*');
+            return;
+        }
+        if (findText('Treats & Chews')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'treats_chews' }, '*');
+            return;
+        }
+        if (findText('Toys & Mental') || findText('Toys & Enrichment')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'toys_enrichment' }, '*');
+            return;
+        }
+        if (findText('Grooming Services')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'grooming_services' }, '*');
+            return;
+        }
+        if (findText('Travel, Leashes') || findText('Travel & Apparel')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'travel_apparel' }, '*');
+            return;
+        }
+        if (findText('Furniture & Sleep')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'furniture_sleep' }, '*');
+            return;
+        }
+        if (findText('Waste Management') || findText('Litter')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'waste_management' }, '*');
+            return;
+        }
+
+        // 4. Map shops/profiles using navigateShop
+        if (findText('The Posh Paws') || findText('Posh Paws')) {
+            window.parent.postMessage({ type: 'navigateShop', shopId: 'posh_paws' }, '*');
+            return;
+        }
+        if (findText('Healthy Hounds') || findText('Healthy Hound')) {
+            window.parent.postMessage({ type: 'navigateShop', shopId: 'healthy_hound' }, '*');
+            return;
+        }
+        if (findText('PetCare Pharmacy')) {
+            window.parent.postMessage({ type: 'navigateShop', shopId: 'petcare_pharmacy' }, '*');
+            return;
+        }
+        if (findText('City Pet Hospital') || findText('City Pet')) {
+            window.parent.postMessage({ type: 'navigateShop', shopId: 'city_pet' }, '*');
+            return;
+        }
+        if (findText('PetCare Wellness')) {
+            window.parent.postMessage({ type: 'navigateShop', shopId: 'petcare_wellness' }, '*');
+            return;
+        }
+        if (findText('Paws & Bubbles')) {
+            window.parent.postMessage({ type: 'navigateShop', shopId: 'paws_bubbles' }, '*');
+            return;
+        }
+
+        // 5. Health Passport
+        if (findText('Vaccinations')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'vaccinations' }, '*');
+            return;
+        }
+        if (findText('Reports') || findText('Medical Reports')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'medical-reports' }, '*');
+            return;
+        }
+        if (findText('Appointments')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'appointments' }, '*');
+            return;
+        }
+
+        // 6. Quick Action Pills / Navigation tabs
+        if (findText('Favourites') || findText('Favorite')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'favourites' }, '*');
+            return;
+        }
+        if (findText('Orders') || findText('Receipt')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'orders' }, '*');
+            return;
+        }
+        if (findText('New Arrivals')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'new_arrivals' }, '*');
+            return;
+        }
+
+        // 7. Guides
+        if (findText('Puppy Nutrition (0-2 mo)')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'guide_puppy_nutrition' }, '*');
+            return;
+        }
+        if (findText('Puppy Growth (2-12 mo)')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'guide_puppy_growth' }, '*');
+            return;
+        }
+        if (findText('Hair & Coat') || findText('Coat & Skin')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'guide_coat_skin' }, '*');
+            return;
+        }
+
+        // 8. Bottom Nav Tab clicks
+        const navBtn = e.target.closest('a, button');
+        if (navBtn) {
+            const text = navBtn.textContent.toLowerCase();
+            if (text.includes('home')) {
+                window.parent.postMessage({ type: 'navigate', screenId: 'home' }, '*');
+                return;
+            }
+            if (text.includes('search')) {
+                window.parent.postMessage({ type: 'navigate', screenId: 'food_nutrition' }, '*');
+                return;
+            }
+            if (text.includes('profile')) {
+                window.parent.postMessage({ type: 'navigate', screenId: 'profile' }, '*');
+                return;
+            }
+        }
+    });
+
+    // Dynamic rendering from parent window state
+    if (window.parent && window.parent.state && window.parent.state.appointments) {
+        const grid = document.querySelector('main .grid');
+        if (grid) {
+            const appointments = window.parent.state.appointments;
+            
+            const getDoctorPhoto = (name) => {
+                if (name.includes("Jenkins")) return "https://lh3.googleusercontent.com/aida-public/AB6AXuAXx7J-sz-fV3Y_VS7BUI6xREHCtu84yd5izEqlWLTC8qY3WVnPddQFvYVf1Uguayi9ZhyWEQqeq7VVZ8JBry3BUH8fQZe9pYp60LQlAR5WW6EqklajhvhlVd5UfSEbAEEdBxS2KPuNI2uYuzXZDjavgaQPJdIW6hobWpxBmcbsK-_aYymv4nOhGWpCChcYO1573y__YOHNSOI3lnkq3dbHgykjeQTBzaa7j5UA6cZ14CiudAIZpXucpgIZNwKuerA1rpKJ82bpAXk";
+                if (name.includes("Rossi")) return "https://lh3.googleusercontent.com/aida-public/AB6AXuAn2LMbNYuqvAlSJ3Vsv3UiJVRa9B9YUYi39ShyxYeRMqbb6gwbm_4Iotbu_QZm-5pxwrOvETau5MJVPL3XcKNg6qJVbEke8w6buRQkmUgagREG15ZIZTBzIbtKGwCVgqAao1NSa_ZZsJpM9KgiC_VrK9O7aF2eMr6Gc5ES_fCKqnlSM8pjQ43E5RjzkRFt3L-lFoX38HEPBd99oYiAvt9cFIUV6eaqq44WCx2QdvoFE-V8XtAwCc_uwI9A53BXcQdxiXfZv7X09sw";
+                if (name.includes("Chang")) return "https://lh3.googleusercontent.com/aida-public/AB6AXuAKwIVhg0jtyF9l-ZpnLelxtm7dPs0cNiFMAyw_WbKRSfJ-i0uLTr96yc3YnkabFFIt0-hMNtQHjQbpSi78KFLnVwvykST98Q7q0yq-VpxoJsmDMPV-o5KN9bm1J7OvZmRRt5brgcoASNXXfKdmBQQQhUfDC321lcBVF-97a8rpivLlEdfo5BOwTnpqhCSm8jeONbNd_hZQynrJzMvK0xF-OekAviLapXfyl7_GJi-uwVhc2mIOs3PLunPO4AZkbC_lh_X_RficrVc";
+                return "https://lh3.googleusercontent.com/aida-public/AB6AXuBT5ErbZE34PrwsulcWscKJ_B29WnP6Zwmi5Sz2EjhV5cvCCn_K2U7urMNkV264lKZSPFKFcFuZM1moXeoBQ1_wXXUxPhnv2akkA5rSWnMpbYXSbGtRW4Csd4PAET2wQzCHCmsbbjs3pnqzj5iLiW9dnhR2xdBtKzLoWSQAk0YXYRQozbUch0dnnnCH92O28KO5zYUrY3imnc5gx2YoYxndhvxmKULayQWn2kzoDyfz3E924jYVICJx2V11prYiqbH_d-YBqXRsnxs";
+            };
+            
+            const getGroomerPhoto = (name) => {
+                if (name.includes("Sharma")) return "https://lh3.googleusercontent.com/aida-public/AB6AXuAn2LMbNYuqvAlSJ3Vsv3UiJVRa9B9YUYi39ShyxYeRMqbb6gwbm_4Iotbu_QZm-5pxwrOvETau5MJVPL3XcKNg6qJVbEke8w6buRQkmUgagREG15ZIZTBzIbtKGwCVgqAao1NSa_ZZsJpM9KgiC_VrK9O7aF2eMr6Gc5ES_fCKqnlSM8pjQ43E5RjzkRFt3L-lFoX38HEPBd99oYiAvt9cFIUV6eaqq44WCx2QdvoFE-V8XtAwCc_uwI9A53BXcQdxiXfZv7X09sw";
+                if (name.includes("Davis")) return "https://lh3.googleusercontent.com/aida-public/AB6AXuAXx7J-sz-fV3Y_VS7BUI6xREHCtu84yd5izEqlWLTC8qY3WVnPddQFvYVf1Uguayi9ZhyWEQqeq7VVZ8JBry3BUH8fQZe9pYp60LQlAR5WW6EqklajhvhlVd5UfSEbAEEdBxS2KPuNI2uYuzXZDjavgaQPJdIW6hobWpxBmcbsK-_aYymv4nOhGWpCChcYO1573y__YOHNSOI3lnkq3dbHgykjeQTBzaa7j5UA6cZ14CiudAIZpXucpgIZNwKuerA1rpKJ82bpAXk";
+                if (name.includes("Singh")) return "https://lh3.googleusercontent.com/aida-public/AB6AXuAKwIVhg0jtyF9l-ZpnLelxtm7dPs0cNiFMAyw_WbKRSfJ-i0uLTr96yc3YnkabFFIt0-hMNtQHjQbpSi78KFLnVwvykST98Q7q0yq-VpxoJsmDMPV-o5KN9bm1J7OvZmRRt5brgcoASNXXfKdmBQQQhUfDC321lcBVF-97a8rpivLlEdfo5BOwTnpqhCSm8jeONbNd_hZQynrJzMvK0xF-OekAviLapXfyl7_GJi-uwVhc2mIOs3PLunPO4AZkbC_lh_X_RficrVc";
+                return "https://lh3.googleusercontent.com/aida-public/AB6AXuBT5ErbZE34PrwsulcWscKJ_B29WnP6Zwmi5Sz2EjhV5cvCCn_K2U7urMNkV264lKZSPFKFcFuZM1moXeoBQ1_wXXUxPhnv2akkA5rSWnMpbYXSbGtRW4Csd4PAET2wQzCHCmsbbjs3pnqzj5iLiW9dnhR2xdBtKzLoWSQAk0YXYRQozbUch0dnnnCH92O28KO5zYUrY3imnc5gx2YoYxndhvxmKULayQWn2kzoDyfz3E924jYVICJx2V11prYiqbH_d-YBqXRsnxs";
+            };
+
+            const renderCards = () => {
+                grid.innerHTML = '';
+                appointments.forEach(appt => {
+                    const isGrooming = appt.serviceName.toLowerCase().includes('grooming') || 
+                                      appt.serviceName.toLowerCase().includes('bath') || 
+                                      appt.serviceName.toLowerCase().includes('styling') || 
+                                      appt.serviceName.toLowerCase().includes('trim') || 
+                                      appt.serviceName.toLowerCase().includes('spa') ||
+                                      appt.shopId === 'bubbles_spa';
+
+                    let providerName = '';
+                    let subLabel = '';
+                    let photoUrl = '';
+                    let borderLeftColor = '';
+                    let iconName = '';
+
+                    if (isGrooming) {
+                        borderLeftColor = 'bg-secondary-container';
+                        iconName = 'content_cut';
+                        subLabel = appt.shopName;
+                        if (appt.serviceName.toLowerCase().includes('styling')) {
+                            providerName = 'Rohan Sharma (Master Stylist)';
+                            photoUrl = getGroomerPhoto('Sharma');
+                        } else if (appt.serviceName.toLowerCase().includes('bath')) {
+                            providerName = 'Emily Davis (Bath Specialist)';
+                            photoUrl = getGroomerPhoto('Davis');
+                        } else if (appt.serviceName.toLowerCase().includes('trim')) {
+                            providerName = 'Vikram Singh (Puppy Specialist)';
+                            photoUrl = getGroomerPhoto('Singh');
+                        } else {
+                            providerName = 'Jessica Mercer (Nail & Paw Care Expert)';
+                            photoUrl = getGroomerPhoto('Mercer');
+                        }
+                    } else {
+                        borderLeftColor = 'bg-tertiary-container';
+                        iconName = 'vaccines';
+                        subLabel = appt.shopName;
+                        if (appt.shopId === 'petcare_pharmacy') {
+                            providerName = 'Dr. Elena Rossi';
+                            photoUrl = getDoctorPhoto('Rossi');
+                        } else {
+                            providerName = 'Dr. Sarah Jenkins';
+                            photoUrl = getDoctorPhoto('Jenkins');
+                        }
+                    }
+
+                    const d = new Date(appt.date);
+                    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    const dateString = `${days[d.getDay()] || 'Saturday'}, ${months[d.getMonth()] || 'Oct'} ${d.getDate() || '14'}`;
+
+                    const cardHtml = `
+                        <div class="bg-surface-container-lowest rounded-xl p-md border border-outline-variant/50 soft-shadow hover:active-shadow transition-shadow relative overflow-hidden group">
+                            <div class="absolute top-0 left-0 w-1 h-full ${borderLeftColor}"></div>
+                            <div class="flex justify-between items-start mb-md">
+                                <div class="flex items-center gap-sm">
+                                    <div class="w-12 h-12 rounded-full overflow-hidden border border-outline-variant/20 flex items-center justify-center bg-slate-50">
+                                        <img src="${photoUrl}" class="w-full h-full object-cover" alt="${providerName}">
+                                    </div>
+                                    <div>
+                                        <h3 class="font-headline-md text-headline-md text-on-surface leading-tight text-base font-bold">${appt.serviceName}</h3>
+                                        <p class="font-label-sm text-label-sm text-on-surface-variant">${providerName}</p>
+                                        <p class="text-[10px] text-slate-500 font-medium">${subLabel}</p>
+                                    </div>
+                                </div>
+                                <span class="px-2 py-1 rounded bg-tertiary-container/10 text-tertiary-container font-label-sm text-label-sm uppercase text-[10px] font-bold">${appt.status}</span>
+                            </div>
+                            <div class="bg-surface-container-low rounded-lg p-sm mb-md flex flex-col gap-2">
+                                <div class="flex items-center gap-xs text-on-surface">
+                                    <span class="material-symbols-outlined text-[18px] text-outline">calendar_today</span>
+                                    <span class="font-label-md text-label-md text-xs">${dateString}</span>
+                                </div>
+                                <div class="flex items-center gap-xs text-on-surface">
+                                    <span class="material-symbols-outlined text-[18px] text-outline">schedule</span>
+                                    <span class="font-label-md text-label-md text-xs">${appt.time}</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-sm mt-auto">
+                                <button class="flex-1 py-2 rounded-lg bg-surface-container-highest text-primary font-label-md text-label-md hover:bg-primary-fixed transition-colors active:scale-[0.98] text-xs font-semibold">
+                                    Reschedule
+                                </button>
+                                <button class="px-3 py-2 rounded-lg border border-outline-variant text-on-surface-variant hover:bg-error-container hover:text-error hover:border-error-container transition-colors active:scale-[0.98]">
+                                    <span class="material-symbols-outlined text-[20px]">close</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    grid.insertAdjacentHTML('beforeend', cardHtml);
+                });
+            };
+            
+            renderCards();
+        }
+    }
+});
+</script>
+
 </body></html>

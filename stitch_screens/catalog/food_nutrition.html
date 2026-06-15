@@ -328,4 +328,157 @@
 
 
 
+
+
+
+
+<!-- Navigation Interceptor for Web Simulator -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('click', (e) => {
+        // 1. Back button detection
+        const backBtn = e.target.closest('button, a, span');
+        if (backBtn && (
+            backBtn.innerText.includes('arrow_back') || 
+            backBtn.textContent.includes('arrow_back') ||
+            backBtn.id === 'back-btn' ||
+            backBtn.classList.contains('back-button')
+        )) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.parent.postMessage({ type: 'back' }, '*');
+            return;
+        }
+
+        // 2. Helper to check text content of target or its parent elements
+        const findText = (text) => {
+            let el = e.target;
+            while (el && el !== document.body) {
+                if (el.textContent && el.textContent.toLowerCase().includes(text.toLowerCase())) {
+                    return true;
+                }
+                el = el.parentElement;
+            }
+            return false;
+        };
+
+        // 3. Map categories
+        if (findText('Food & Nutrition')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'food_nutrition' }, '*');
+            return;
+        }
+        if (findText('Treats & Chews')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'treats_chews' }, '*');
+            return;
+        }
+        if (findText('Toys & Mental') || findText('Toys & Enrichment')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'toys_enrichment' }, '*');
+            return;
+        }
+        if (findText('Grooming Services')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'grooming_services' }, '*');
+            return;
+        }
+        if (findText('Travel, Leashes') || findText('Travel & Apparel')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'travel_apparel' }, '*');
+            return;
+        }
+        if (findText('Furniture & Sleep')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'furniture_sleep' }, '*');
+            return;
+        }
+        if (findText('Waste Management') || findText('Litter')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'waste_management' }, '*');
+            return;
+        }
+
+        // 4. Map shops/profiles using navigateShop
+        if (findText('The Posh Paws') || findText('Posh Paws')) {
+            window.parent.postMessage({ type: 'navigateShop', shopId: 'posh_paws' }, '*');
+            return;
+        }
+        if (findText('Healthy Hounds') || findText('Healthy Hound')) {
+            window.parent.postMessage({ type: 'navigateShop', shopId: 'healthy_hound' }, '*');
+            return;
+        }
+        if (findText('PetCare Pharmacy')) {
+            window.parent.postMessage({ type: 'navigateShop', shopId: 'petcare_pharmacy' }, '*');
+            return;
+        }
+        if (findText('City Pet Hospital') || findText('City Pet')) {
+            window.parent.postMessage({ type: 'navigateShop', shopId: 'city_pet' }, '*');
+            return;
+        }
+        if (findText('PetCare Wellness')) {
+            window.parent.postMessage({ type: 'navigateShop', shopId: 'petcare_wellness' }, '*');
+            return;
+        }
+        if (findText('Paws & Bubbles')) {
+            window.parent.postMessage({ type: 'navigateShop', shopId: 'paws_bubbles' }, '*');
+            return;
+        }
+
+        // 5. Health Passport
+        if (findText('Vaccinations')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'vaccinations' }, '*');
+            return;
+        }
+        if (findText('Reports') || findText('Medical Reports')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'medical-reports' }, '*');
+            return;
+        }
+        if (findText('Appointments')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'appointments' }, '*');
+            return;
+        }
+
+        // 6. Quick Action Pills / Navigation tabs
+        if (findText('Favourites') || findText('Favorite')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'favourites' }, '*');
+            return;
+        }
+        if (findText('Orders') || findText('Receipt')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'orders' }, '*');
+            return;
+        }
+        if (findText('New Arrivals')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'new_arrivals' }, '*');
+            return;
+        }
+
+        // 7. Guides
+        if (findText('Puppy Nutrition (0-2 mo)')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'guide_puppy_nutrition' }, '*');
+            return;
+        }
+        if (findText('Puppy Growth (2-12 mo)')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'guide_puppy_growth' }, '*');
+            return;
+        }
+        if (findText('Hair & Coat') || findText('Coat & Skin')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'guide_coat_skin' }, '*');
+            return;
+        }
+
+        // 8. Bottom Nav Tab clicks
+        const navBtn = e.target.closest('a, button');
+        if (navBtn) {
+            const text = navBtn.textContent.toLowerCase();
+            if (text.includes('home')) {
+                window.parent.postMessage({ type: 'navigate', screenId: 'home' }, '*');
+                return;
+            }
+            if (text.includes('search')) {
+                window.parent.postMessage({ type: 'navigate', screenId: 'food_nutrition' }, '*');
+                return;
+            }
+            if (text.includes('profile')) {
+                window.parent.postMessage({ type: 'navigate', screenId: 'profile' }, '*');
+                return;
+            }
+        }
+    });
+});
+</script>
+
 </body></html>

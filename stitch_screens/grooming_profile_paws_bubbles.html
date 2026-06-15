@@ -12,53 +12,53 @@
             theme: {
                 extend: {
                     "colors": {
-                        "primary-fixed": "#dbe1ff",
-                        "primary": "#004ac6",
-                        "on-tertiary-fixed-variant": "#005236",
-                        "on-secondary": "#ffffff",
-                        "surface-dim": "#cbdbf5",
-                        "error": "#ba1a1a",
-                        "surface-container-lowest": "#ffffff",
-                        "inverse-surface": "#213145",
-                        "tertiary-fixed": "#6ffbbe",
-                        "on-error": "#ffffff",
-                        "tertiary-fixed-dim": "#4edea3",
-                        "surface-variant": "#d3e4fe",
-                        "surface-container-highest": "#d3e4fe",
-                        "error-container": "#ffdad6",
-                        "on-secondary-fixed": "#2a1700",
-                        "on-error-container": "#93000a",
-                        "inverse-on-surface": "#eaf1ff",
-                        "secondary-container": "#fea619",
-                        "surface-container": "#e5eeff",
-                        "on-primary-container": "#eeefff",
-                        "surface-tint": "#0053db",
-                        "surface-bright": "#f8f9ff",
-                        "primary-fixed-dim": "#b4c5ff",
-                        "surface": "#f8f9ff",
-                        "on-primary-fixed-variant": "#003ea8",
-                        "on-primary-fixed": "#00174b",
-                        "outline": "#737686",
-                        "on-tertiary-container": "#bdffdb",
-                        "secondary": "#855300",
-                        "on-surface-variant": "#434655",
-                        "on-background": "#0b1c30",
-                        "on-secondary-fixed-variant": "#653e00",
-                        "primary-container": "#2563eb",
-                        "on-secondary-container": "#684000",
-                        "on-surface": "#0b1c30",
-                        "inverse-primary": "#b4c5ff",
-                        "on-tertiary-fixed": "#002113",
-                        "tertiary-container": "#007d55",
-                        "background": "#f8f9ff",
-                        "surface-container-low": "#eff4ff",
-                        "outline-variant": "#c3c6d7",
-                        "secondary-fixed-dim": "#ffb95f",
-                        "secondary-fixed": "#ffddb8",
-                        "on-primary": "#ffffff",
-                        "tertiary": "#006242",
-                        "surface-container-high": "#dce9ff",
-                        "on-tertiary": "#ffffff"
+                         "primary-fixed": "#eff6ff",
+                         "primary": "#1e3a8a",
+                         "on-tertiary-fixed-variant": "#005236",
+                         "on-secondary": "#ffffff",
+                         "surface-dim": "#cbdbf5",
+                         "error": "#ba1a1a",
+                         "surface-container-lowest": "#ffffff",
+                         "inverse-surface": "#213145",
+                         "tertiary-fixed": "#6ffbbe",
+                         "on-error": "#ffffff",
+                         "tertiary-fixed-dim": "#4edea3",
+                         "surface-variant": "#d3e4fe",
+                         "surface-container-highest": "#d3e4fe",
+                         "error-container": "#ffdad6",
+                         "on-secondary-fixed": "#2a1700",
+                         "on-error-container": "#93000a",
+                         "inverse-on-surface": "#eaf1ff",
+                         "secondary-container": "#fea619",
+                         "surface-container": "#e5eeff",
+                         "on-primary-container": "#1e40af",
+                         "surface-tint": "#3b82f6",
+                         "surface-bright": "#f8f9ff",
+                         "primary-fixed-dim": "#93c5fd",
+                         "surface": "#f8f9ff",
+                         "on-primary-fixed-variant": "#1e40af",
+                         "on-primary-fixed": "#1e40af",
+                         "outline": "#737686",
+                         "on-tertiary-container": "#bdffdb",
+                         "secondary": "#855300",
+                         "on-surface-variant": "#434655",
+                         "on-background": "#0b1c30",
+                         "on-secondary-fixed-variant": "#653e00",
+                         "primary-container": "#eff6ff",
+                         "on-secondary-container": "#684000",
+                         "on-surface": "#0b1c30",
+                         "inverse-primary": "#93c5fd",
+                         "on-tertiary-fixed": "#002113",
+                         "tertiary-container": "#007d55",
+                         "background": "#f8f9ff",
+                         "surface-container-low": "#eff4ff",
+                         "outline-variant": "#c3c6d7",
+                         "secondary-fixed-dim": "#ffb95f",
+                         "secondary-fixed": "#ffddb8",
+                         "on-primary": "#ffffff",
+                         "tertiary": "#006242",
+                         "surface-container-high": "#dce9ff",
+                         "on-tertiary": "#ffffff"
                     },
                     "borderRadius": {
                         "DEFAULT": "0.25rem",
@@ -105,6 +105,42 @@
     body {
       min-height: max(884px, 100dvh);
     }
+    /* Floating bubbles animation */
+    .bubbles-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: 10;
+    }
+    .bubble {
+        position: absolute;
+        bottom: -20px;
+        background: rgba(255, 255, 255, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 50%;
+        animation: float-up var(--duration) ease-in-out infinite;
+        opacity: 0;
+    }
+    @keyframes float-up {
+        0% {
+            transform: translateY(0) scale(1) translateX(0);
+            opacity: 0;
+        }
+        10% {
+            opacity: 0.6;
+        }
+        90% {
+            opacity: 0.6;
+        }
+        100% {
+            transform: translateY(-350px) scale(1.2) translateX(var(--wobble));
+            opacity: 0;
+        }
+    }
   </style>
   </head>
 <body class="bg-background text-on-background font-body-md antialiased pb-24">
@@ -122,6 +158,15 @@
 <!-- Hero Section -->
 <section class="relative w-full h-[309px] min-h-[300px] md:h-[397px] md:rounded-b-2xl overflow-hidden shadow-sm">
 <img alt="Paws &amp; Bubbles Spa Interior" class="w-full h-full object-cover" data-alt="A brightly lit, luxurious pet grooming boutique with pristine white tiled walls, modern copper plumbing fixtures, and deep royal blue accents. A clean, stainless steel grooming tub sits in the center, surrounded by neatly organized premium pet shampoos and soft fluffy towels. The aesthetic is extremely clean, modern, and high-end, conveying a high-trust professional pet spa environment in natural daylight." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiXOqgwlQHKcrmcugBicmHyn3pqMt5hr_iUojYhCpiBmTuE10LgLCX6NqrDGRWDBP9UdMc3vsXoeh5p381WgNcLRgoneRsAQMRzvxTlpLCj2EABh7WToKLUrEBwqcfy6vtqJU3M9tpzbyarI-oqaDsHGDJUM35CdU2Skx0dr0LSuy3-PwKIX3-5AjGkUOxPFLxy3X1dSt5YYF-lUlARWrzJCka8IRlyfqPLRhcl9tyaQZnJNhoiVDk-ec6bzZ0cFhz5hFdU5zo0Tw">
+<div class="bubbles-container">
+  <div class="bubble" style="left: 10%; width: 12px; height: 12px; --duration: 6s; --wobble: 15px; animation-delay: 0s;"></div>
+  <div class="bubble" style="left: 25%; width: 8px; height: 8px; --duration: 8s; --wobble: -20px; animation-delay: 1.5s;"></div>
+  <div class="bubble" style="left: 40%; width: 14px; height: 14px; --duration: 7s; --wobble: 10px; animation-delay: 3s;"></div>
+  <div class="bubble" style="left: 55%; width: 6px; height: 6px; --duration: 9s; --wobble: -15px; animation-delay: 0.5s;"></div>
+  <div class="bubble" style="left: 70%; width: 10px; height: 10px; --duration: 5s; --wobble: 25px; animation-delay: 2s;"></div>
+  <div class="bubble" style="left: 85%; width: 12px; height: 12px; --duration: 7.5s; --wobble: -10px; animation-delay: 4s;"></div>
+  <div class="bubble" style="left: 92%; width: 8px; height: 8px; --duration: 6.5s; --wobble: 8px; animation-delay: 1s;"></div>
+</div>
 <!-- Gradient Overlay for text legibility -->
 <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
 <!-- Hero Content Overlay -->
@@ -147,7 +192,7 @@
 <div class="px-margin-mobile md:px-margin-desktop pt-lg pb-xl space-y-xl">
 <!-- Action Buttons (Bento Grid Style) -->
 <div class="grid grid-cols-2 md:grid-cols-3 gap-sm">
-<button class="col-span-2 md:col-span-1 bg-primary text-on-primary font-label-md text-label-md py-4 rounded-xl shadow-md hover:bg-primary-fixed-dim hover:text-on-primary-fixed transition-colors flex items-center justify-center gap-2 active:scale-95 duration-150">
+<button class="col-span-2 md:col-span-1 bg-[#f97316] text-white font-label-md text-label-md py-4 rounded-xl shadow-md hover:bg-[#ea580c] transition-colors flex items-center justify-center gap-2 active:scale-95 duration-150">
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">calendar_month</span>
                     Book Session
                 </button>
@@ -240,5 +285,158 @@
 </div>
 </main>
 
+
+
+
+
+
+<!-- Navigation Interceptor for Web Simulator -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('click', (e) => {
+        // 1. Back button detection
+        const backBtn = e.target.closest('button, a, span');
+        if (backBtn && (
+            backBtn.innerText.includes('arrow_back') || 
+            backBtn.textContent.includes('arrow_back') ||
+            backBtn.id === 'back-btn' ||
+            backBtn.classList.contains('back-button')
+        )) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.parent.postMessage({ type: 'back' }, '*');
+            return;
+        }
+
+        // 2. Helper to check text content of target or its parent elements
+        const findText = (text) => {
+            let el = e.target;
+            while (el && el !== document.body) {
+                if (el.textContent && el.textContent.toLowerCase().includes(text.toLowerCase())) {
+                    return true;
+                }
+                el = el.parentElement;
+            }
+            return false;
+        };
+
+        // 3. Map categories
+        if (findText('Food & Nutrition')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'food_nutrition' }, '*');
+            return;
+        }
+        if (findText('Treats & Chews')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'treats_chews' }, '*');
+            return;
+        }
+        if (findText('Toys & Mental') || findText('Toys & Enrichment')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'toys_enrichment' }, '*');
+            return;
+        }
+        if (findText('Grooming Services')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'grooming_services' }, '*');
+            return;
+        }
+        if (findText('Travel, Leashes') || findText('Travel & Apparel')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'travel_apparel' }, '*');
+            return;
+        }
+        if (findText('Furniture & Sleep')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'furniture_sleep' }, '*');
+            return;
+        }
+        if (findText('Waste Management') || findText('Litter')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'waste_management' }, '*');
+            return;
+        }
+
+        // 4. Map shops/profiles using navigateShop
+        if (findText('The Posh Paws') || findText('Posh Paws')) {
+            window.parent.postMessage({ type: 'navigateShop', shopId: 'posh_paws' }, '*');
+            return;
+        }
+        if (findText('Healthy Hounds') || findText('Healthy Hound')) {
+            window.parent.postMessage({ type: 'navigateShop', shopId: 'healthy_hound' }, '*');
+            return;
+        }
+        if (findText('PetCare Pharmacy')) {
+            window.parent.postMessage({ type: 'navigateShop', shopId: 'petcare_pharmacy' }, '*');
+            return;
+        }
+        if (findText('City Pet Hospital') || findText('City Pet')) {
+            window.parent.postMessage({ type: 'navigateShop', shopId: 'city_pet' }, '*');
+            return;
+        }
+        if (findText('PetCare Wellness')) {
+            window.parent.postMessage({ type: 'navigateShop', shopId: 'petcare_wellness' }, '*');
+            return;
+        }
+        if (findText('Paws & Bubbles')) {
+            window.parent.postMessage({ type: 'navigateShop', shopId: 'paws_bubbles' }, '*');
+            return;
+        }
+
+        // 5. Health Passport
+        if (findText('Vaccinations')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'vaccinations' }, '*');
+            return;
+        }
+        if (findText('Reports') || findText('Medical Reports')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'medical-reports' }, '*');
+            return;
+        }
+        if (findText('Appointments')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'appointments' }, '*');
+            return;
+        }
+
+        // 6. Quick Action Pills / Navigation tabs
+        if (findText('Favourites') || findText('Favorite')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'favourites' }, '*');
+            return;
+        }
+        if (findText('Orders') || findText('Receipt')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'orders' }, '*');
+            return;
+        }
+        if (findText('New Arrivals')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'new_arrivals' }, '*');
+            return;
+        }
+
+        // 7. Guides
+        if (findText('Puppy Nutrition (0-2 mo)')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'guide_puppy_nutrition' }, '*');
+            return;
+        }
+        if (findText('Puppy Growth (2-12 mo)')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'guide_puppy_growth' }, '*');
+            return;
+        }
+        if (findText('Hair & Coat') || findText('Coat & Skin')) {
+            window.parent.postMessage({ type: 'navigate', screenId: 'guide_coat_skin' }, '*');
+            return;
+        }
+
+        // 8. Bottom Nav Tab clicks
+        const navBtn = e.target.closest('a, button');
+        if (navBtn) {
+            const text = navBtn.textContent.toLowerCase();
+            if (text.includes('home')) {
+                window.parent.postMessage({ type: 'navigate', screenId: 'home' }, '*');
+                return;
+            }
+            if (text.includes('search')) {
+                window.parent.postMessage({ type: 'navigate', screenId: 'food_nutrition' }, '*');
+                return;
+            }
+            if (text.includes('profile')) {
+                window.parent.postMessage({ type: 'navigate', screenId: 'profile' }, '*');
+                return;
+            }
+        }
+    });
+});
+</script>
 
 </body></html>
