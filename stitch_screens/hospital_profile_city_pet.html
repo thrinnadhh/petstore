@@ -102,47 +102,99 @@
         }
     </script>
 <style>
-    body {
-      min-height: max(884px, 100dvh);
-    }
-    /* Floating healing crosses animation */
+    body { min-height: max(884px, 100dvh); }
     .healing-crosses-container {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        pointer-events: none;
-        z-index: 10;
+        position: absolute; top: 0; left: 0;
+        width: 100%; height: 100%;
+        overflow: hidden; pointer-events: none; z-index: 10;
     }
     .healing-cross {
-        position: absolute;
-        bottom: -30px;
-        color: rgba(5, 150, 105, 0.45); /* Translucent healing green */
-        font-family: 'Inter', sans-serif;
-        font-size: 26px;
-        font-weight: 800;
-        line-height: 1;
-        animation: float-up var(--duration) ease-in-out infinite;
-        opacity: 0;
+        position: absolute; bottom: -30px;
+        color: rgba(5, 150, 105, 0.45);
+        font-family: 'Inter', sans-serif; font-size: 26px; font-weight: 800; line-height: 1;
+        animation: float-up var(--duration) ease-in-out infinite; opacity: 0;
     }
     @keyframes float-up {
-        0% {
-            transform: translateY(0) scale(0.8) rotate(0deg) translateX(0);
-            opacity: 0;
-        }
-        10% {
-            opacity: 0.7;
-        }
-        90% {
-            opacity: 0.7;
-        }
-        100% {
-            transform: translateY(-300px) scale(1.3) rotate(90deg) translateX(var(--wobble));
-            opacity: 0;
-        }
+        0%   { transform: translateY(0) scale(0.8) rotate(0deg) translateX(0); opacity: 0; }
+        10%  { opacity: 0.7; }
+        90%  { opacity: 0.7; }
+        100% { transform: translateY(-300px) scale(1.3) rotate(90deg) translateX(var(--wobble)); opacity: 0; }
     }
+    /* ── TAB SYSTEM ── */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Each tab ALWAYS shows a colored pill — no need to click to see color */
+    .tab-btn {
+        transition: all 0.22s ease;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 10px 8px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+    }
+    /* The pill span inside the button */
+    .tab-pill {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        padding: 6px 10px;
+        border-radius: 12px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        transition: all 0.22s ease;
+        opacity: 0.55;
+        transform: scale(0.92);
+    }
+    .tab-btn.tab-active .tab-pill {
+        opacity: 1;
+        transform: scale(1);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    }
+    /* Permanent background colors per tab */
+    .tab-doctors .tab-pill  { background: #dcfce7; color: #15803d; border: 1.5px solid #86efac; }
+    .tab-doctors.tab-active .tab-pill { background: #16a34a; color: #ffffff; border-color: #16a34a; }
+
+    .tab-consult .tab-pill  { background: #e0f2fe; color: #0369a1; border: 1.5px solid #7dd3fc; }
+    .tab-consult.tab-active .tab-pill { background: #0891b2; color: #ffffff; border-color: #0891b2; }
+
+    .tab-reviews .tab-pill  { background: #fef3c7; color: #b45309; border: 1.5px solid #fcd34d; }
+    .tab-reviews.tab-active .tab-pill { background: #d97706; color: #ffffff; border-color: #d97706; }
+
+    .tab-info .tab-pill     { background: #dbeafe; color: #1d4ed8; border: 1.5px solid #93c5fd; }
+    .tab-info.tab-active .tab-pill  { background: #2563eb; color: #ffffff; border-color: #2563eb; }
+
+    /* Section heading pills — always colored */
+    .section-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px 6px 10px;
+        border-radius: 999px;
+        font-size: 16px;
+        font-weight: 800;
+        margin-bottom: 4px;
+    }
+    .section-pill-doctors { background: #dcfce7; color: #15803d; border: 1.5px solid #86efac; }
+    .section-pill-consult  { background: #e0f2fe; color: #0369a1; border: 1.5px solid #7dd3fc; }
+    .section-pill-reviews  { background: #fef3c7; color: #b45309; border: 1.5px solid #fcd34d; }
+    .section-pill-info     { background: #dbeafe; color: #1d4ed8; border: 1.5px solid #93c5fd; }
+
+    /* Review star color */
+    .star-filled { color: #f59e0b; }
+    .star-empty  { color: #d1d5db; }
+
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
   </head>
 <body class="bg-background text-on-background antialiased md:bg-surface-container-low min-h-screen pb-24 md:pb-0">
@@ -295,112 +347,283 @@
 </div>
 <!-- Horizontal Divider -->
 <div class="h-px w-full bg-outline-variant/30"></div>
-<!-- Categories Tabs -->
-<div class="px-margin-mobile py-4 bg-surface overflow-x-auto hide-scrollbar">
-<div class="flex gap-3 min-w-max">
-<button class="px-4 py-2 rounded-full bg-primary-container text-on-primary-container font-label-md text-label-md transition-colors">
-                    Emergency
-                </button>
-<button class="px-4 py-2 rounded-full bg-surface-container hover:bg-surface-variant/50 text-on-surface-variant font-label-md text-label-md transition-colors border border-outline-variant/20">
-                    General Care
-                </button>
-<button class="px-4 py-2 rounded-full bg-surface-container hover:bg-surface-variant/50 text-on-surface-variant font-label-md text-label-md transition-colors border border-outline-variant/20">
-                    Surgery
-                </button>
-<button class="px-4 py-2 rounded-full bg-surface-container hover:bg-surface-variant/50 text-on-surface-variant font-label-md text-label-md transition-colors border border-outline-variant/20">
-                    Pharmacy
-                </button>
+
+<!-- ═══ 4-TAB NAVIGATION BAR (inline styles - Tailwind-proof) ═══ -->
+<div style="position:sticky;top:64px;z-index:40;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+  <div style="display:flex;width:100%;" id="hospital-tabs">
+
+    <!-- DOCTORS tab - always green -->
+    <button id="tab-doctors" onclick="switchTab('doctors')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border:none;cursor:pointer;background:transparent;transition:all 0.2s;">
+      <span style="display:inline-flex;flex-direction:column;align-items:center;gap:3px;padding:7px 12px;border-radius:14px;font-size:10px;font-weight:800;letter-spacing:0.03em;background:#16a34a;color:#fff;border:2px solid #16a34a;box-shadow:0 2px 8px rgba(22,163,74,0.35);transition:all 0.2s;" id="pill-doctors">
+        <span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 1;">stethoscope</span>
+        Doctors
+      </span>
+    </button>
+
+    <!-- CONSULTATION tab - always cyan -->
+    <button id="tab-consult" onclick="switchTab('consult')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border:none;cursor:pointer;background:transparent;transition:all 0.2s;">
+      <span style="display:inline-flex;flex-direction:column;align-items:center;gap:3px;padding:7px 12px;border-radius:14px;font-size:10px;font-weight:800;letter-spacing:0.03em;background:#e0f2fe;color:#0369a1;border:2px solid #7dd3fc;transition:all 0.2s;" id="pill-consult">
+        <span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 1;">event_available</span>
+        Consultation
+      </span>
+    </button>
+
+    <!-- REVIEWS tab - always amber -->
+    <button id="tab-reviews" onclick="switchTab('reviews')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border:none;cursor:pointer;background:transparent;transition:all 0.2s;">
+      <span style="display:inline-flex;flex-direction:column;align-items:center;gap:3px;padding:7px 12px;border-radius:14px;font-size:10px;font-weight:800;letter-spacing:0.03em;background:#fef3c7;color:#92400e;border:2px solid #fcd34d;transition:all 0.2s;" id="pill-reviews">
+        <span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 1;">reviews</span>
+        Reviews
+      </span>
+    </button>
+
+    <!-- HOSPITAL INFO tab - always blue -->
+    <button id="tab-info" onclick="switchTab('info')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border:none;cursor:pointer;background:transparent;transition:all 0.2s;">
+      <span style="display:inline-flex;flex-direction:column;align-items:center;gap:3px;padding:7px 12px;border-radius:14px;font-size:10px;font-weight:800;letter-spacing:0.03em;background:#dbeafe;color:#1e40af;border:2px solid #93c5fd;transition:all 0.2s;" id="pill-info">
+        <span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 1;">local_hospital</span>
+        Hospital Info
+      </span>
+    </button>
+
+  </div>
 </div>
+
+<!-- ═══ PANEL: DOCTORS ═══ -->
+<div id="panel-doctors" style="display:block;" class="px-margin-mobile py-6 bg-surface">
+  <div style="display:inline-flex;align-items:center;gap:8px;padding:7px 16px 7px 10px;border-radius:999px;font-size:16px;font-weight:800;background:#dcfce7;color:#15803d;border:2px solid #86efac;margin-bottom:12px;">
+    <span class="material-symbols-outlined" style="font-size:18px;font-variation-settings:'FILL' 1;">stethoscope</span>
+    Available Doctors
+  </div>
+  <p class="text-[11px] text-on-surface-variant mb-4">2 vets on duty today</p>
+  <div class="flex flex-col gap-4">
+    <!-- Doctor Card 1 -->
+    <div class="flex items-center justify-between p-4 rounded-2xl border-2 border-[#d1fae5] bg-[#f0fdf4] hover:shadow-md transition-all">
+      <div class="flex items-center gap-3">
+        <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-[#a7f3d0]">
+          <img alt="Dr. Sarah Jenkins" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXx7J-sz-fV3Y_VS7BUI6xREHCtu84yd5izEqlWLTC8qY3WVnPddQFvYVf1Uguayi9ZhyWEQqeq7VVZ8JBry3BUH8fQZe9pYp60LQlAR5WW6EqklajhvhlVd5UfSEbAEEdBxS2KPuNI2uYuzXZDjavgaQPJdIW6hobWpxBmcbsK-_aYymv4nOhGWpCChcYO1573y__YOHNSOI3lnkq3dbHgykjeQTBzaa7j5UA6cZ14CiudAIZpXucpgIZNwKuerA1rpKJ82bpAXk">
+        </div>
+        <div>
+          <h3 class="font-bold text-[15px] text-on-background">Dr. Sarah Jenkins</h3>
+          <p class="text-[12px] text-[#007d55] font-semibold">Emergency Surgery</p>
+          <div class="flex items-center gap-1 mt-0.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#4edea3] animate-pulse"></span>
+            <span class="text-[11px] font-bold text-[#006242]">Available Now</span>
+          </div>
+        </div>
+      </div>
+      <button class="p-2 rounded-full bg-[#007d55] text-white hover:bg-[#006242] transition-colors">
+        <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+      </button>
+    </div>
+    <!-- Doctor Card 2 -->
+    <div class="flex items-center justify-between p-4 rounded-2xl border-2 border-[#d1fae5] bg-[#f0fdf4] hover:shadow-md transition-all">
+      <div class="flex items-center gap-3">
+        <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-[#a7f3d0]">
+          <img alt="Dr. Michael Chang" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKwIVhg0jtyF9l-ZpnLelxtm7dPs0cNiFMAyw_WbKRSfJ-i0uLTr96yc3YnkabFFIt0-hMNtQHjQbpSi78KFLnVwvykST98Q7q0yq-VpxoJsmDMPV-o5KN9bm1J7OvZmRRt5brgcoASNXXfKdmBQQQhUfDC321lcBVF-97a8rpivLlEdfo5BOwTnpqhCSm8jeONbNd_hZQynrJzMvK0xF-OekAviLapXfyl7_GJi-uwVhc2mIOs3PLunPO4AZkbC_lh_X_RficrVc">
+        </div>
+        <div>
+          <h3 class="font-bold text-[15px] text-on-background">Dr. Michael Chang</h3>
+          <p class="text-[12px] text-[#007d55] font-semibold">Internal Medicine</p>
+          <div class="flex items-center gap-1 mt-0.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#4edea3] animate-pulse"></span>
+            <span class="text-[11px] font-bold text-[#006242]">Available Now</span>
+          </div>
+        </div>
+      </div>
+      <button class="p-2 rounded-full bg-[#007d55] text-white hover:bg-[#006242] transition-colors">
+        <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+      </button>
+    </div>
+  </div>
 </div>
-<div class="h-2 w-full bg-surface-container-low md:hidden"></div>
-<!-- Facilities Section -->
-<div class="px-margin-mobile py-6 bg-surface">
-<h2 class="font-headline-md text-headline-md text-on-background mb-4">Hospital Facilities</h2>
-<div class="grid grid-cols-3 md:grid-cols-4 gap-4">
-<div class="flex flex-col items-center p-4 rounded-xl bg-surface-container-low border border-outline-variant/20 hover:shadow-sm transition-shadow">
-<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary mb-2">
-<span class="material-symbols-outlined">medical_services</span>
+
+<!-- ═══ PANEL: CONSULTATION ═══ -->
+<div id="panel-consult" style="display:none;" class="px-margin-mobile py-6 bg-surface">
+  <div style="display:inline-flex;align-items:center;gap:8px;padding:7px 16px 7px 10px;border-radius:999px;font-size:16px;font-weight:800;background:#e0f2fe;color:#0369a1;border:2px solid #7dd3fc;margin-bottom:12px;">
+    <span class="material-symbols-outlined" style="font-size:18px;font-variation-settings:'FILL' 1;">event_available</span>
+    Consultation Details
+  </div>
+  <p class="text-[11px] text-on-surface-variant mb-4">Book or walk in — slots available today</p>
+
+  <!-- Consultation Fee Card -->
+  <div class="rounded-2xl bg-[#e0f2fe] border border-[#bae6fd] p-4 mb-4">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-[12px] font-bold text-[#0369a1] uppercase tracking-wide">OPD Consultation Fee</span>
+      <span class="text-[22px] font-extrabold text-[#0891b2]">₹600</span>
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-[16px] text-[#0891b2]">schedule</span>
+        <span class="text-[12px] text-[#0369a1] font-medium">Open 24 hours, 7 days a week</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-[16px] text-[#0891b2]">pets</span>
+        <span class="text-[12px] text-[#0369a1] font-medium">Dogs · Cats · Birds · Exotic Pets</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-[16px] text-[#0891b2]">emergency</span>
+        <span class="text-[12px] font-bold text-red-600">Emergency cases accepted 24/7</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Specializations -->
+  <p class="text-[11px] font-extrabold text-[#0891b2] uppercase tracking-wider mb-2">Specializations</p>
+  <div class="grid grid-cols-2 gap-2 mb-4">
+    <div class="flex items-center gap-2 p-2.5 rounded-xl bg-[#f0f9ff] border border-[#bae6fd]">
+      <span class="material-symbols-outlined text-[16px] text-[#0891b2]">healing</span>
+      <span class="text-[11px] font-semibold text-[#0369a1]">Emergency Surgery</span>
+    </div>
+    <div class="flex items-center gap-2 p-2.5 rounded-xl bg-[#f0f9ff] border border-[#bae6fd]">
+      <span class="material-symbols-outlined text-[16px] text-[#0891b2]">biotech</span>
+      <span class="text-[11px] font-semibold text-[#0369a1]">Internal Medicine</span>
+    </div>
+    <div class="flex items-center gap-2 p-2.5 rounded-xl bg-[#f0f9ff] border border-[#bae6fd]">
+      <span class="material-symbols-outlined text-[16px] text-[#0891b2]">vaccines</span>
+      <span class="text-[11px] font-semibold text-[#0369a1]">Vaccinations</span>
+    </div>
+    <div class="flex items-center gap-2 p-2.5 rounded-xl bg-[#f0f9ff] border border-[#bae6fd]">
+      <span class="material-symbols-outlined text-[16px] text-[#0891b2]">radiology</span>
+      <span class="text-[11px] font-semibold text-[#0369a1]">X-Ray & Imaging</span>
+    </div>
+  </div>
+
+  <!-- Insurance Note -->
+  <div class="flex items-start gap-2 p-3 rounded-xl bg-green-50 border border-green-200">
+    <span class="material-symbols-outlined text-[18px] text-green-700 mt-0.5">verified_user</span>
+    <p class="text-[11px] text-green-800 font-medium">Pet insurance accepted. Carry your policy document on visit.</p>
+  </div>
 </div>
-<span class="font-label-sm text-label-sm text-on-surface-variant text-center">X-Ray &amp; Imaging</span>
+
+<!-- ═══ PANEL: REVIEWS ═══ -->
+<div id="panel-reviews" style="display:none;" class="px-margin-mobile py-6 bg-surface">
+  <div style="display:inline-flex;align-items:center;gap:8px;padding:7px 16px 7px 10px;border-radius:999px;font-size:16px;font-weight:800;background:#fef3c7;color:#92400e;border:2px solid #fcd34d;margin-bottom:12px;">
+    <span class="material-symbols-outlined" style="font-size:18px;font-variation-settings:'FILL' 1;">reviews</span>
+    Patient Reviews
+  </div>
+  <p class="text-[11px] text-on-surface-variant mb-4">250+ verified reviews</p>
+
+  <!-- Rating Summary Bar -->
+  <div class="flex items-center gap-4 p-4 rounded-2xl bg-amber-50 border border-amber-200 mb-4">
+    <div class="flex flex-col items-center">
+      <span class="text-4xl font-extrabold text-amber-600">4.9</span>
+      <div class="flex gap-0.5 mt-1">
+        <span class="star-filled material-symbols-outlined text-[14px]" style="font-variation-settings:'FILL' 1;">star</span>
+        <span class="star-filled material-symbols-outlined text-[14px]" style="font-variation-settings:'FILL' 1;">star</span>
+        <span class="star-filled material-symbols-outlined text-[14px]" style="font-variation-settings:'FILL' 1;">star</span>
+        <span class="star-filled material-symbols-outlined text-[14px]" style="font-variation-settings:'FILL' 1;">star</span>
+        <span class="star-filled material-symbols-outlined text-[14px]" style="font-variation-settings:'FILL' 1;">star_half</span>
+      </div>
+      <span class="text-[10px] text-amber-700 font-semibold mt-0.5">Excellent</span>
+    </div>
+    <div class="flex-1 flex flex-col gap-1">
+      <div class="flex items-center gap-2"><span class="text-[10px] w-12 text-amber-800">5 ★</span><div class="flex-1 h-1.5 rounded-full bg-amber-100 overflow-hidden"><div class="h-full bg-amber-500 rounded-full" style="width:85%"></div></div><span class="text-[10px] text-amber-700">85%</span></div>
+      <div class="flex items-center gap-2"><span class="text-[10px] w-12 text-amber-800">4 ★</span><div class="flex-1 h-1.5 rounded-full bg-amber-100 overflow-hidden"><div class="h-full bg-amber-400 rounded-full" style="width:10%"></div></div><span class="text-[10px] text-amber-700">10%</span></div>
+      <div class="flex items-center gap-2"><span class="text-[10px] w-12 text-amber-800">3 ★</span><div class="flex-1 h-1.5 rounded-full bg-amber-100 overflow-hidden"><div class="h-full bg-amber-300 rounded-full" style="width:4%"></div></div><span class="text-[10px] text-amber-700">4%</span></div>
+      <div class="flex items-center gap-2"><span class="text-[10px] w-12 text-amber-800">1-2 ★</span><div class="flex-1 h-1.5 rounded-full bg-amber-100 overflow-hidden"><div class="h-full bg-amber-200 rounded-full" style="width:1%"></div></div><span class="text-[10px] text-amber-700">1%</span></div>
+    </div>
+  </div>
+
+  <!-- Individual Reviews -->
+  <div class="flex flex-col gap-3">
+    <div class="p-4 rounded-2xl bg-surface-container-low border border-outline-variant/20">
+      <div class="flex items-center justify-between mb-1">
+        <span class="font-bold text-[13px] text-on-background">Ramesh K.</span>
+        <div class="flex gap-0.5">
+          <span class="star-filled material-symbols-outlined text-[13px]" style="font-variation-settings:'FILL' 1;">star</span>
+          <span class="star-filled material-symbols-outlined text-[13px]" style="font-variation-settings:'FILL' 1;">star</span>
+          <span class="star-filled material-symbols-outlined text-[13px]" style="font-variation-settings:'FILL' 1;">star</span>
+          <span class="star-filled material-symbols-outlined text-[13px]" style="font-variation-settings:'FILL' 1;">star</span>
+          <span class="star-filled material-symbols-outlined text-[13px]" style="font-variation-settings:'FILL' 1;">star</span>
+        </div>
+      </div>
+      <p class="text-[12px] text-on-surface-variant">"My dog Bruno had an emergency at 2 AM. The team was <strong class="text-amber-700">incredibly responsive</strong>. Saved his life. Highly recommend!"</p>
+      <span class="text-[10px] text-outline mt-1 block">2 days ago · Verified Visit</span>
+    </div>
+    <div class="p-4 rounded-2xl bg-surface-container-low border border-outline-variant/20">
+      <div class="flex items-center justify-between mb-1">
+        <span class="font-bold text-[13px] text-on-background">Priya M.</span>
+        <div class="flex gap-0.5">
+          <span class="star-filled material-symbols-outlined text-[13px]" style="font-variation-settings:'FILL' 1;">star</span>
+          <span class="star-filled material-symbols-outlined text-[13px]" style="font-variation-settings:'FILL' 1;">star</span>
+          <span class="star-filled material-symbols-outlined text-[13px]" style="font-variation-settings:'FILL' 1;">star</span>
+          <span class="star-filled material-symbols-outlined text-[13px]" style="font-variation-settings:'FILL' 1;">star</span>
+          <span class="star-empty material-symbols-outlined text-[13px]" style="font-variation-settings:'FILL' 1;">star</span>
+        </div>
+      </div>
+      <p class="text-[12px] text-on-surface-variant">"Clean facility, <strong class="text-amber-700">professional staff</strong>. Wait time was a bit long but overall excellent care for my cat."</p>
+      <span class="text-[10px] text-outline mt-1 block">1 week ago · Verified Visit</span>
+    </div>
+  </div>
 </div>
-<div class="flex flex-col items-center p-4 rounded-xl bg-surface-container-low border border-outline-variant/20 hover:shadow-sm transition-shadow">
-<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary mb-2">
-<span class="material-symbols-outlined">monitor_heart</span>
+
+<!-- ═══ PANEL: HOSPITAL INFO ═══ -->
+<div id="panel-info" style="display:none;" class="px-margin-mobile py-6 bg-surface">
+  <div style="display:inline-flex;align-items:center;gap:8px;padding:7px 16px 7px 10px;border-radius:999px;font-size:16px;font-weight:800;background:#dbeafe;color:#1e40af;border:2px solid #93c5fd;margin-bottom:12px;">
+    <span class="material-symbols-outlined" style="font-size:18px;font-variation-settings:'FILL' 1;">local_hospital</span>
+    Hospital Information
+  </div>
+  <p class="text-[11px] text-on-surface-variant mb-4">Everything you need to know before your visit</p>
+
+  <!-- Address Card -->
+  <div class="rounded-2xl bg-[#eff6ff] border border-[#bfdbfe] p-4 mb-4">
+    <p class="text-[11px] font-extrabold text-[#2563eb] uppercase tracking-wider mb-2">Address</p>
+    <div class="flex items-start gap-2">
+      <span class="material-symbols-outlined text-[18px] text-[#2563eb] mt-0.5">location_on</span>
+      <div>
+        <p class="text-[13px] font-semibold text-[#1e3a8a]">City Pet Hospital</p>
+        <p class="text-[12px] text-[#1d4ed8]">12, Greenfield Nagar, Jubilee Hills,<br>Hyderabad, Telangana – 500033</p>
+      </div>
+    </div>
+    <button class="mt-3 w-full py-2 rounded-xl text-[12px] font-bold text-white flex items-center justify-center gap-1.5" style="background:#2563eb;">
+      <span class="material-symbols-outlined text-[16px]">directions</span>
+      Get Directions
+    </button>
+  </div>
+
+  <!-- Facilities Grid -->
+  <p class="text-[11px] font-extrabold text-[#2563eb] uppercase tracking-wider mb-2">Facilities</p>
+  <div class="grid grid-cols-2 gap-2 mb-4">
+    <div class="flex items-center gap-2 p-3 rounded-xl bg-[#eff6ff] border border-[#bfdbfe]">
+      <span class="material-symbols-outlined text-[18px] text-[#2563eb]">medical_services</span>
+      <span class="text-[11px] font-semibold text-[#1e3a8a]">X-Ray & Imaging</span>
+    </div>
+    <div class="flex items-center gap-2 p-3 rounded-xl bg-[#eff6ff] border border-[#bfdbfe]">
+      <span class="material-symbols-outlined text-[18px] text-[#2563eb]">monitor_heart</span>
+      <span class="text-[11px] font-semibold text-[#1e3a8a]">ICU Unit</span>
+    </div>
+    <div class="flex items-center gap-2 p-3 rounded-xl bg-[#eff6ff] border border-[#bfdbfe]">
+      <span class="material-symbols-outlined text-[18px] text-[#2563eb]">science</span>
+      <span class="text-[11px] font-semibold text-[#1e3a8a]">In-house Lab</span>
+    </div>
+    <div class="flex items-center gap-2 p-3 rounded-xl bg-[#eff6ff] border border-[#bfdbfe]">
+      <span class="material-symbols-outlined text-[18px] text-[#2563eb]">medication</span>
+      <span class="text-[11px] font-semibold text-[#1e3a8a]">In-house Pharmacy</span>
+    </div>
+    <div class="flex items-center gap-2 p-3 rounded-xl bg-[#eff6ff] border border-[#bfdbfe]">
+      <span class="material-symbols-outlined text-[18px] text-[#2563eb]">local_parking</span>
+      <span class="text-[11px] font-semibold text-[#1e3a8a]">Free Parking</span>
+    </div>
+    <div class="flex items-center gap-2 p-3 rounded-xl bg-[#eff6ff] border border-[#bfdbfe]">
+      <span class="material-symbols-outlined text-[18px] text-[#2563eb]">wifi</span>
+      <span class="text-[11px] font-semibold text-[#1e3a8a]">Free Wi-Fi</span>
+    </div>
+  </div>
+
+  <!-- Contact -->
+  <p class="text-[11px] font-extrabold text-[#2563eb] uppercase tracking-wider mb-2">Contact</p>
+  <a href="tel:+919000055555" class="flex items-center gap-3 p-3 rounded-xl bg-[#eff6ff] border border-[#bfdbfe] mb-2">
+    <span class="material-symbols-outlined text-[20px] text-[#2563eb]">call</span>
+    <div>
+      <p class="text-[12px] font-bold text-[#1e3a8a]">+91 90000 55555</p>
+      <p class="text-[10px] text-[#3b82f6]">Available 24/7</p>
+    </div>
+  </a>
 </div>
-<span class="font-label-sm text-label-sm text-on-surface-variant text-center">ICU</span>
-</div>
-<div class="flex flex-col items-center p-4 rounded-xl bg-surface-container-low border border-outline-variant/20 hover:shadow-sm transition-shadow">
-<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary mb-2">
-<span class="material-symbols-outlined">science</span>
-</div>
-<span class="font-label-sm text-label-sm text-on-surface-variant text-center">In-house Lab</span>
-</div>
-<div class="flex flex-col items-center p-4 rounded-xl bg-surface-container-low border border-outline-variant/20 hover:shadow-sm transition-shadow">
-<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary mb-2">
-<span class="material-symbols-outlined">medication</span>
-</div>
-<span class="font-label-sm text-label-sm text-on-surface-variant text-center">Pharmacy</span>
-</div>
-</div>
-</div>
-<div class="h-2 w-full bg-surface-container-low md:hidden"></div>
-<!-- Doctors List Section -->
-<div class="px-margin-mobile py-6 bg-surface rounded-b-xl">
-<h2 class="font-headline-md text-headline-md text-on-background mb-4">Available Doctors</h2>
-<div class="flex flex-col gap-4">
-<!-- Doctor Card 1 -->
-<div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-surface hover:shadow-md transition-shadow">
-<div class="flex items-center gap-4">
-<div class="w-16 h-16 rounded-full overflow-hidden border border-outline-variant/20">
-<img alt="Dr. Sarah Jenkins" class="w-full h-full object-cover" data-alt="A professional headshot of a smiling female veterinarian in a clean, modern clinic setting. She is wearing standard medical scrubs. The lighting is bright and soft, creating a high-trust, premium aesthetic consistent with a top-tier healthcare app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXx7J-sz-fV3Y_VS7BUI6xREHCtu84yd5izEqlWLTC8qY3WVnPddQFvYVf1Uguayi9ZhyWEQqeq7VVZ8JBry3BUH8fQZe9pYp60LQlAR5WW6EqklajhvhlVd5UfSEbAEEdBxS2KPuNI2uYuzXZDjavgaQPJdIW6hobWpxBmcbsK-_aYymv4nOhGWpCChcYO1573y__YOHNSOI3lnkq3dbHgykjeQTBzaa7j5UA6cZ14CiudAIZpXucpgIZNwKuerA1rpKJ82bpAXk">
-</div>
-<div>
-<h3 class="font-headline-md text-headline-md text-on-background text-base">Dr. Sarah Jenkins</h3>
-<p class="font-body-md text-body-md text-on-surface-variant text-sm">Emergency Surgery</p>
-<div class="flex items-center gap-1 mt-1">
-<span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim"></span>
-<span class="font-label-sm text-label-sm text-tertiary">Available</span>
-</div>
-</div>
-</div>
-<button class="p-2 rounded-full bg-surface-container hover:bg-surface-variant text-primary transition-colors">
-<span class="material-symbols-outlined">arrow_forward</span>
-</button>
-</div>
-<!-- Doctor Card 2 -->
-<div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-surface hover:shadow-md transition-shadow">
-<div class="flex items-center gap-4">
-<div class="w-16 h-16 rounded-full overflow-hidden border border-outline-variant/20">
-<img alt="Dr. Michael Chang" class="w-full h-full object-cover" data-alt="A professional headshot of a friendly male veterinarian in a bright, modern veterinary clinic. He wears a stethoscope and clean scrubs. The lighting is natural and inviting, conveying reliability and expertise in a premium pet care environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKwIVhg0jtyF9l-ZpnLelxtm7dPs0cNiFMAyw_WbKRSfJ-i0uLTr96yc3YnkabFFIt0-hMNtQHjQbpSi78KFLnVwvykST98Q7q0yq-VpxoJsmDMPV-o5KN9bm1J7OvZmRRt5brgcoASNXXfKdmBQQQhUfDC321lcBVF-97a8rpivLlEdfo5BOwTnpqhCSm8jeONbNd_hZQynrJzMvK0xF-OekAviLapXfyl7_GJi-uwVhc2mIOs3PLunPO4AZkbC_lh_X_RficrVc">
-</div>
-<div>
-<h3 class="font-headline-md text-headline-md text-on-background text-base">Dr. Michael Chang</h3>
-<p class="font-body-md text-body-md text-on-surface-variant text-sm">Internal Medicine</p>
-<div class="flex items-center gap-1 mt-1">
-<span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim"></span>
-<span class="font-label-sm text-label-sm text-tertiary">Available</span>
-</div>
-</div>
-</div>
-<button class="p-2 rounded-full bg-surface-container hover:bg-surface-variant text-primary transition-colors">
-<span class="material-symbols-outlined">arrow_forward</span>
-</button>
-</div>
-</div>
-</div>
+
 </main>
 <!-- Suppressed Bottom Navigation for Sub-page/Details intent -->
 <!-- (Per rules, Task-Focused or Details pages suppress global nav for canvas focus) -->
-<style>
-        /* Hide scrollbar for horizontal scrolling areas but keep functionality */
-        .hide-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .hide-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-    </style>
+<style>/* scrollbar already in head */</style>
 
 
 
@@ -409,6 +632,54 @@
 
 <!-- Navigation Interceptor for Web Simulator -->
 <script>
+/* ── TAB SWITCHER ── */
+const TAB_CLASSES = {
+  doctors: 'active-doctors',
+  consult:  'active-consult',
+  reviews:  'active-reviews',
+  info:     'active-info'
+};
+/* ── TAB SWITCHER (inline style approach) ── */
+const TAB_CONFIG = {
+  doctors: { bg:'#16a34a', color:'#fff', border:'#16a34a', shadow:'rgba(22,163,74,0.4)' },
+  consult:  { bg:'#0891b2', color:'#fff', border:'#0891b2', shadow:'rgba(8,145,178,0.4)' },
+  reviews:  { bg:'#d97706', color:'#fff', border:'#d97706', shadow:'rgba(217,119,6,0.4)' },
+  info:     { bg:'#2563eb', color:'#fff', border:'#2563eb', shadow:'rgba(37,99,235,0.4)' }
+};
+const TAB_DIM = {
+  doctors: { bg:'#dcfce7', color:'#15803d', border:'#86efac' },
+  consult:  { bg:'#e0f2fe', color:'#0369a1', border:'#7dd3fc' },
+  reviews:  { bg:'#fef3c7', color:'#92400e', border:'#fcd34d' },
+  info:     { bg:'#dbeafe', color:'#1e40af', border:'#93c5fd' }
+};
+window.switchTab = function(name) {
+  ['doctors','consult','reviews','info'].forEach(t => {
+    const pill  = document.getElementById('pill-' + t);
+    const panel = document.getElementById('panel-' + t);
+    if (t === name) {
+      // Active: vivid fill
+      const c = TAB_CONFIG[t];
+      pill.style.background = c.bg;
+      pill.style.color = c.color;
+      pill.style.borderColor = c.border;
+      pill.style.boxShadow = '0 3px 10px ' + c.shadow;
+      pill.style.transform = 'scale(1.05)';
+      panel.style.display = 'block';
+    } else {
+      // Inactive: soft tint — still clearly visible!
+      const d = TAB_DIM[t];
+      pill.style.background = d.bg;
+      pill.style.color = d.color;
+      pill.style.borderColor = d.border;
+      pill.style.boxShadow = 'none';
+      pill.style.transform = 'scale(1)';
+      panel.style.display = 'none';
+    }
+  });
+};
+// Init: make doctors active
+switchTab('doctors');
+
 let selectedDate = "";
 let selectedTime = "";
 
