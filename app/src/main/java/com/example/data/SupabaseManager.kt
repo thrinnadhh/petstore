@@ -8,18 +8,28 @@ import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.auth.Auth
+import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.realtime.Realtime
 import io.github.jan.supabase.storage.Storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
 
 object SupabaseManager {
     lateinit var client: SupabaseClient
     private var isInitialized = false
+    private val httpClient = OkHttpClient()
 
     fun init(context: Context) {
         if (isInitialized) return
         try {
+            if (!ProductionConfig.IS_DEMO_MODE) {
+                ProductionConfig.requireProductionBackendConfig()
+            }
             // Security: credentials are loaded from BuildConfig which reads from local.properties
             // local.properties is git-ignored and NEVER committed to version control
             client = createSupabaseClient(
@@ -36,6 +46,9 @@ object SupabaseManager {
         } catch (e: Exception) {
             // Security: don't log exception details in production (may leak config info)
             Log.e("SupabaseManager", "Initialization failed")
+            if (!ProductionConfig.IS_DEMO_MODE) {
+                throw IllegalStateException("Production backend configuration failed.", e)
+            }
         }
     }
 
@@ -69,6 +82,88 @@ object SupabaseManager {
         }
         val cleanPath = path.trim().removePrefix("/")
         return "https://irvskkigcxryxmdwylpt.supabase.co/storage/v1/object/public/$bucketName/$cleanPath"
+    }
+
+    suspend fun verifyRazorpayPayment(
+        razorpayOrderId: String,
+        paymentId: String,
+        signature: String
+    ): Result<Unit> = withContext(Dispatchers.IO) {
+        runCatching {
+            ProductionConfig.requireProductionBackendConfig()
+
+            val payload = JSONObject().apply {
+                put("order_id", razorpayOrderId)
+                put("payment_id", paymentId)
+                put("signature", signature)
+            }
+            val requestBody = payload.toString()
+                .toRequestBody("application/json; charset=utf-8".toMediaType())
+
+            val accessToken = client.auth.currentAccessTokenOrNull()
+                ?: error("A signed-in user session is required to verify payments.")
+
+            val endpoint = BuildConfig.SUPABASE_URL.trimEnd('/') + "/functions/v1/verify-payment"
+            val request = Request.Builder()
+                .url(endpoint)
+                .addHeader("apikey", BuildConfig.SUPABASE_ANON_KEY)
+                .addHeader("Authorization", "Bearer $accessToken")
+                .addHeader("Content-Type", "application/json")
+                .post(requestBody)
+                .build()
+
+            httpClient.newCall(request).execute().use { response ->
+                val responseBody = response.body?.string().orEmpty()
+                if (!response.isSuccessful) {
+                    if (BuildConfig.DEBUG) {
+                        Log.w("PaymentVerification", "Verification failed: HTTP ${response.code} $responseBody")
+                    }
+                    error("Payment verification failed.")
+                }
+
+                val json = JSONObject(responseBody)
+                if (!json.optBoolean("verified", false)) {
+                    error("Payment verification failed.")
+                }
+            }
+        }
+    }
+
+    suspend fun createRazorpayOrder(amountInRupees: Double, receipt: String): Result<String> = withContext(Dispatchers.IO) {
+        runCatching {
+            ProductionConfig.requireProductionBackendConfig()
+            require(amountInRupees > 0.0) { "Payment amount must be greater than zero." }
+
+            val accessToken = client.auth.currentAccessTokenOrNull()
+                ?: error("A signed-in user session is required to create payments.")
+            val payload = JSONObject().apply {
+                put("amount", (amountInRupees * 100).toInt())
+                put("currency", "INR")
+                put("receipt", receipt.take(40))
+            }
+            val requestBody = payload.toString()
+                .toRequestBody("application/json; charset=utf-8".toMediaType())
+
+            val endpoint = BuildConfig.SUPABASE_URL.trimEnd('/') + "/functions/v1/create-razorpay-order"
+            val request = Request.Builder()
+                .url(endpoint)
+                .addHeader("apikey", BuildConfig.SUPABASE_ANON_KEY)
+                .addHeader("Authorization", "Bearer $accessToken")
+                .addHeader("Content-Type", "application/json")
+                .post(requestBody)
+                .build()
+
+            httpClient.newCall(request).execute().use { response ->
+                val responseBody = response.body?.string().orEmpty()
+                if (!response.isSuccessful) {
+                    if (BuildConfig.DEBUG) {
+                        Log.w("PaymentOrder", "Create Razorpay order failed: HTTP ${response.code} $responseBody")
+                    }
+                    error("Could not create payment order.")
+                }
+                JSONObject(responseBody).getString("order_id")
+            }
+        }
     }
 
     // Emits merchant onboarding parameters to Zapier/Make webhooks to trigger Slack alerts and Google Sheets sync

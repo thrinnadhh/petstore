@@ -14,13 +14,10 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import android.location.Geocoder
-import com.example.domain.common.UuidIdGenerator
-import com.example.domain.grooming.BookGroomingSlotUseCase
-import com.example.domain.grooming.CancelGroomingBookingUseCase
-import com.example.domain.grooming.UpdateGroomingBookingStatusUseCase
-import com.example.domain.orders.UpdateOrderStatusUseCase
-import com.example.domain.vet.BookDoctorAppointmentUseCase
-import com.example.domain.vet.CancelDoctorAppointmentUseCase
+import com.example.di.AppContainer
+import com.example.domain.cart.AddToCartResult
+import com.example.domain.cart.CartState
+import com.example.domain.orders.PlaceOrderCommand
 import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -93,30 +90,17 @@ sealed class Screen {
 }
 
 class PawsViewModel(application: Application) : AndroidViewModel(application) {
-    private val database = AppDatabase.getDatabase(application)
-    private val repository = PawsRepository(database.pawsDao())
-    private val idGenerator = UuidIdGenerator()
-    private val updateOrderStatusUseCase = UpdateOrderStatusUseCase(repository)
-    private val bookGroomingSlotUseCase = BookGroomingSlotUseCase(repository, idGenerator)
-    private val cancelGroomingBookingUseCase = CancelGroomingBookingUseCase(repository)
-    private val updateGroomingBookingStatusUseCase = UpdateGroomingBookingStatusUseCase(repository)
-    private val bookDoctorAppointmentUseCase = BookDoctorAppointmentUseCase(repository, idGenerator)
-    private val cancelDoctorAppointmentUseCase = CancelDoctorAppointmentUseCase(repository)
-
-    private val authRepository: AuthRepository by lazy {
-        if (ProductionConfig.IS_DEMO_MODE) {
-            DemoAuthRepositoryImpl(database.pawsDao())
-        } else {
-            SupabaseAuthRepositoryImpl(database.pawsDao())
-        }
-    }
+    private val appContainer = AppContainer(application)
+    private val database = appContainer.database
+    private val repository = appContainer.repository
+    private val authRepository = appContainer.authRepository
 
     val doctorViewModel by lazy {
         com.example.ui.doctor.DoctorViewModel(
             repository = repository,
             currentUserFlow = currentUser,
-            bookDoctorAppointmentUseCase = bookDoctorAppointmentUseCase,
-            cancelDoctorAppointmentUseCase = cancelDoctorAppointmentUseCase
+            bookDoctorAppointmentUseCase = appContainer.bookDoctorAppointmentUseCase,
+            cancelDoctorAppointmentUseCase = appContainer.cancelDoctorAppointmentUseCase
         )
     }
     
@@ -125,9 +109,9 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
             repository = repository,
             currentUserFlow = currentUser,
             merchantShopFlow = merchantShop,
-            bookGroomingSlotUseCase = bookGroomingSlotUseCase,
-            cancelGroomingBookingUseCase = cancelGroomingBookingUseCase,
-            updateGroomingBookingStatusUseCase = updateGroomingBookingStatusUseCase
+            bookGroomingSlotUseCase = appContainer.bookGroomingSlotUseCase,
+            cancelGroomingBookingUseCase = appContainer.cancelGroomingBookingUseCase,
+            updateGroomingBookingStatusUseCase = appContainer.updateGroomingBookingStatusUseCase
         )
     }
 
@@ -936,33 +920,30 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
 
     // Cart Actions
     fun addToCart(product: ProductEntity, shop: ShopEntity) {
-        val currentShopId = _cartShopId.value
-        if (currentShopId != null && currentShopId != shop.id) {
-            // Trigger warning dialog
-            _showCartWarning.value = ShopConflict(product, _merchantShop.value?.name ?: shop.name)
-            return
+        when (
+            val result = appContainer.addToCartUseCase(
+                CartState(shopId = _cartShopId.value, items = _cartItems.value),
+                productId = product.id,
+                shopId = shop.id
+            )
+        ) {
+            is AddToCartResult.ShopConflict -> {
+                _showCartWarning.value = ShopConflict(product, _merchantShop.value?.name ?: shop.name)
+            }
+            is AddToCartResult.Updated -> {
+                _cartShopId.value = result.state.shopId
+                _cartItems.value = result.state.items
+            }
         }
-
-        _cartShopId.value = shop.id
-        val currentQt = _cartItems.value[product.id] ?: 0
-        val updatedMap = _cartItems.value.toMutableMap()
-        updatedMap[product.id] = currentQt + 1
-        _cartItems.value = updatedMap
     }
 
     fun removeFromCart(productId: String) {
-        val currentQt = _cartItems.value[productId] ?: return
-        val updatedMap = _cartItems.value.toMutableMap()
-        if (currentQt <= 1) {
-            updatedMap.remove(productId)
-        } else {
-            updatedMap[productId] = currentQt - 1
-        }
-        _cartItems.value = updatedMap
-
-        if (updatedMap.isEmpty()) {
-            _cartShopId.value = null
-        }
+        val updated = appContainer.removeFromCartUseCase(
+            CartState(shopId = _cartShopId.value, items = _cartItems.value),
+            productId = productId
+        )
+        _cartShopId.value = updated.shopId
+        _cartItems.value = updated.items
     }
 
     fun resolveCartConflict(clearCartAndAdd: Boolean) {
@@ -981,8 +962,9 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun clearCart() {
-        _cartItems.value = emptyMap()
-        _cartShopId.value = null
+        val cleared = appContainer.clearCartUseCase()
+        _cartItems.value = cleared.items
+        _cartShopId.value = cleared.shopId
     }
 
     // Placing Orders
@@ -992,65 +974,36 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
         val items = _cartItems.value
 
         viewModelScope.launch {
-            val orderId = "order_" + UUID.randomUUID().toString().substring(0, 8)
-            
-            // Calculate totals
-            var subtotal = 0.0
-            val lineItems = mutableListOf<OrderItemEntity>()
-            items.forEach { (prodId, qty) ->
-                val prod = repository.getProductById(prodId)
-                if (prod != null) {
-                    val lineCost = prod.price * qty
-                    subtotal += lineCost
-                    lineItems.add(
-                        OrderItemEntity(
-                            id = UUID.randomUUID().toString(),
-                            orderId = orderId,
-                            productId = prodId,
-                            quantity = qty,
-                            unitPrice = prod.price,
-                            subtotal = lineCost
-                        )
-                    )
-                }
-            }
-
             val deliveryFee = if (deliveryType == "delivery") deliveryFeeTier.value else 0.0
-            val totalAmount = subtotal + deliveryFee
-
-            val newOrder = OrderEntity(
-                id = orderId,
+            val placedOrder = appContainer.placeOrderUseCase(
+                PlaceOrderCommand(
                 consumerId = user.id,
                 shopId = shopId,
-                type = deliveryType,
-                status = "pending",
-                totalAmount = totalAmount,
-                deliveryAddress = address,
-                notes = notes,
-                placedAt = System.currentTimeMillis()
+                    cartItems = items,
+                    deliveryAddress = address,
+                    notes = notes,
+                    deliveryType = deliveryType,
+                    deliveryFee = deliveryFee
+                )
             )
-
-            // Insert to DB
-            repository.insertOrder(newOrder)
-            repository.insertOrderItems(lineItems)
 
             // Clear Cart
             clearCart()
 
             // PostHog order tracking analytics
             AnalyticsManager.trackEvent("order_placed", mapOf(
-                "order_id" to orderId,
-                "amount" to totalAmount,
+                "order_id" to placedOrder.orderId,
+                "amount" to placedOrder.totalAmount,
                 "type" to deliveryType
             ))
 
             // Navigate to tracking
-            _activeOrder.value = newOrder
-            _activeOrderItems.value = lineItems
-            _currentScreen.value = Screen.OrderTracking(orderId)
+            _activeOrder.value = repository.getOrderById(placedOrder.orderId)
+            _activeOrderItems.value = repository.getOrderItemsForOrder(placedOrder.orderId)
+            _currentScreen.value = Screen.OrderTracking(placedOrder.orderId)
 
             // Kick-off automatic tracker progress simulation
-            launchOrderSimulation(orderId)
+            launchOrderSimulation(placedOrder.orderId)
         }
     }
 
@@ -1060,7 +1013,7 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
             delay(10000)
             var currentOrd = repository.getOrderById(orderId)
             if (currentOrd?.status == "pending") {
-                updateOrderStatusUseCase(orderId, "accepted")
+                appContainer.updateOrderStatusUseCase(orderId, "accepted")
                 _activeOrder.value = repository.getOrderById(orderId)
                 NotificationManager.fireInstantNotification(
                     getApplication(),
@@ -1071,7 +1024,7 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
             delay(12000)
             currentOrd = repository.getOrderById(orderId)
             if (currentOrd?.status == "accepted") {
-                updateOrderStatusUseCase(orderId, "preparing")
+                appContainer.updateOrderStatusUseCase(orderId, "preparing")
                 _activeOrder.value = repository.getOrderById(orderId)
                 NotificationManager.fireInstantNotification(
                     getApplication(),
@@ -1082,7 +1035,7 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
             delay(15000)
             currentOrd = repository.getOrderById(orderId)
             if (currentOrd?.status == "preparing") {
-                updateOrderStatusUseCase(orderId, "out_for_delivery")
+                appContainer.updateOrderStatusUseCase(orderId, "out_for_delivery")
                 _activeOrder.value = repository.getOrderById(orderId)
                 NotificationManager.fireInstantNotification(
                     getApplication(),
@@ -1093,7 +1046,7 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
             delay(15000)
             currentOrd = repository.getOrderById(orderId)
             if (currentOrd?.status == "out_for_delivery") {
-                updateOrderStatusUseCase(orderId, "delivered")
+                appContainer.updateOrderStatusUseCase(orderId, "delivered")
                 _activeOrder.value = repository.getOrderById(orderId)
                 NotificationManager.fireInstantNotification(
                     getApplication(),
@@ -1264,7 +1217,7 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
 
     fun updateMerchantOrderStatus(orderId: String, newStatus: String) {
         viewModelScope.launch {
-            updateOrderStatusUseCase(orderId, newStatus)
+            appContainer.updateOrderStatusUseCase(orderId, newStatus)
             // If viewing active tracking, sync too
             if (_activeOrder.value?.id == orderId) {
                 _activeOrder.value = repository.getOrderById(orderId)
@@ -1354,7 +1307,7 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
 
     fun acceptDeliveryJob(orderId: String, captainId: String) {
         viewModelScope.launch {
-            updateOrderStatusUseCase(orderId, "preparing", captainId)
+            appContainer.updateOrderStatusUseCase(orderId, "preparing", captainId)
             if (_activeOrder.value?.id == orderId) {
                 _activeOrder.value = repository.getOrderById(orderId)
             }
@@ -1363,7 +1316,7 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
 
     fun completeDeliveryJob(orderId: String) {
         viewModelScope.launch {
-            updateOrderStatusUseCase(orderId, "delivered")
+            appContainer.updateOrderStatusUseCase(orderId, "delivered")
             if (_activeOrder.value?.id == orderId) {
                 _activeOrder.value = repository.getOrderById(orderId)
             }

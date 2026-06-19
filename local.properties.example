@@ -1,0 +1,13 @@
+# Copy this file to local.properties for local Android builds.
+# Do not commit local.properties. It is already git-ignored.
+#
+# Android Studio may also add sdk.dir automatically.
+# sdk.dir=/Users/your-user/Library/Android/sdk
+
+# Public/mobile-safe Supabase values. The anon key is not a service-role secret,
+# but it must still be paired with strict Supabase RLS policies.
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Razorpay key ID is client-visible. Never put RAZORPAY_SECRET in Android files.
+RAZORPAY_KEY_ID=rzp_test_or_live_xxxxxxxxxx

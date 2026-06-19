@@ -4089,7 +4089,7 @@ fun OriginalHomeScreen(viewModel: PawsViewModel) {
                                                                      orderId = "rfq_pay_${session.id}_${memberId}",
                                                                      email = currentUser?.email ?: "trinadhbandapalli@gmail.com",
                                                                      phone = currentUser?.phone ?: "9999999999",
-                                                                     onSuccess = { paymentId ->
+                                                                     onSuccess = { payment ->
                                                                          viewModel.payMemberShare(session.id, memberId) { success ->
                                                                              if (success) {
                                                                                  Toast.makeText(context, "Payment successful! Your share is paid.", Toast.LENGTH_SHORT).show()
@@ -8006,13 +8006,13 @@ fun CartScreen(viewModel: PawsViewModel) {
                     orderId = "order_chk_" + java.util.UUID.randomUUID().toString().take(6),
                     email = userEmail,
                     phone = userPhone,
-                    onSuccess = { paymentId ->
+                    onSuccess = { payment ->
                         viewModel.placeOrder(
                             address = if (deliveryType == "delivery") addressInput else "Pickup from merchant clinic",
                             notes = noteInput,
                             deliveryType = deliveryType
                         )
-                        Toast.makeText(context, "Payment Successful! ID: $paymentId", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, "Payment Successful! ID: ${payment.paymentId}", Toast.LENGTH_LONG).show()
                     },
                     onFailure = { error ->
                         Toast.makeText(context, "Payment Failed: $error", Toast.LENGTH_LONG).show()
@@ -10327,7 +10327,7 @@ fun ServiceCatalogRow(service: ServiceEntity, viewModel: PawsViewModel, shopId: 
                                     orderId = "appt_chk_" + java.util.UUID.randomUUID().toString().take(6),
                                     email = userEmail,
                                     phone = userPhone,
-                                    onSuccess = { paymentId ->
+                                    onSuccess = { payment ->
                                         viewModel.bookAppointment(
                                             shopId = shopId,
                                             serviceId = service.id,
@@ -10338,7 +10338,7 @@ fun ServiceCatalogRow(service: ServiceEntity, viewModel: PawsViewModel, shopId: 
                                             petName = petNameBooked
                                         )
                                         showBookingDialog = false
-                                        Toast.makeText(context, "Appointment Booked! Payment ID: $paymentId", Toast.LENGTH_LONG).show()
+                                        Toast.makeText(context, "Appointment Booked! Payment ID: ${payment.paymentId}", Toast.LENGTH_LONG).show()
                                     },
                                     onFailure = { error ->
                                         Toast.makeText(context, "Payment Failed: $error", Toast.LENGTH_SHORT).show()
@@ -17371,4 +17371,3 @@ fun MerchantCouponsScreen(viewModel: PawsViewModel) {
         }
     }
 }
-

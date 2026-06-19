@@ -1,12 +1,22 @@
 package com.example
 
 import com.example.data.AppDatabaseMigrations
+import com.example.domain.cart.AddToCartResult
+import com.example.domain.cart.AddToCartUseCase
+import com.example.domain.cart.CartState
+import com.example.domain.cart.RemoveFromCartUseCase
 import com.example.domain.common.IdGenerator
 import com.example.domain.grooming.BookGroomingSlotCommand
 import com.example.domain.grooming.BookGroomingSlotUseCase
 import com.example.domain.grooming.GroomingBookingRepository
 import com.example.domain.grooming.GroomingBookingRequest
+import com.example.domain.orders.CheckoutProduct
+import com.example.domain.orders.CheckoutRepository
 import com.example.domain.orders.OrderStatusRepository
+import com.example.domain.orders.PlaceOrderCommand
+import com.example.domain.orders.PlaceOrderRequest
+import com.example.domain.orders.PlaceOrderUseCase
+import com.example.domain.orders.PlacedOrder
 import com.example.domain.orders.UpdateOrderStatusUseCase
 import com.example.domain.vet.BookDoctorAppointmentCommand
 import com.example.domain.vet.BookDoctorAppointmentUseCase
@@ -18,6 +28,63 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class DomainUseCaseTest {
+    @Test
+    fun `add to cart increments same shop items and rejects cross shop add`() {
+        val useCase = AddToCartUseCase()
+
+        val first = useCase(CartState(shopId = null, items = emptyMap()), "product_1", "shop_1")
+        val second = useCase((first as AddToCartResult.Updated).state, "product_1", "shop_1")
+        val conflict = useCase((second as AddToCartResult.Updated).state, "product_2", "shop_2")
+
+        assertEquals(mapOf("product_1" to 2), second.state.items)
+        assertTrue(conflict is AddToCartResult.ShopConflict)
+    }
+
+    @Test
+    fun `remove from cart decrements quantity and clears shop when empty`() {
+        val useCase = RemoveFromCartUseCase()
+
+        val once = useCase(CartState("shop_1", mapOf("product_1" to 2)), "product_1")
+        val empty = useCase(once, "product_1")
+
+        assertEquals(mapOf("product_1" to 1), once.items)
+        assertEquals(null, empty.shopId)
+        assertTrue(empty.items.isEmpty())
+    }
+
+    @Test
+    fun `place order calculates line totals and delivery fee outside ViewModel`() = runBlocking {
+        val repository = FakeCheckoutRepository(
+            products = mapOf(
+                "product_1" to CheckoutProduct("product_1", 100.0),
+                "product_2" to CheckoutProduct("product_2", 50.0)
+            )
+        )
+        val useCase = PlaceOrderUseCase(
+            repository = repository,
+            idGenerator = SequenceIdGenerator(listOf("order_fixed", "item_1", "item_2")),
+            clockMillis = { 999L }
+        )
+
+        val result = useCase(
+            PlaceOrderCommand(
+                consumerId = "consumer_1",
+                shopId = "shop_1",
+                cartItems = mapOf("product_1" to 2, "product_2" to 1),
+                deliveryAddress = "Hyderabad",
+                notes = "Leave at door",
+                deliveryType = "delivery",
+                deliveryFee = 30.0
+            )
+        )
+
+        assertEquals("order_fixed", result.orderId)
+        assertEquals(280.0, result.totalAmount, 0.0)
+        assertEquals(2, result.itemCount)
+        assertEquals(999L, repository.placedRequest?.placedAt)
+        assertEquals(listOf(200.0, 50.0), repository.placedRequest?.items?.map { it.subtotal })
+    }
+
     @Test
     fun `book grooming slot builds a sanitized pending booking request`() = runBlocking {
         val repository = FakeGroomingRepository()
@@ -100,6 +167,32 @@ class DomainUseCaseTest {
 
     private class FixedIdGenerator(private val value: String) : IdGenerator {
         override fun next(prefix: String): String = value
+    }
+
+    private class SequenceIdGenerator(values: List<String>) : IdGenerator {
+        private val ids = values.toMutableList()
+
+        override fun next(prefix: String): String = ids.removeAt(0)
+    }
+
+    private class FakeCheckoutRepository(
+        private val products: Map<String, CheckoutProduct>
+    ) : CheckoutRepository {
+        var placedRequest: PlaceOrderRequest? = null
+
+        override suspend fun getCheckoutProduct(productId: String): CheckoutProduct? {
+            return products[productId]
+        }
+
+        override suspend fun placeOrder(request: PlaceOrderRequest): PlacedOrder {
+            placedRequest = request
+            return PlacedOrder(
+                orderId = request.orderId,
+                totalAmount = request.totalAmount,
+                itemCount = request.items.size,
+                deliveryType = request.deliveryType
+            )
+        }
     }
 
     private class FakeGroomingRepository : GroomingBookingRepository {

@@ -440,7 +440,7 @@ fun DoctorSlotPickerScreen(
                         orderId = "chk_doc_" + UUID.randomUUID().toString().take(6),
                         email = userEmail,
                         phone = userPhone,
-                        onSuccess = { paymentId ->
+                        onSuccess = { payment ->
                             val priorityStr = if (isHighPriority) "High" else "Normal"
                             viewModel.bookDoctorAppointment(
                                 shopId = shopId,
@@ -463,7 +463,7 @@ fun DoctorSlotPickerScreen(
                                     }
                                     com.example.data.NotificationManager.fireInstantNotification(context, notificationTitle, notificationMsg)
 
-                                    Toast.makeText(context, "Consultation Booked Successfully! ID: $paymentId", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(context, "Consultation Booked Successfully! ID: ${payment.paymentId}", Toast.LENGTH_LONG).show()
                                     viewModel.navigateBack()
                                 },
                                 onError = { err ->

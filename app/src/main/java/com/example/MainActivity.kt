@@ -9,9 +9,10 @@ import com.example.data.PaymentManager
 import com.example.ui.PawsApp
 import com.example.ui.PawsViewModel
 import com.example.ui.theme.MyApplicationTheme
-import com.razorpay.PaymentResultListener
+import com.razorpay.PaymentData
+import com.razorpay.PaymentResultWithDataListener
 
-class MainActivity : ComponentActivity(), PaymentResultListener {
+class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
     private val viewModel: PawsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,11 +25,15 @@ class MainActivity : ComponentActivity(), PaymentResultListener {
         }
     }
 
-    override fun onPaymentSuccess(razorpayPaymentId: String?) {
-        PaymentManager.onPaymentSuccess(razorpayPaymentId ?: "")
+    override fun onPaymentSuccess(razorpayPaymentId: String?, paymentData: PaymentData?) {
+        PaymentManager.onPaymentSuccess(
+            paymentId = razorpayPaymentId.orEmpty(),
+            razorpayOrderId = paymentData?.orderId,
+            signature = paymentData?.signature
+        )
     }
 
-    override fun onPaymentError(code: Int, response: String?) {
+    override fun onPaymentError(code: Int, response: String?, paymentData: PaymentData?) {
         PaymentManager.onPaymentError(code, response ?: "")
     }
 }

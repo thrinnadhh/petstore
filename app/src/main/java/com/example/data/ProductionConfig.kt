@@ -1,28 +1,27 @@
 package com.example.data
 
+import com.example.BuildConfig
+
 /**
  * Global configurations for Swiggy Paws Google Play Store release.
- * Easily toggle between Demo Mode (essential for Google Play Reviewers to test without real transactions)
- * and Production Mode (integrated with live servers & real payment gateways).
+ * Build types control demo vs production behavior. Debug builds stay self-contained for
+ * development and review; release builds fail closed when required backend config is missing.
  */
 object ProductionConfig {
-    
-    /**
-     * Set to true to run in self-contained Demo/Mock mode.
-     * Google Play Reviewers require all flows to function perfectly without charging real money.
-     * Set to false for the final public release using real network backends.
-     */
-    const val IS_DEMO_MODE: Boolean = true
+    val IS_DEMO_MODE: Boolean = BuildConfig.DEMO_MODE
 
-    /**
-     * Production credentials placeholder for Razorpay.
-     * Managed securely and separately from development sandbox tokens.
-     */
-    const val RAZORPAY_PROD_KEY: String = "rzp_live_production_token_placeholder"
+    val RAZORPAY_KEY_ID: String = BuildConfig.RAZORPAY_KEY_ID
 
     /**
      * Minimum API Level metadata verified for Google Play SDK compliance.
      */
     const val PLAY_STORE_MIN_SDK: Int = 24
     const val PLAY_STORE_TARGET_SDK: Int = 36
+
+    fun requireProductionBackendConfig() {
+        if (IS_DEMO_MODE) return
+        require(BuildConfig.SUPABASE_URL.isNotBlank()) { "SUPABASE_URL is required for production builds." }
+        require(BuildConfig.SUPABASE_ANON_KEY.isNotBlank()) { "SUPABASE_ANON_KEY is required for production builds." }
+        require(RAZORPAY_KEY_ID.isNotBlank()) { "RAZORPAY_KEY_ID is required for production payment builds." }
+    }
 }

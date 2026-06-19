@@ -16,6 +16,12 @@ val localProperties = Properties().also { props ->
     if (localFile.exists()) props.load(localFile.inputStream())
 }
 
+fun secureConfigValue(name: String): String {
+    return System.getenv(name)
+        ?: localProperties.getProperty(name)
+        ?: ""
+}
+
 android {
   namespace = "com.example"
   compileSdk { version = release(36) { minorApiLevel = 1 } }
@@ -29,12 +35,16 @@ android {
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-    // Inject Supabase config from local.properties → never hardcode credentials in source
+    // Inject config from CI env vars first, then local.properties for local development.
+    // Never hardcode real production credentials in source.
     buildConfigField("String", "SUPABASE_URL",
-        "\"${localProperties["SUPABASE_URL"] ?: ""}\""
+        "\"${secureConfigValue("SUPABASE_URL")}\""
     )
     buildConfigField("String", "SUPABASE_ANON_KEY",
-        "\"${localProperties["SUPABASE_ANON_KEY"] ?: ""}\""
+        "\"${secureConfigValue("SUPABASE_ANON_KEY")}\""
+    )
+    buildConfigField("String", "RAZORPAY_KEY_ID",
+        "\"${secureConfigValue("RAZORPAY_KEY_ID")}\""
     )
   }
 
@@ -52,6 +62,7 @@ android {
   buildTypes {
     release {
       isCrunchPngs = false
+      buildConfigField("Boolean", "DEMO_MODE", "false")
       // Security: Enable R8 minification + shrinking to prevent APK decompilation
       isMinifyEnabled = true
       isShrinkResources = true
@@ -67,6 +78,7 @@ android {
     debug {
       // Debug builds: keep readable for development only
       isMinifyEnabled = false
+      buildConfigField("Boolean", "DEMO_MODE", "true")
     }
   }
   compileOptions {
