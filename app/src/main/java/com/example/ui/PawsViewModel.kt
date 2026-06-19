@@ -14,6 +14,13 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import android.location.Geocoder
+import com.example.domain.common.UuidIdGenerator
+import com.example.domain.grooming.BookGroomingSlotUseCase
+import com.example.domain.grooming.CancelGroomingBookingUseCase
+import com.example.domain.grooming.UpdateGroomingBookingStatusUseCase
+import com.example.domain.orders.UpdateOrderStatusUseCase
+import com.example.domain.vet.BookDoctorAppointmentUseCase
+import com.example.domain.vet.CancelDoctorAppointmentUseCase
 import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -88,6 +95,41 @@ sealed class Screen {
 class PawsViewModel(application: Application) : AndroidViewModel(application) {
     private val database = AppDatabase.getDatabase(application)
     private val repository = PawsRepository(database.pawsDao())
+    private val idGenerator = UuidIdGenerator()
+    private val updateOrderStatusUseCase = UpdateOrderStatusUseCase(repository)
+    private val bookGroomingSlotUseCase = BookGroomingSlotUseCase(repository, idGenerator)
+    private val cancelGroomingBookingUseCase = CancelGroomingBookingUseCase(repository)
+    private val updateGroomingBookingStatusUseCase = UpdateGroomingBookingStatusUseCase(repository)
+    private val bookDoctorAppointmentUseCase = BookDoctorAppointmentUseCase(repository, idGenerator)
+    private val cancelDoctorAppointmentUseCase = CancelDoctorAppointmentUseCase(repository)
+
+    private val authRepository: AuthRepository by lazy {
+        if (ProductionConfig.IS_DEMO_MODE) {
+            DemoAuthRepositoryImpl(database.pawsDao())
+        } else {
+            SupabaseAuthRepositoryImpl(database.pawsDao())
+        }
+    }
+
+    val doctorViewModel by lazy {
+        com.example.ui.doctor.DoctorViewModel(
+            repository = repository,
+            currentUserFlow = currentUser,
+            bookDoctorAppointmentUseCase = bookDoctorAppointmentUseCase,
+            cancelDoctorAppointmentUseCase = cancelDoctorAppointmentUseCase
+        )
+    }
+    
+    val groomingViewModel by lazy {
+        com.example.ui.grooming.GroomingViewModel(
+            repository = repository,
+            currentUserFlow = currentUser,
+            merchantShopFlow = merchantShop,
+            bookGroomingSlotUseCase = bookGroomingSlotUseCase,
+            cancelGroomingBookingUseCase = cancelGroomingBookingUseCase,
+            updateGroomingBookingStatusUseCase = updateGroomingBookingStatusUseCase
+        )
+    }
 
     // Navigation State
     private val backstack = mutableListOf<Screen>()
@@ -492,10 +534,7 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val formattedPhone = formatPhoneNumber(phone)
             
-            // ⚠️  SECURITY WARNING: REMOVE BEFORE PRODUCTION DEPLOYMENT ⚠️
-            // These hardcoded phone numbers grant role-based access with ZERO authentication.
-            // Replace with real Firebase Phone Auth OTP or Supabase OTP verification.
-            // In production: roles must be assigned server-side and never trusted from local DB.
+            // Seed default profile dynamically if it's the demo path and does not exist in DB
             if (ProductionConfig.IS_DEMO_MODE && (phone == "9876543210" || phone == "8765432109" || phone == "9999999999" || phone == "7777777777")) {
                 val isMerchant = (phone == "8765432109")
                 val isAdmin = (phone == "9999999999")
@@ -516,13 +555,12 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
                             "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop"
                             else "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop",
                         role = if (isAdmin) "superadmin" else if (isMerchant) "merchant" else if (isCaptain) "captain" else "consumer",
-                        password = if (isAdmin) "0000" else if (isMerchant) "5678" else if (isCaptain) "9999" else "1234",
+                        password = BCryptHelper.hashPassword(if (isAdmin) "0000" else if (isMerchant) "5678" else if (isCaptain) "9999" else "1234"),
                         address = "Villa 42, Road No 5, Banjara Hills, Hyderabad"
                     )
                     repository.insertProfile(defaultProfile)
                     
                     if (isCaptain) {
-                        // Also insert matching Captain record in SQLite
                         val defaultCaptain = CaptainEntity(
                             id = "capt_default_1",
                             userId = userId,
@@ -543,44 +581,39 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
                     }
                 }
             }
-            
-            val profile = MonitoringManager.measureQuery("getProfileByPhone") {
-                repository.getProfileByPhone(formattedPhone)
-            }
-            if (profile == null) {
-                onError("Account not found! Please register first as a Customer or Shop.")
-                return@launch
-            }
 
-            if (profile.password != null && profile.password != pin) {
-                onError("Incorrect 4-digit PIN password!")
-                return@launch
-            }
-            
-            MonitoringManager.logAuthEvent(formattedPhone, "login_success")
-            _currentUser.value = profile
-            _selectedCityId.value = profile.cityId
-            val cityObj = repository.getAllCitiesSync().firstOrNull { it.id == profile.cityId }
-            _selectedCityName.value = if (cityObj != null) "${cityObj.name}, ${cityObj.state}" else "Hyderabad, Telangana"
-            
-            // PostHog analytics integration
-            AnalyticsManager.identifyUser(profile.id, mapOf("name" to profile.fullName, "role" to profile.role, "phone" to profile.phone))
-            AnalyticsManager.trackEvent("user_login", mapOf("user_id" to profile.id, "role" to profile.role))
+            val authResult = authRepository.login(formattedPhone, pin)
+            authResult.fold(
+                onSuccess = { profile ->
+                    MonitoringManager.logAuthEvent(formattedPhone, "login_success")
+                    _currentUser.value = profile
+                    _selectedCityId.value = profile.cityId
+                    val cityObj = repository.getAllCitiesSync().firstOrNull { it.id == profile.cityId }
+                    _selectedCityName.value = if (cityObj != null) "${cityObj.name}, ${cityObj.state}" else "Hyderabad, Telangana"
+                    
+                    // PostHog analytics integration
+                    AnalyticsManager.identifyUser(profile.id, mapOf("name" to profile.fullName, "role" to profile.role, "phone" to profile.phone))
+                    AnalyticsManager.trackEvent("user_login", mapOf("user_id" to profile.id, "role" to profile.role))
 
-            if (profile.role == "merchant") {
-                val shop = repository.getShopByOwnerId(profile.id)
-                _merchantShop.value = shop
-                if (shop == null) {
-                    _currentScreen.value = Screen.MerchantShopSetup
-                } else {
-                    _currentScreen.value = Screen.MerchantDashboard
+                    if (profile.role == "merchant") {
+                        val shop = repository.getShopByOwnerId(profile.id)
+                        _merchantShop.value = shop
+                        if (shop == null) {
+                            _currentScreen.value = Screen.MerchantShopSetup
+                        } else {
+                            _currentScreen.value = Screen.MerchantDashboard
+                        }
+                    } else if (profile.role == "superadmin" || profile.role == "admin") {
+                        _currentScreen.value = Screen.SuperAdmin
+                    } else {
+                        _currentScreen.value = Screen.LocationSelect
+                    }
+                    onSuccess()
+                },
+                onFailure = { e ->
+                    onError(e.message ?: "Authentication failed!")
                 }
-            } else if (profile.role == "superadmin" || profile.role == "admin") {
-                _currentScreen.value = Screen.SuperAdmin
-            } else {
-                _currentScreen.value = Screen.LocationSelect
-            }
-            onSuccess()
+            )
         }
     }
 
@@ -627,48 +660,53 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
                 role = role,
                 petName = if (role == "consumer") petName.trim() else "",
                 email = email.trim().lowercase().ifBlank { null },
-                password = password.ifBlank { null },
+                password = "", // Will be set as hashed in register()
                 address = address.trim()
             )
             
-            MonitoringManager.measureQuery("insertProfile") {
-                repository.insertProfile(profile)
-            }
+            val registerResult = authRepository.register(profile, password)
+            registerResult.fold(
+                onSuccess = {
+                    val savedProfile = repository.getProfile(userId) ?: profile
+                    // Insert matching PetEntity for the customer's pet
+                    if (role == "consumer" && petName.trim().isNotBlank()) {
+                        val pet = PetEntity(
+                            id = "pet_" + UUID.randomUUID().toString().take(8),
+                            ownerId = userId,
+                            name = petName.trim(),
+                            breed = petBreed.trim().ifBlank { "Golden Retriever" },
+                            ageText = petAge.trim().ifBlank { "2 years" },
+                            weight = petWeight.trim().ifBlank { "24 kg" },
+                            avatarUrl = finalAvatar, // Same selfie with dog
+                            allergies = "No wheat grains",
+                            vaccineRecord = "Rabies vaccine (2025-08-20)",
+                            dewormingDate = "2026-05-15",
+                            vaccineDueDate = "2026-08-20"
+                        )
+                        repository.insertPet(pet)
+                    }
+                    
+                    MonitoringManager.logAuthEvent(formattedPhone, "register_success")
+                    _currentUser.value = savedProfile
+                    _selectedCityId.value = savedProfile.cityId
+                    _selectedCityName.value = "Hyderabad, Telangana"
+                    
+                    // PostHog registration analytics integration
+                    AnalyticsManager.identifyUser(savedProfile.id, mapOf("name" to savedProfile.fullName, "role" to savedProfile.role, "phone" to savedProfile.phone))
+                    AnalyticsManager.trackEvent("user_registration", mapOf("user_id" to savedProfile.id, "role" to savedProfile.role))
 
-            // Insert matching PetEntity for the customer's pet
-            if (role == "consumer" && petName.trim().isNotBlank()) {
-                val pet = PetEntity(
-                    id = "pet_" + UUID.randomUUID().toString().take(8),
-                    ownerId = userId,
-                    name = petName.trim(),
-                    breed = petBreed.trim().ifBlank { "Golden Retriever" },
-                    ageText = petAge.trim().ifBlank { "2 years" },
-                    weight = petWeight.trim().ifBlank { "24 kg" },
-                    avatarUrl = finalAvatar, // Same selfie with dog
-                    allergies = "No wheat grains",
-                    vaccineRecord = "Rabies vaccine (2025-08-20)",
-                    dewormingDate = "2026-05-15",
-                    vaccineDueDate = "2026-08-20"
-                )
-                repository.insertPet(pet)
-            }
-            
-            MonitoringManager.logAuthEvent(formattedPhone, "register_success")
-            _currentUser.value = profile
-            _selectedCityId.value = profile.cityId
-            _selectedCityName.value = "Hyderabad, Telangana"
-            
-            // PostHog registration analytics integration
-            AnalyticsManager.identifyUser(profile.id, mapOf("name" to profile.fullName, "role" to profile.role, "phone" to profile.phone))
-            AnalyticsManager.trackEvent("user_registration", mapOf("user_id" to profile.id, "role" to profile.role))
-
-            if (role == "merchant") {
-                _merchantShop.value = null
-                _currentScreen.value = Screen.MerchantShopSetup
-            } else {
-                _currentScreen.value = Screen.LocationSelect
-            }
-            onSuccess()
+                    if (role == "merchant") {
+                        _merchantShop.value = null
+                        _currentScreen.value = Screen.MerchantShopSetup
+                    } else {
+                        _currentScreen.value = Screen.LocationSelect
+                    }
+                    onSuccess()
+                },
+                onFailure = { e ->
+                    onError(e.message ?: "Registration failed!")
+                }
+            )
         }
     }
 
@@ -685,76 +723,43 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
                 return@launch
             }
 
-            // Find profile by email or phone
-            val profile = if (cleanIdentifier.contains("@")) {
-                repository.getProfileByEmail(cleanIdentifier.lowercase())
+            val cleanId = if (cleanIdentifier.contains("@")) {
+                cleanIdentifier
             } else {
-                val formattedPhone = formatPhoneNumber(cleanIdentifier)
-                repository.getProfileByPhone(formattedPhone)
+                formatPhoneNumber(cleanIdentifier)
             }
 
-            // Hardcoded fallback for Super Admin to ensure it always works
-            if (profile == null && cleanIdentifier.lowercase() == "trinadhbandapalli@gmail.com" && passwordText == "thrinnadhh@Paws") {
-                val superAdmin = ProfileEntity(
-                    id = "admin_super",
-                    fullName = "Super Admin",
-                    phone = "79999999999",
-                    cityId = "hyd",
-                    avatarUrl = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop",
-                    role = "superadmin",
-                    email = "trinadhbandapalli@gmail.com",
-                    password = "thrinnadhh@Paws"
-                )
-                repository.insertProfile(superAdmin)
-                
-                _currentUser.value = superAdmin
-                _selectedCityId.value = "hyd"
-                _selectedCityName.value = "Hyderabad, Telangana"
-                _currentScreen.value = Screen.SuperAdmin
-                onSuccess()
-                return@launch
-            }
+            val authResult = authRepository.login(cleanId, passwordText)
+            authResult.fold(
+                onSuccess = { profile ->
+                    // Login success
+                    _currentUser.value = profile
+                    _selectedCityId.value = profile.cityId
+                    val cityObj = repository.getAllCitiesSync().firstOrNull { it.id == profile.cityId }
+                    _selectedCityName.value = if (cityObj != null) "${cityObj.name}, ${cityObj.state}" else "Hyderabad, Telangana"
 
-            if (profile == null) {
-                onError("Account not found! Please check your credentials.")
-                return@launch
-            }
+                    AnalyticsManager.identifyUser(profile.id, mapOf("name" to profile.fullName, "role" to profile.role, "phone" to profile.phone))
+                    AnalyticsManager.trackEvent("user_login", mapOf("user_id" to profile.id, "role" to profile.role))
 
-            // Verify password
-            val expectedPassword = if (profile.id == "admin_super") {
-                "thrinnadhh@Paws"
-            } else {
-                profile.password ?: ""
-            }
-
-            if (passwordText != expectedPassword) {
-                onError("Incorrect password! Please try again or use Phone OTP login.")
-                return@launch
-            }
-
-            // Login success
-            _currentUser.value = profile
-            _selectedCityId.value = profile.cityId
-            val cityObj = repository.getAllCitiesSync().firstOrNull { it.id == profile.cityId }
-            _selectedCityName.value = if (cityObj != null) "${cityObj.name}, ${cityObj.state}" else "Hyderabad, Telangana"
-
-            AnalyticsManager.identifyUser(profile.id, mapOf("name" to profile.fullName, "role" to profile.role, "phone" to profile.phone))
-            AnalyticsManager.trackEvent("user_login", mapOf("user_id" to profile.id, "role" to profile.role))
-
-            if (profile.role == "superadmin" || profile.role == "admin") {
-                _currentScreen.value = Screen.SuperAdmin
-            } else if (profile.role == "merchant") {
-                val shop = repository.getShopByOwnerId(profile.id)
-                _merchantShop.value = shop
-                if (shop == null) {
-                    _currentScreen.value = Screen.MerchantShopSetup
-                } else {
-                    _currentScreen.value = Screen.MerchantDashboard
+                    if (profile.role == "superadmin" || profile.role == "admin") {
+                        _currentScreen.value = Screen.SuperAdmin
+                    } else if (profile.role == "merchant") {
+                        val shop = repository.getShopByOwnerId(profile.id)
+                        _merchantShop.value = shop
+                        if (shop == null) {
+                            _currentScreen.value = Screen.MerchantShopSetup
+                        } else {
+                            _currentScreen.value = Screen.MerchantDashboard
+                        }
+                    } else {
+                        _currentScreen.value = Screen.LocationSelect
+                    }
+                    onSuccess()
+                },
+                onFailure = { e ->
+                    onError(e.message ?: "Authentication failed!")
                 }
-            } else {
-                _currentScreen.value = Screen.LocationSelect
-            }
-            onSuccess()
+            )
         }
     }
 
@@ -1055,7 +1060,7 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
             delay(10000)
             var currentOrd = repository.getOrderById(orderId)
             if (currentOrd?.status == "pending") {
-                repository.updateOrderStatus(orderId, "accepted")
+                updateOrderStatusUseCase(orderId, "accepted")
                 _activeOrder.value = repository.getOrderById(orderId)
                 NotificationManager.fireInstantNotification(
                     getApplication(),
@@ -1066,7 +1071,7 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
             delay(12000)
             currentOrd = repository.getOrderById(orderId)
             if (currentOrd?.status == "accepted") {
-                repository.updateOrderStatus(orderId, "preparing")
+                updateOrderStatusUseCase(orderId, "preparing")
                 _activeOrder.value = repository.getOrderById(orderId)
                 NotificationManager.fireInstantNotification(
                     getApplication(),
@@ -1077,7 +1082,7 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
             delay(15000)
             currentOrd = repository.getOrderById(orderId)
             if (currentOrd?.status == "preparing") {
-                repository.updateOrderStatus(orderId, "out_for_delivery")
+                updateOrderStatusUseCase(orderId, "out_for_delivery")
                 _activeOrder.value = repository.getOrderById(orderId)
                 NotificationManager.fireInstantNotification(
                     getApplication(),
@@ -1088,7 +1093,7 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
             delay(15000)
             currentOrd = repository.getOrderById(orderId)
             if (currentOrd?.status == "out_for_delivery") {
-                repository.updateOrderStatus(orderId, "delivered")
+                updateOrderStatusUseCase(orderId, "delivered")
                 _activeOrder.value = repository.getOrderById(orderId)
                 NotificationManager.fireInstantNotification(
                     getApplication(),
@@ -1259,7 +1264,7 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
 
     fun updateMerchantOrderStatus(orderId: String, newStatus: String) {
         viewModelScope.launch {
-            repository.updateOrderStatus(orderId, newStatus)
+            updateOrderStatusUseCase(orderId, newStatus)
             // If viewing active tracking, sync too
             if (_activeOrder.value?.id == orderId) {
                 _activeOrder.value = repository.getOrderById(orderId)
@@ -1349,7 +1354,7 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
 
     fun acceptDeliveryJob(orderId: String, captainId: String) {
         viewModelScope.launch {
-            repository.updateOrderStatus(orderId, "preparing", captainId)
+            updateOrderStatusUseCase(orderId, "preparing", captainId)
             if (_activeOrder.value?.id == orderId) {
                 _activeOrder.value = repository.getOrderById(orderId)
             }
@@ -1358,7 +1363,7 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
 
     fun completeDeliveryJob(orderId: String) {
         viewModelScope.launch {
-            repository.updateOrderStatus(orderId, "delivered")
+            updateOrderStatusUseCase(orderId, "delivered")
             if (_activeOrder.value?.id == orderId) {
                 _activeOrder.value = repository.getOrderById(orderId)
             }
@@ -2023,368 +2028,51 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // --- Grooming ViewModel Methods ---
-
-    // Flows
-    fun getActiveGroomingServicesForShopFlow(shopId: String): Flow<List<GroomingServiceEntity>> =
-        repository.getActiveGroomingServicesForShopFlow(shopId)
-
-    fun getAllGroomingServicesForShopFlow(shopId: String): Flow<List<GroomingServiceEntity>> =
-        repository.getAllGroomingServicesForShopFlow(shopId)
-
-    fun getGroomingSlotsForShopAndDateFlow(shopId: String, date: String): Flow<List<GroomingSlotEntity>> =
-        repository.getGroomingSlotsForShopAndDateFlow(shopId, date)
-
-    fun getGroomingSlotsForDateRangeFlow(shopId: String, startDate: String, endDate: String): kotlinx.coroutines.flow.Flow<List<GroomingSlotEntity>> =
-        repository.getGroomingSlotsForDateRangeFlow(shopId, startDate, endDate)
-
-    // Booking flows for consumer & merchant
-    val myGroomingBookings: Flow<List<GroomingBookingEntity>> = _currentUser.flatMapLatest { user ->
-        if (user != null) repository.getGroomingBookingsForConsumerFlow(user.id)
-        else kotlinx.coroutines.flow.flowOf(emptyList())
-    }
-
-    val merchantGroomingBookings: Flow<List<GroomingBookingEntity>> = _merchantShop.flatMapLatest { shop ->
-        if (shop != null) repository.getGroomingBookingsForShopFlow(shop.id)
-        else kotlinx.coroutines.flow.flowOf(emptyList())
-    }
-
-    // Actions
-    fun getOrGenerateSlotsForDate(shopId: String, date: String, onResult: (List<GroomingSlotEntity>) -> Unit) {
-        viewModelScope.launch {
-            val slots = repository.getOrGenerateSlotsForDate(shopId, date)
-            onResult(slots)
-        }
-    }
-
-    fun bulkEditSlotCapacity(
-        shopId: String,
-        startDate: String,
-        endDate: String,
-        daysOfWeek: List<Int>,
-        newCapacity: Int,
-        onResult: (Boolean) -> Unit = {}
-    ) {
-        viewModelScope.launch {
-            repository.bulkEditSlotCapacity(shopId, startDate, endDate, daysOfWeek, newCapacity)
-            onResult(true)
-        }
-    }
-
-    fun toggleSlotBlocked(slot: GroomingSlotEntity) {
-        viewModelScope.launch {
-            val updated = slot.copy(isBlocked = !slot.isBlocked)
-            repository.insertGroomingSlot(updated)
-        }
-    }
-
-    fun bookGroomingSlot(
-        shopId: String,
-        serviceId: String,
-        slotId: String,
-        petId: String,
-        petSizeCategory: String,
-        specialInstructions: String?,
-        totalPrice: Double,
-        onSuccess: (String) -> Unit,
-        onError: (String) -> Unit
-    ) {
+    fun getActiveGroomingServicesForShopFlow(shopId: String) = groomingViewModel.getActiveGroomingServicesForShopFlow(shopId)
+    fun getAllGroomingServicesForShopFlow(shopId: String) = groomingViewModel.getAllGroomingServicesForShopFlow(shopId)
+    fun getGroomingSlotsForShopAndDateFlow(shopId: String, date: String) = groomingViewModel.getGroomingSlotsForShopAndDateFlow(shopId, date)
+    fun getGroomingSlotsForDateRangeFlow(shopId: String, startDate: String, endDate: String) = groomingViewModel.getGroomingSlotsForDateRangeFlow(shopId, startDate, endDate)
+    val myGroomingBookings: Flow<List<GroomingBookingEntity>> get() = groomingViewModel.myGroomingBookings
+    val merchantGroomingBookings: Flow<List<GroomingBookingEntity>> get() = groomingViewModel.merchantGroomingBookings
+    fun getOrGenerateSlotsForDate(shopId: String, date: String, onResult: (List<GroomingSlotEntity>) -> Unit) = groomingViewModel.getOrGenerateSlotsForDate(shopId, date, onResult)
+    fun bulkEditSlotCapacity(shopId: String, startDate: String, endDate: String, daysOfWeek: List<Int>, newCapacity: Int, onResult: (Boolean) -> Unit = {}) = groomingViewModel.bulkEditSlotCapacity(shopId, startDate, endDate, daysOfWeek, newCapacity, onResult)
+    fun toggleSlotBlocked(slot: GroomingSlotEntity) = groomingViewModel.toggleSlotBlocked(slot)
+    fun bookGroomingSlot(shopId: String, serviceId: String, slotId: String, petId: String, petSizeCategory: String, specialInstructions: String?, totalPrice: Double, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
         val user = _currentUser.value ?: return onError("User not logged in.")
-        viewModelScope.launch {
-            try {
-                val bookingId = "gr_bk_" + java.util.UUID.randomUUID().toString().substring(0, 8)
-                val booking = GroomingBookingEntity(
-                    id = bookingId,
-                    consumerId = user.id,
-                    shopId = shopId,
-                    serviceId = serviceId,
-                    slotId = slotId,
-                    petId = petId,
-                    petSizeCategory = petSizeCategory,
-                    status = "pending",
-                    specialInstructions = specialInstructions?.trim()?.takeIf { it.isNotEmpty() },
-                    totalPrice = totalPrice,
-                    bookedAt = System.currentTimeMillis()
-                )
-                repository.bookGroomingSlot(booking)
-                onSuccess(bookingId)
-            } catch (e: Exception) {
-                onError(e.message ?: "Booking failed due to slot capacity or network issue.")
-            }
-        }
+        groomingViewModel.bookGroomingSlot(user.id, shopId, serviceId, slotId, petId, petSizeCategory, specialInstructions, totalPrice, onSuccess, onError)
     }
-
-    fun cancelGroomingBooking(bookingId: String, onResult: (Boolean) -> Unit = {}) {
-        viewModelScope.launch {
-            repository.cancelGroomingBooking(bookingId)
-            onResult(true)
-        }
-    }
-
-    fun updateGroomingBookingStatus(bookingId: String, status: String, onResult: (Boolean) -> Unit = {}) {
-        viewModelScope.launch {
-            repository.updateGroomingBookingStatus(bookingId, status)
-            onResult(true)
-        }
-    }
-
-    fun getGroomingBookingById(bookingId: String, onResult: (GroomingBookingEntity?) -> Unit) {
-        viewModelScope.launch {
-            val booking = repository.getGroomingBookingById(bookingId)
-            onResult(booking)
-        }
-    }
-
-    fun getGroomingServiceById(serviceId: String, onResult: (GroomingServiceEntity?) -> Unit) {
-        viewModelScope.launch {
-            val service = repository.getGroomingServiceById(serviceId)
-            onResult(service)
-        }
-    }
-
-    fun saveGroomingService(
-        serviceType: String,
-        variantName: String,
-        description: String,
-        petSizeCategory: String,
-        price: Double,
-        durationMinutes: Int,
-        imageUrls: List<String>,
-        isActive: Boolean,
-        onResult: (Boolean) -> Unit = {}
-    ) {
+    fun cancelGroomingBooking(bookingId: String, onResult: (Boolean) -> Unit = {}) = groomingViewModel.cancelGroomingBooking(bookingId, onResult)
+    fun updateGroomingBookingStatus(bookingId: String, status: String, onResult: (Boolean) -> Unit = {}) = groomingViewModel.updateGroomingBookingStatus(bookingId, status, onResult)
+    fun getGroomingBookingById(bookingId: String, onResult: (GroomingBookingEntity?) -> Unit) = groomingViewModel.getGroomingBookingById(bookingId, onResult)
+    fun getGroomingServiceById(serviceId: String, onResult: (GroomingServiceEntity?) -> Unit) = groomingViewModel.getGroomingServiceById(serviceId, onResult)
+    fun saveGroomingService(serviceType: String, variantName: String, description: String, petSizeCategory: String, price: Double, durationMinutes: Int, imageUrls: List<String>, isActive: Boolean, onResult: (Boolean) -> Unit = {}) {
         val shop = _merchantShop.value ?: return
-        viewModelScope.launch {
-            val id = "gs_" + shop.id + "_" + serviceType.replace("_", "") + "_" + variantName.replace(" ", "").lowercase() + "_" + petSizeCategory
-            val service = GroomingServiceEntity(
-                id = id,
-                shopId = shop.id,
-                serviceType = serviceType,
-                variantName = variantName,
-                description = description,
-                petSizeCategory = petSizeCategory,
-                price = price,
-                durationMinutes = durationMinutes,
-                imageUrls = imageUrls,
-                isActive = isActive,
-                createdAt = System.currentTimeMillis()
-            )
-            repository.insertGroomingService(service)
-            onResult(true)
-        }
+        groomingViewModel.saveGroomingService(shop.id, serviceType, variantName, description, petSizeCategory, price, durationMinutes, imageUrls, isActive, onResult)
     }
-
-    fun deleteGroomingService(serviceId: String) {
-        viewModelScope.launch {
-            repository.deleteGroomingService(serviceId)
-        }
-    }
-
-    fun updateGroomingService(service: GroomingServiceEntity) {
-        viewModelScope.launch {
-            repository.insertGroomingService(service)
-        }
-    }
+    fun deleteGroomingService(serviceId: String) = groomingViewModel.deleteGroomingService(serviceId)
+    fun updateGroomingService(service: GroomingServiceEntity) = groomingViewModel.updateGroomingService(service)
 
     // --- Doctor & Hospital Management ---
-    fun getDoctorsForShopFlow(shopId: String): Flow<List<DoctorEntity>> =
-        repository.getDoctorsForShopFlow(shopId)
-
-    fun getDoctorById(id: String, onResult: (DoctorEntity?) -> Unit) {
-        viewModelScope.launch {
-            onResult(repository.getDoctorById(id))
-        }
-    }
-
-    fun getDoctorSlotsFlow(shopId: String, doctorId: String, date: String): Flow<List<DoctorSlotEntity>> =
-        repository.getDoctorSlotsFlow(shopId, doctorId, date)
-
-    fun getOrGenerateDoctorSlotsForDate(shopId: String, doctorId: String, date: String, onResult: (List<DoctorSlotEntity>) -> Unit) {
-        viewModelScope.launch {
-            val slots = repository.getOrGenerateDoctorSlotsForDate(shopId, doctorId, date)
-            onResult(slots)
-        }
-    }
-
-    fun toggleDoctorSlotBlocked(slot: DoctorSlotEntity) {
-        viewModelScope.launch {
-            repository.toggleDoctorSlotBlocked(slot)
-        }
-    }
-
-    fun updateDoctorSlotCapacity(slotId: String, capacity: Int) {
-        viewModelScope.launch {
-            repository.updateDoctorSlotCapacity(slotId, capacity)
-        }
-    }
-
-    fun saveDoctor(
-        id: String?,
-        shopId: String,
-        name: String,
-        photoUrl: String,
-        qualification: String,
-        specialization: String,
-        workingDays: List<String>,
-        activeSlots: List<String>,
-        isAvailable: Boolean,
-        onResult: (Boolean) -> Unit = {}
-    ) {
-        viewModelScope.launch {
-            val docId = id ?: ("doc_" + UUID.randomUUID().toString().substring(0, 8))
-            val doctor = DoctorEntity(
-                id = docId,
-                shopId = shopId,
-                name = name.trim(),
-                photoUrl = photoUrl.trim().ifEmpty { "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400" },
-                qualification = qualification.trim(),
-                specialization = specialization.trim(),
-                workingDays = workingDays,
-                activeSlots = activeSlots,
-                isAvailable = isAvailable
-            )
-            repository.insertDoctor(doctor)
-            onResult(true)
-        }
-    }
-
-    fun deleteDoctor(doctorId: String) {
-        viewModelScope.launch {
-            repository.deleteDoctor(doctorId)
-        }
-    }
-
-    fun bookDoctorAppointment(
-        shopId: String,
-        serviceId: String,
-        serviceName: String,
-        price: Double,
-        date: String,
-        time: String,
-        petName: String,
-        doctorId: String?,
-        slotId: String?,
-        concern: String = "",
-        priority: String = "Normal",
-        onSuccess: () -> Unit = {},
-        onError: (String) -> Unit = {}
-    ) {
-        val user = _currentUser.value ?: return onError("User not logged in.")
-        viewModelScope.launch {
-            try {
-                val appt = AppointmentEntity(
-                    id = "appt_" + UUID.randomUUID().toString().substring(0, 8),
-                    consumerId = user.id,
-                    shopId = shopId,
-                    serviceId = serviceId,
-                    serviceName = serviceName,
-                    price = price,
-                    appointmentDate = date,
-                    appointmentTime = time,
-                    petName = petName.trim().ifEmpty { "Buddy" },
-                    status = "pending",
-                    doctorId = doctorId,
-                    createdAt = System.currentTimeMillis(),
-                    concern = concern,
-                    priority = priority
-                )
-                if (slotId != null) {
-                    repository.bookDoctorAppointment(appt, slotId)
-                } else {
-                    repository.insertAppointment(appt)
-                }
-                onSuccess()
-            } catch (e: Exception) {
-                onError(e.message ?: "Booking failed.")
-            }
-        }
-    }
+    fun getDoctorsForShopFlow(shopId: String) = doctorViewModel.getDoctorsForShopFlow(shopId)
+    fun getDoctorById(id: String, onResult: (DoctorEntity?) -> Unit) = doctorViewModel.getDoctorById(id, onResult)
+    fun getDoctorSlotsFlow(shopId: String, doctorId: String, date: String) = doctorViewModel.getDoctorSlotsFlow(shopId, doctorId, date)
+    fun getOrGenerateDoctorSlotsForDate(shopId: String, doctorId: String, date: String, onResult: (List<DoctorSlotEntity>) -> Unit) = doctorViewModel.getOrGenerateDoctorSlotsForDate(shopId, doctorId, date, onResult)
+    fun toggleDoctorSlotBlocked(slot: DoctorSlotEntity) = doctorViewModel.toggleDoctorSlotBlocked(slot)
+    fun updateDoctorSlotCapacity(slotId: String, capacity: Int) = doctorViewModel.updateDoctorSlotCapacity(slotId, capacity)
+    fun saveDoctor(id: String?, shopId: String, name: String, photoUrl: String, qualification: String, specialization: String, workingDays: List<String>, activeSlots: List<String>, isAvailable: Boolean, onResult: (Boolean) -> Unit = {}) = doctorViewModel.saveDoctor(id, shopId, name, photoUrl, qualification, specialization, workingDays, activeSlots, isAvailable, onResult)
+    fun deleteDoctor(doctorId: String) = doctorViewModel.deleteDoctor(doctorId)
+    fun bookDoctorAppointment(shopId: String, serviceId: String, serviceName: String, price: Double, date: String, time: String, petName: String, doctorId: String?, slotId: String?, concern: String = "", priority: String = "Normal", onSuccess: () -> Unit = {}, onError: (String) -> Unit = {}) = doctorViewModel.bookDoctorAppointment(shopId, serviceId, serviceName, price, date, time, petName, doctorId, slotId, concern, priority, onSuccess, onError)
 
     // --- Rescheduling State Machine & Refunds ---
-    fun proposeReschedule(appointment: AppointmentEntity, newDate: String, newTime: String, onResult: (Boolean) -> Unit = {}) {
-        viewModelScope.launch {
-            val updated = appointment.copy(
-                rescheduleDate = newDate,
-                rescheduleTime = newTime,
-                status = "reschedule_pending"
-            )
-            repository.insertAppointment(updated)
-            onResult(true)
-        }
-    }
-
-    fun acceptReschedule(appointment: AppointmentEntity, onResult: (Boolean) -> Unit = {}) {
-        viewModelScope.launch {
-            val updated = appointment.copy(
-                appointmentDate = appointment.rescheduleDate ?: appointment.appointmentDate,
-                appointmentTime = appointment.rescheduleTime ?: appointment.appointmentTime,
-                rescheduleDate = null,
-                rescheduleTime = null,
-                status = "confirmed"
-            )
-            repository.insertAppointment(updated)
-            onResult(true)
-        }
-    }
-
-    fun declineReschedule(appointment: AppointmentEntity, onResult: (Boolean) -> Unit = {}) {
-        viewModelScope.launch {
-            val updated = appointment.copy(
-                rescheduleDate = null,
-                rescheduleTime = null,
-                status = "cancelled"
-            )
-            repository.insertAppointment(updated)
-            onResult(true)
-        }
-    }
-
-    fun cancelAppointmentWithRefund(appointment: AppointmentEntity, slotId: String?, onResult: (Boolean) -> Unit = {}) {
-        viewModelScope.launch {
-            repository.cancelDoctorAppointment(appointment.id, slotId)
-            onResult(true)
-        }
-    }
+    fun proposeReschedule(appointment: AppointmentEntity, newDate: String, newTime: String, onResult: (Boolean) -> Unit = {}) = doctorViewModel.proposeReschedule(appointment, newDate, newTime, onResult)
+    fun acceptReschedule(appointment: AppointmentEntity, onResult: (Boolean) -> Unit = {}) = doctorViewModel.acceptReschedule(appointment, onResult)
+    fun declineReschedule(appointment: AppointmentEntity, onResult: (Boolean) -> Unit = {}) = doctorViewModel.declineReschedule(appointment, onResult)
+    fun cancelAppointmentWithRefund(appointment: AppointmentEntity, slotId: String?, onResult: (Boolean) -> Unit = {}) = doctorViewModel.cancelAppointmentWithRefund(appointment, slotId, onResult)
 
     // Grooming Rescheduling Actions
-    fun proposeGroomingReschedule(booking: GroomingBookingEntity, newDate: String, newTime: String, onResult: (Boolean) -> Unit = {}) {
-        viewModelScope.launch {
-            val updated = booking.copy(
-                rescheduleDate = newDate,
-                rescheduleTime = newTime,
-                status = "reschedule_pending"
-            )
-            repository.insertGroomingBooking(updated)
-            onResult(true)
-        }
-    }
-
-    fun acceptGroomingReschedule(booking: GroomingBookingEntity, newSlotId: String, newDate: String, newTime: String, onResult: (Boolean) -> Unit = {}) {
-        viewModelScope.launch {
-            database.pawsDao().decrementSlotBookedCount(booking.slotId)
-            database.pawsDao().incrementSlotBookedCount(newSlotId)
-            val updated = booking.copy(
-                slotId = newSlotId,
-                rescheduleDate = null,
-                rescheduleTime = null,
-                status = "confirmed"
-            )
-            repository.insertGroomingBooking(updated)
-            onResult(true)
-        }
-    }
-
-    fun declineGroomingReschedule(booking: GroomingBookingEntity, onResult: (Boolean) -> Unit = {}) {
-        viewModelScope.launch {
-            val updated = booking.copy(
-                rescheduleDate = null,
-                rescheduleTime = null,
-                status = "cancelled"
-            )
-            repository.insertGroomingBooking(updated)
-            database.pawsDao().decrementSlotBookedCount(booking.slotId)
-            onResult(true)
-        }
-    }
+    fun proposeGroomingReschedule(booking: GroomingBookingEntity, newDate: String, newTime: String, onResult: (Boolean) -> Unit = {}) = groomingViewModel.proposeGroomingReschedule(booking, newDate, newTime, onResult)
+    fun acceptGroomingReschedule(booking: GroomingBookingEntity, newSlotId: String, newDate: String, newTime: String, onResult: (Boolean) -> Unit = {}) = groomingViewModel.acceptGroomingReschedule(booking, newSlotId, newDate, newTime, onResult)
+    fun declineGroomingReschedule(booking: GroomingBookingEntity, onResult: (Boolean) -> Unit = {}) = groomingViewModel.declineGroomingReschedule(booking, onResult)
 
     // --- Coupon Management ---
     fun getCouponsForShopFlow(shopId: String): Flow<List<CouponEntity>> =
@@ -2498,5 +2186,3 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 }
-
-

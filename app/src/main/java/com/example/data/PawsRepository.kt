@@ -1,16 +1,38 @@
 package com.example.data
 
+import com.example.domain.grooming.GroomingBookingRepository
+import com.example.domain.grooming.GroomingBookingRequest
+import com.example.domain.orders.CheckoutProduct
+import com.example.domain.orders.CheckoutRepository
+import com.example.domain.orders.OrderStatusRepository
+import com.example.domain.orders.PlaceOrderItemRequest
+import com.example.domain.orders.PlaceOrderRequest
+import com.example.domain.orders.PlacedOrder
+import com.example.domain.vet.DoctorAppointmentRepository
+import com.example.domain.vet.DoctorAppointmentRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
-class PawsRepository(private val pawsDao: PawsDao) {
+class PawsRepository(private val pawsDao: PawsDao) :
+    GroomingBookingRepository,
+    DoctorAppointmentRepository,
+    CheckoutRepository,
+    OrderStatusRepository {
 
     // Profiles
     suspend fun getProfile(id: String): ProfileEntity? = pawsDao.getProfile(id)
     suspend fun getProfileByPhone(phone: String): ProfileEntity? = pawsDao.getProfileByPhone(phone)
     suspend fun getProfileByEmail(email: String): ProfileEntity? = pawsDao.getProfileByEmail(email)
-    suspend fun insertProfile(profile: ProfileEntity) = pawsDao.insertProfile(profile)
+    suspend fun insertProfile(profile: ProfileEntity) {
+        val rawPassword = profile.password
+        val finalPassword = when {
+            rawPassword.isNullOrBlank() -> null
+            BCryptHelper.isHashedPassword(rawPassword) -> rawPassword
+            else -> BCryptHelper.hashPassword(rawPassword)
+        }
+        pawsDao.insertProfile(profile.copy(password = finalPassword))
+    }
     suspend fun updateProfileCity(id: String, cityId: String) = pawsDao.updateProfileCity(id, cityId)
 
     // Cities
@@ -66,11 +88,46 @@ class PawsRepository(private val pawsDao: PawsDao) {
             )
         }
     }
-    suspend fun updateOrderStatus(id: String, status: String, captainId: String? = null) {
-        pawsDao.updateOrderStatus(id, status, captainId)
-        if (!ProductionConfig.IS_DEMO_MODE) {
-            SupabaseManager.updateOrderStatusInCloud(id, status)
+
+    override suspend fun getCheckoutProduct(productId: String): CheckoutProduct? {
+        return pawsDao.getProductById(productId)?.let { product ->
+            CheckoutProduct(id = product.id, price = product.price)
         }
+    }
+
+    override suspend fun placeOrder(request: PlaceOrderRequest): PlacedOrder {
+        insertOrder(
+            OrderEntity(
+                id = request.orderId,
+                consumerId = request.consumerId,
+                shopId = request.shopId,
+                type = request.deliveryType,
+                status = "pending",
+                totalAmount = request.totalAmount,
+                deliveryAddress = request.deliveryAddress,
+                notes = request.notes,
+                placedAt = request.placedAt
+            )
+        )
+        insertOrderItems(request.items.map { it.toEntity() })
+        return PlacedOrder(
+            orderId = request.orderId,
+            totalAmount = request.totalAmount,
+            itemCount = request.items.size,
+            deliveryType = request.deliveryType
+        )
+    }
+    override suspend fun updateOrderStatus(orderId: String, status: String, captainId: String?) {
+        val existingOrder = pawsDao.getOrderById(orderId)
+        val finalCaptainId = captainId ?: existingOrder?.captainId
+        pawsDao.updateOrderStatus(orderId, status, finalCaptainId)
+        if (!ProductionConfig.IS_DEMO_MODE) {
+            SupabaseManager.updateOrderStatusInCloud(orderId, status)
+        }
+    }
+
+    suspend fun updateOrderStatus(orderId: String, status: String) {
+        updateOrderStatus(orderId, status, null)
     }
 
     // Order Items
@@ -416,14 +473,10 @@ class PawsRepository(private val pawsDao: PawsDao) {
             )
         }
 
-        val hasNew = pawsDao.hasNewCategories()
-        if (hasNew == 0) {
-            pawsDao.clearCategories()
-            pawsDao.clearShops()
-            pawsDao.clearProducts()
-            pawsDao.clearServices()
-        } else {
-            // New database structure already seeded, check if we need to seed appointments/reminders
+        // Additive seeding only: never clear user or merchant-created records during startup.
+        // Existing seed rows are protected by REPLACE semantics and id-prefix checks below.
+        run {
+            // Check if we need to seed appointments/reminders
             val existingAppts = pawsDao.getAppointmentsForConsumerSync("consumer_arjun")
             if (existingAppts.none { it.id.startsWith("appt_seed_") }) {
                 val seededAppointments = listOf(
@@ -551,7 +604,6 @@ class PawsRepository(private val pawsDao: PawsDao) {
                 )
                 seededMedReminders.forEach { pawsDao.insertReminder(it) }
             }
-            return@withContext
         }
 
         // 2. Seed Categories
@@ -1253,7 +1305,7 @@ class PawsRepository(private val pawsDao: PawsDao) {
             avatarUrl = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop",
             role = "superadmin",
             email = "trinadhbandapalli@gmail.com",
-            password = "thrinnadhh@Paws",
+            password = BCryptHelper.hashPassword("thrinnadhh@Paws"),
             address = "Super Admin Headquarters, Hyderabad"
         )
         val defaultCustomerProfile = ProfileEntity(
@@ -1264,7 +1316,7 @@ class PawsRepository(private val pawsDao: PawsDao) {
             avatarUrl = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop",
             role = "consumer",
             email = "arjun@gmail.com",
-            password = "password123",
+            password = BCryptHelper.hashPassword("password123"),
             address = "Villa 42, Road No 5, Banjara Hills, Hyderabad"
         )
         pawsDao.insertProfile(superAdminProfile)
@@ -1602,11 +1654,11 @@ class PawsRepository(private val pawsDao: PawsDao) {
         // Update default profiles with 4-digit passwords
         val arjun = pawsDao.getProfile("consumer_arjun")
         if (arjun != null) {
-            pawsDao.insertProfile(arjun.copy(password = "1234"))
+            pawsDao.insertProfile(arjun.copy(password = BCryptHelper.hashPassword("1234")))
         }
         val superAdmin = pawsDao.getProfile("admin_super")
         if (superAdmin != null) {
-            pawsDao.insertProfile(superAdmin.copy(password = "0000"))
+            pawsDao.insertProfile(superAdmin.copy(password = BCryptHelper.hashPassword("0000")))
         }
 
         // Attach freebie sample to Pedigree dry dog food
@@ -1752,7 +1804,25 @@ class PawsRepository(private val pawsDao: PawsDao) {
         pawsDao.incrementSlotBookedCount(booking.slotId)
     }
 
-    suspend fun cancelGroomingBooking(bookingId: String) = withContext(Dispatchers.IO) {
+    override suspend fun bookGroomingSlot(request: GroomingBookingRequest): String {
+        val booking = GroomingBookingEntity(
+            id = request.id,
+            consumerId = request.consumerId,
+            shopId = request.shopId,
+            serviceId = request.serviceId,
+            slotId = request.slotId,
+            petId = request.petId,
+            petSizeCategory = request.petSizeCategory,
+            status = request.status,
+            specialInstructions = request.specialInstructions,
+            totalPrice = request.totalPrice,
+            bookedAt = request.bookedAt
+        )
+        bookGroomingSlot(booking)
+        return request.id
+    }
+
+    override suspend fun cancelGroomingBooking(bookingId: String) = withContext(Dispatchers.IO) {
         val booking = pawsDao.getGroomingBookingById(bookingId) ?: return@withContext
         if (booking.status == "cancelled") return@withContext
 
@@ -1760,7 +1830,7 @@ class PawsRepository(private val pawsDao: PawsDao) {
         pawsDao.decrementSlotBookedCount(booking.slotId)
     }
 
-    suspend fun updateGroomingBookingStatus(bookingId: String, status: String) = withContext(Dispatchers.IO) {
+    override suspend fun updateGroomingBookingStatus(bookingId: String, status: String) = withContext(Dispatchers.IO) {
         val booking = pawsDao.getGroomingBookingById(bookingId) ?: return@withContext
         val oldStatus = booking.status
         
@@ -1838,17 +1908,39 @@ class PawsRepository(private val pawsDao: PawsDao) {
         pawsDao.incrementDoctorSlotBookedCount(slotId)
     }
 
-    suspend fun cancelDoctorAppointment(appointmentId: String, slotId: String?) = withContext(Dispatchers.IO) {
-        val appt = pawsDao.getOrderById(appointmentId) // wait, appointment is in appointments table, not orders
-        // we can fetch appointment from pawsDao: wait, is there a getAppointmentById in DAO?
-        // Let's check PawsDao.kt. Oh, PawsDao.kt doesn't have getAppointmentById! Let's check.
-        // Wait, does PawsDao have getAppointmentById?
-        // Let's look at PawsDao.kt: it has getAppointmentsForConsumerFlow, getAppointmentsForShopFlow, insertAppointment, updateAppointmentStatus.
-        // But no getAppointmentById! Oh, let's look at line 224: insertAppointment, updateAppointmentStatus.
-        // Wait, how do we get appointment by id?
-        // Ah! In PawsDao.kt: we can add getAppointmentById! But wait, let's see how rescheduleAppointment does it in PawsViewModel:
-        // it receives AppointmentEntity directly!
-        // Yes, so we can just update status to "cancelled" and decrement doctor slot.
+    override suspend fun bookDoctorAppointment(request: DoctorAppointmentRequest, slotId: String?): String {
+        val appointment = AppointmentEntity(
+            id = request.id,
+            consumerId = request.consumerId,
+            shopId = request.shopId,
+            serviceId = request.serviceId,
+            serviceName = request.serviceName,
+            price = request.price,
+            appointmentDate = request.appointmentDate,
+            appointmentTime = request.appointmentTime,
+            petName = request.petName,
+            status = request.status,
+            doctorId = request.doctorId,
+            createdAt = request.createdAt,
+            concern = request.concern,
+            priority = request.priority
+        )
+        if (slotId != null) {
+            bookDoctorAppointment(appointment, slotId)
+        } else {
+            insertAppointment(appointment)
+        }
+        return request.id
+    }
+
+    suspend fun getAppointmentById(id: String): AppointmentEntity? = pawsDao.getAppointmentById(id)
+
+    override suspend fun cancelDoctorAppointment(appointmentId: String, slotId: String?) = withContext(Dispatchers.IO) {
+        val appt = pawsDao.getAppointmentById(appointmentId)
+        if (appt == null || appt.status == "cancelled" || appt.status == "no_show") {
+            return@withContext
+        }
+
         pawsDao.updateAppointmentStatus(appointmentId, "cancelled")
         if (slotId != null) {
             pawsDao.decrementDoctorSlotBookedCount(slotId)
@@ -1862,3 +1954,13 @@ class PawsRepository(private val pawsDao: PawsDao) {
     suspend fun deleteCoupon(id: String) = withContext(Dispatchers.IO) { pawsDao.deleteCoupon(id) }
 }
 
+private fun PlaceOrderItemRequest.toEntity(): OrderItemEntity {
+    return OrderItemEntity(
+        id = id,
+        orderId = orderId,
+        productId = productId,
+        quantity = quantity,
+        unitPrice = unitPrice,
+        subtotal = subtotal
+    )
+}

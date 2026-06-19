@@ -224,8 +224,8 @@ class CustomerAppTest {
 
         val found = repo.getProfileByPhone("799111222333")
         assertNotNull(found)
-        // Verify pin check
-        assertEquals("1234", found?.password)
+        assertNotEquals("Password must not be stored as plaintext", "1234", found?.password)
+        assertTrue("Stored hash should verify the correct PIN", BCryptHelper.verifyPassword("1234", found?.password ?: ""))
     }
 
     @Test
@@ -242,7 +242,7 @@ class CustomerAppTest {
         val found = repo.getProfileByPhone("799222333444")
         assertNotNull(found)
         val enteredPin = "0000"
-        val isWrong = (found?.password != null && found.password != enteredPin)
+        val isWrong = found?.password != null && !BCryptHelper.verifyPassword(enteredPin, found.password)
         assertTrue("Wrong PIN should be flagged", isWrong)
     }
 
@@ -253,7 +253,7 @@ class CustomerAppTest {
 
         val found = repo.getProfileByPhone("799333444555")
         val enteredPin = "4321"
-        val isCorrect = (found?.password == null || found.password == enteredPin)
+        val isCorrect = found?.password != null && BCryptHelper.verifyPassword(enteredPin, found.password)
         assertTrue("Correct PIN must be accepted", isCorrect)
     }
 
@@ -264,7 +264,8 @@ class CustomerAppTest {
 
         val found = repo.getProfileByEmail("test_login@pawsapp.com")
         assertNotNull(found)
-        assertEquals("MyPaws#1", found?.password)
+        assertNotEquals("Password must not be stored as plaintext", "MyPaws#1", found?.password)
+        assertTrue("Stored hash should verify the correct password", BCryptHelper.verifyPassword("MyPaws#1", found?.password ?: ""))
     }
 
     // ═══════════════════════════════════════════════════════════════════════════

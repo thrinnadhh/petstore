@@ -217,6 +217,9 @@ interface PawsDao {
     @Query("SELECT * FROM appointments WHERE consumerId = :consumerId")
     suspend fun getAppointmentsForConsumerSync(consumerId: String): List<AppointmentEntity>
 
+    @Query("SELECT * FROM appointments WHERE id = :id LIMIT 1")
+    suspend fun getAppointmentById(id: String): AppointmentEntity?
+
     @Query("SELECT * FROM appointments WHERE shopId = :shopId ORDER BY createdAt DESC")
     fun getAppointmentsForShopFlow(shopId: String): Flow<List<AppointmentEntity>>
 
@@ -383,7 +386,7 @@ interface PawsDao {
     @Query("UPDATE grooming_slots SET bookedCount = bookedCount + 1 WHERE id = :slotId")
     suspend fun incrementSlotBookedCount(slotId: String)
 
-    @Query("UPDATE grooming_slots SET bookedCount = bookedCount - 1 WHERE id = :slotId")
+    @Query("UPDATE grooming_slots SET bookedCount = bookedCount - 1 WHERE id = :slotId AND bookedCount > 0")
     suspend fun decrementSlotBookedCount(slotId: String)
 
     @Query("SELECT * FROM grooming_slots WHERE shopId = :shopId AND slotDate >= :startDate AND slotDate <= :endDate ORDER BY slotDate ASC, slotTime ASC")
@@ -446,7 +449,7 @@ interface PawsDao {
     @Query("UPDATE doctor_slots SET bookedCount = bookedCount + 1 WHERE id = :slotId")
     suspend fun incrementDoctorSlotBookedCount(slotId: String)
 
-    @Query("UPDATE doctor_slots SET bookedCount = bookedCount - 1 WHERE id = :slotId")
+    @Query("UPDATE doctor_slots SET bookedCount = bookedCount - 1 WHERE id = :slotId AND bookedCount > 0")
     suspend fun decrementDoctorSlotBookedCount(slotId: String)
 
     @Query("SELECT * FROM doctor_slots WHERE shopId = :shopId AND doctorId = :doctorId AND slotDate >= :startDate AND slotDate <= :endDate ORDER BY slotDate ASC, slotTime ASC")
@@ -456,10 +459,10 @@ interface PawsDao {
     suspend fun getDoctorSlotsForDateRangeSync(shopId: String, doctorId: String, startDate: String, endDate: String): List<DoctorSlotEntity>
 
     // Coupons
-    @Query("SELECT * FROM coupons WHERE shopId = :shopId OR shopId = 'global' AND isActive = 1")
+    @Query("SELECT * FROM coupons WHERE (shopId = :shopId OR shopId = 'global') AND isActive = 1")
     fun getCouponsForShopFlow(shopId: String): Flow<List<CouponEntity>>
 
-    @Query("SELECT * FROM coupons WHERE shopId = :shopId OR shopId = 'global' AND isActive = 1")
+    @Query("SELECT * FROM coupons WHERE (shopId = :shopId OR shopId = 'global') AND isActive = 1")
     suspend fun getCouponsForShopSync(shopId: String): List<CouponEntity>
 
     @Query("SELECT * FROM coupons WHERE code = :code LIMIT 1")
@@ -471,5 +474,4 @@ interface PawsDao {
     @Query("DELETE FROM coupons WHERE id = :id")
     suspend fun deleteCoupon(id: String)
 }
-
 

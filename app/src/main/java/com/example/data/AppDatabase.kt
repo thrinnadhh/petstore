@@ -37,7 +37,7 @@ import androidx.room.TypeConverters
         DoctorSlotEntity::class,
         CouponEntity::class
     ],
-    version = 22,
+    version = 23,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -56,7 +56,7 @@ abstract class AppDatabase : RoomDatabase() {
                     e.printStackTrace()
                 }
                 // Initialize SQLCipher factory helper for secure SQLite encryption at rest
-                val passphrase = "secure_paws_key_passphrase_to_encrypt_sqlite".toByteArray()
+                val passphrase = KeystoreHelper.getOrCreatePassphrase(context)
                 val factory = net.zetetic.database.sqlcipher.SupportOpenHelperFactory(passphrase)
 
                 val instance = Room.databaseBuilder(
@@ -65,7 +65,7 @@ abstract class AppDatabase : RoomDatabase() {
                     "paws_database"
                 )
                 .openHelperFactory(factory)
-                .fallbackToDestructiveMigration()
+                .addMigrations(*AppDatabaseMigrations.ALL)
                 .build()
                 INSTANCE = instance
                 instance
