@@ -32,6 +32,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -243,6 +244,29 @@ fun PawsApp(viewModel: PawsViewModel) {
                     is Screen.TravelApparel -> CatalogScreen(categoryId = "cat_travel", viewModel = viewModel)
                     is Screen.FurnitureSleep -> CatalogScreen(categoryId = "cat_furniture", viewModel = viewModel)
                     is Screen.WasteManagement -> CatalogScreen(categoryId = "cat_waste", viewModel = viewModel)
+                    is Screen.GroomingSlotPicker -> GroomingSlotPickerScreen(
+                        viewModel = viewModel,
+                        shopId = screen.shopId,
+                        serviceId = screen.serviceId,
+                        variantName = screen.variantName,
+                        price = screen.price,
+                        durationMinutes = screen.durationMinutes,
+                        petSizeCategory = screen.petSizeCategory
+                    )
+                    is Screen.GroomingBookingConfirmation -> GroomingBookingConfirmationScreen(viewModel = viewModel, bookingId = screen.bookingId)
+                    is Screen.MyGroomingBookings -> MyGroomingBookingsScreen(viewModel = viewModel)
+                    is Screen.MerchantGroomingServices -> MerchantGroomingServicesScreen(viewModel = viewModel)
+                    is Screen.MerchantGroomingSlots -> MerchantGroomingSlotsScreen(viewModel = viewModel)
+                    is Screen.MerchantGroomingQueue -> MerchantGroomingQueueScreen(viewModel = viewModel)
+                    is Screen.DoctorSlotPicker -> DoctorSlotPickerScreen(
+                        viewModel = viewModel,
+                        shopId = screen.shopId,
+                        doctorId = screen.doctorId,
+                        serviceId = screen.serviceId,
+                        price = screen.price
+                    )
+                    is Screen.MerchantDoctors -> MerchantDoctorsScreen(viewModel = viewModel)
+                    is Screen.MerchantCoupons -> MerchantCouponsScreen(viewModel = viewModel)
                 }
             }
 
@@ -527,6 +551,8 @@ fun AuthScreen(viewModel: PawsViewModel) {
     var regOtp by remember { mutableStateOf("") }
     var isRegOtpSent by remember { mutableStateOf(false) }
     var regError by remember { mutableStateOf<String?>(null) }
+    var regCityId by remember { mutableStateOf("hyd") }
+    var regAddress by remember { mutableStateOf("") }
     var regPetName by remember { mutableStateOf("") }
     var regPetBreed by remember { mutableStateOf("") }
     var regPetAge by remember { mutableStateOf("") }
@@ -739,197 +765,82 @@ fun AuthScreen(viewModel: PawsViewModel) {
         Spacer(modifier = Modifier.height(28.dp))
 
         if (activeTab == "login") {
-            // LOGIN TAB VIEW
-            if (!isOtpLoginOption) {
-                // Email / Phone & Password Login
-                OutlinedTextField(
-                    value = loginEmailOrPhone,
-                    onValueChange = { loginEmailOrPhone = it },
-                    label = { Text(L10n.getString("email_or_phone")) },
-                    placeholder = { Text("e.g. trinadhbandapalli@gmail.com") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    singleLine = true,
-                    leadingIcon = { Icon(Icons.Default.Email, null) }
-                )
+            // LOGIN TAB VIEW - Phone + 4-digit PIN
+            OutlinedTextField(
+                value = loginPhone,
+                onValueChange = { if (it.length <= 10 && it.all { char -> char.isDigit() }) loginPhone = it },
+                label = { Text("Phone Number") },
+                placeholder = { Text("e.g. 9876543210") },
+                prefix = { Text("+91 ") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                leadingIcon = { Icon(Icons.Default.Call, null) }
+            )
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                var passwordVisibility by remember { mutableStateOf(false) }
-                OutlinedTextField(
-                    value = loginPassword,
-                    onValueChange = { loginPassword = it },
-                    label = { Text(L10n.getString("password")) },
-                    placeholder = { Text("Enter your password") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    singleLine = true,
-                    leadingIcon = { Icon(Icons.Default.Lock, null) },
-                    trailingIcon = {
-                        IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
-                            Icon(if (passwordVisibility) Icons.Default.Info else Icons.Default.Lock, contentDescription = "Toggle password visibility")
-                        }
+            var pinVisibility by remember { mutableStateOf(false) }
+            OutlinedTextField(
+                value = loginPassword,
+                onValueChange = { if (it.length <= 4 && it.all { char -> char.isDigit() }) loginPassword = it },
+                label = { Text("4-Digit PIN Password") },
+                placeholder = { Text("e.g. 1234") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                visualTransformation = if (pinVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                leadingIcon = { Icon(Icons.Default.Lock, null) },
+                trailingIcon = {
+                    IconButton(onClick = { pinVisibility = !pinVisibility }) {
+                        Icon(if (pinVisibility) Icons.Default.Info else Icons.Default.Lock, contentDescription = "Toggle PIN visibility")
                     }
+                }
+            )
+
+            if (loginError != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    loginError!!,
+                    color = Color.Red,
+                    fontSize = 12.sp,
+                    modifier = Modifier.align(Alignment.Start).padding(horizontal = 4.dp)
                 )
+            }
 
-                if (loginError != null) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        loginError!!,
-                        color = Color.Red,
-                        fontSize = 12.sp,
-                        modifier = Modifier.align(Alignment.Start).padding(horizontal = 4.dp)
-                    )
-                }
+            Spacer(modifier = Modifier.height(24.dp))
 
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Button(
-                    onClick = {
-                        if (loginEmailOrPhone.trim().isEmpty() || loginPassword.isEmpty()) {
-                            Toast.makeText(context, "Please fill in all credentials", Toast.LENGTH_SHORT).show()
-                            return@Button
+            Button(
+                onClick = {
+                    if (loginPhone.length < 10 || loginPassword.length != 4) {
+                        Toast.makeText(context, "Please enter a valid 10-digit Phone & 4-digit PIN", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+                    viewModel.loginWithPhone(
+                        phone = loginPhone,
+                        pin = loginPassword,
+                        onSuccess = {
+                            Toast.makeText(context, "Logged in successfully!", Toast.LENGTH_SHORT).show()
+                        },
+                        onError = { error ->
+                            loginError = error
                         }
-                        viewModel.loginWithEmailOrPhoneAndPassword(
-                            identifier = loginEmailOrPhone,
-                            passwordText = loginPassword,
-                            onSuccess = {
-                                Toast.makeText(context, "Logged in successfully!", Toast.LENGTH_SHORT).show()
-                            },
-                            onError = { error ->
-                                loginError = error
-                            }
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(54.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                ) {
-                    Text(
-                        L10n.getString("login_btn"),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
                     )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                TextButton(
-                    onClick = {
-                        isOtpLoginOption = true
-                        loginError = null
-                    },
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                ) {
-                    Text(L10n.getString("forgot_password"), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                }
-            } else {
-                // Phone Number & OTP Login
-                OutlinedTextField(
-                    value = loginPhone,
-                    onValueChange = { if (it.length <= 10 && it.all { char -> char.isDigit() }) loginPhone = it },
-                    label = { Text(L10n.getString("phone_number")) },
-                    placeholder = { Text("e.g. 9876543210") },
-                    prefix = { Text("+91 ") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                    leadingIcon = { Icon(Icons.Default.Call, null) }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Text(
+                    L10n.getString("login_btn"),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
                 )
-
-                if (loginError != null) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        loginError!!,
-                        color = Color.Red,
-                        fontSize = 12.sp,
-                        modifier = Modifier.align(Alignment.Start).padding(horizontal = 4.dp)
-                    )
-                }
-
-                if (isLoginOtpSent) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    OutlinedTextField(
-                        value = loginOtp,
-                        onValueChange = { if (it.length <= 4 && it.all { char -> char.isDigit() }) loginOtp = it },
-                        label = { Text(L10n.getString("enter_mock_otp")) },
-                        placeholder = { Text("e.g. 1234") },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true,
-                        leadingIcon = { Icon(Icons.Default.Check, null) }
-                    )
-                    Text(
-                        L10n.getString("mock_otp_hint"),
-                        fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .align(Alignment.Start)
-                            .padding(top = 4.dp, start = 8.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Button(
-                    onClick = {
-                        if (loginPhone.length < 10) {
-                            Toast.makeText(context, "Please enter a valid 10-digit number", Toast.LENGTH_SHORT).show()
-                            return@Button
-                        }
-                        if (!isLoginOtpSent) {
-                            isLoginOtpSent = true
-                            loginError = null
-                            Toast.makeText(context, "Mock OTP sent successfully to +91 $loginPhone", Toast.LENGTH_SHORT).show()
-                        } else {
-                            if (loginOtp.isEmpty()) {
-                                Toast.makeText(context, "Please enter mock OTP", Toast.LENGTH_SHORT).show()
-                                return@Button
-                            }
-                            viewModel.loginWithPhone(
-                                phone = loginPhone,
-                                onSuccess = {
-                                    Toast.makeText(context, "Logged in successfully!", Toast.LENGTH_SHORT).show()
-                                },
-                                onError = { error ->
-                                    loginError = error
-                                }
-                            )
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(54.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                ) {
-                    Text(
-                        if (!isLoginOtpSent) L10n.getString("send_otp") else L10n.getString("verify_and_login"),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                TextButton(
-                    onClick = {
-                        isOtpLoginOption = false
-                        loginError = null
-                    },
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                ) {
-                    Text(L10n.getString("back_to_password_login"), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                }
             }
         } else {
             // REGISTER TAB VIEW
@@ -957,6 +868,61 @@ fun AuthScreen(viewModel: PawsViewModel) {
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
                 leadingIcon = { Icon(Icons.Default.Call, null) }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Mandatory Location Select
+            Text(
+                "Select Your City (Mandatory) 📍",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.align(Alignment.Start).padding(horizontal = 4.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            val citiesList by viewModel.cities.collectAsState(initial = emptyList())
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                citiesList.filter { it.isActive }.forEach { city ->
+                    val isSelected = regCityId == city.id
+                    val chipBg = if (isSelected) MaterialTheme.colorScheme.primary else Color.White
+                    val chipText = if (isSelected) Color.White else MaterialTheme.colorScheme.primary
+                    val chipBorder = if (isSelected) Color.Transparent else MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                    
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(chipBg)
+                            .border(1.dp, chipBorder, RoundedCornerShape(8.dp))
+                            .clickable { regCityId = city.id }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = city.name,
+                            color = chipText,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = regAddress,
+                onValueChange = { regAddress = it },
+                label = { Text("Delivery/Work Address (Mandatory)") },
+                placeholder = { Text("e.g. Flat 102, Green Meadows, Banjara Hills") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                singleLine = true,
+                leadingIcon = { Icon(Icons.Default.LocationOn, null) }
             )
 
             if (regError != null) {
@@ -1066,7 +1032,7 @@ fun AuthScreen(viewModel: PawsViewModel) {
                 }
             }
 
-            if (regRole == "consumer") {
+            if (regRole == "consumer" || regRole == "merchant") {
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
                     value = regEmail,
@@ -1083,17 +1049,19 @@ fun AuthScreen(viewModel: PawsViewModel) {
                 Spacer(modifier = Modifier.height(12.dp))
                 OutlinedTextField(
                     value = regPassword,
-                    onValueChange = { regPassword = it },
-                    label = { Text("Set Password") },
-                    placeholder = { Text("Minimum 6 characters") },
+                    onValueChange = { if (it.length <= 4 && it.all { char -> char.isDigit() }) regPassword = it },
+                    label = { Text("Set 4-Digit PIN") },
+                    placeholder = { Text("e.g. 1234") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
                     leadingIcon = { Icon(Icons.Default.Lock, null) }
                 )
+            }
 
+            if (regRole == "consumer") {
                 Spacer(modifier = Modifier.height(12.dp))
                 OutlinedTextField(
                     value = regPetName,
@@ -1327,17 +1295,27 @@ fun AuthScreen(viewModel: PawsViewModel) {
                         Toast.makeText(context, "Please enter a valid 10-digit number", Toast.LENGTH_SHORT).show()
                         return@Button
                     }
+                    if (regAddress.trim().isEmpty()) {
+                        Toast.makeText(context, "Address is mandatory for registration", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
                     if (regRole == "consumer") {
                         if (regEmail.trim().isEmpty() || !regEmail.endsWith("@gmail.com", ignoreCase = true)) {
                             Toast.makeText(context, "Please enter a valid Gmail address (ending with @gmail.com)", Toast.LENGTH_SHORT).show()
                             return@Button
                         }
-                        if (regPassword.length < 6) {
-                            Toast.makeText(context, "Password must be at least 6 characters long", Toast.LENGTH_SHORT).show()
+                        if (regPassword.length != 4) {
+                            Toast.makeText(context, "PIN must be exactly 4 digits", Toast.LENGTH_SHORT).show()
                             return@Button
                         }
                         if (regPetName.trim().isEmpty()) {
                             Toast.makeText(context, "Please enter your pet's name", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                    }
+                    if (regRole == "merchant") {
+                        if (regPassword.length != 4) {
+                            Toast.makeText(context, "PIN must be exactly 4 digits", Toast.LENGTH_SHORT).show()
                             return@Button
                         }
                     }
@@ -1380,6 +1358,8 @@ fun AuthScreen(viewModel: PawsViewModel) {
                                 aadharCardUrl = regAadharCardUrl.trim().ifEmpty { "https://images.unsplash.com/photo-1589758438368-0ad531db3366?w=400" },
                                 licenseUrl = regLicenseUrl.trim().ifEmpty { "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=400" },
                                 selfieUrl = regSelfieUrlForCaptain.trim().ifEmpty { "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200" },
+                                cityId = regCityId,
+                                address = regAddress,
                                 onSuccess = {
                                     Toast.makeText(context, "Captain registered successfully!", Toast.LENGTH_SHORT).show()
                                 },
@@ -1399,6 +1379,8 @@ fun AuthScreen(viewModel: PawsViewModel) {
                                 avatarUrl = regSelfieUrl,
                                 email = regEmail,
                                 password = regPassword,
+                                cityId = regCityId,
+                                address = regAddress,
                                 onSuccess = {
                                     Toast.makeText(context, "Registered successfully!", Toast.LENGTH_SHORT).show()
                                 },
@@ -2021,6 +2003,8 @@ fun CaptainDashboardScreen(viewModel: PawsViewModel) {
     val currentCaptain by viewModel.currentCaptain.collectAsState()
     val allOrders by viewModel.allOrders.collectAsState()
     val shopsList by viewModel.shops.collectAsState()
+    val platformCommission by viewModel.platformCommission.collectAsState()
+    val deliveryFeeTier by viewModel.deliveryFeeTier.collectAsState()
     val context = LocalContext.current
 
     Column(
@@ -2211,7 +2195,9 @@ fun CaptainDashboardScreen(viewModel: PawsViewModel) {
                     // Compute dynamic metrics
                     val completedOrders = allOrders.filter { it.captainId == captain.id && it.status == "delivered" }
                     val tripsCount = completedOrders.size
-                    val todayEarnings = tripsCount * 45.0 // ₹45 per delivery payout
+                    val grossEarnings = tripsCount * deliveryFeeTier
+                    val commissionAmount = grossEarnings * (platformCommission / 100.0)
+                    val netEarnings = grossEarnings - commissionAmount
 
                     // Delivery stats dashboard grid
                     Row(
@@ -2219,38 +2205,42 @@ fun CaptainDashboardScreen(viewModel: PawsViewModel) {
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Card(
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.weight(1.2f),
                             shape = RoundedCornerShape(16.dp),
                             colors = CardDefaults.cardColors(containerColor = Color.White)
                         ) {
-                            Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("Today's Earnings", fontSize = 11.sp, color = Color.Gray)
+                            Column(modifier = Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("Net Earnings", fontSize = 10.sp, color = Color.Gray)
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Text("₹${String.format("%.2f", todayEarnings)}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF333333))
+                                Text("₹${String.format("%.2f", netEarnings)}", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2DB37A))
+                                Text("Gross: ₹${grossEarnings.toInt()}", fontSize = 9.sp, color = Color.Gray)
+                                Text("Comm: ${platformCommission.toInt()}%", fontSize = 9.sp, color = Color.Gray)
                             }
                         }
 
                         Card(
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.weight(0.9f),
                             shape = RoundedCornerShape(16.dp),
                             colors = CardDefaults.cardColors(containerColor = Color.White)
                         ) {
-                            Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("Trips Completed", fontSize = 11.sp, color = Color.Gray)
+                            Column(modifier = Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("Trips Completed", fontSize = 10.sp, color = Color.Gray)
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Text("$tripsCount", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF333333))
+                                Text("$tripsCount", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF333333))
+                                Text("Fee/Trip: ₹${deliveryFeeTier.toInt()}", fontSize = 9.sp, color = Color.Gray)
                             }
                         }
 
                         Card(
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.weight(0.9f),
                             shape = RoundedCornerShape(16.dp),
                             colors = CardDefaults.cardColors(containerColor = Color.White)
                         ) {
-                            Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("Rating", fontSize = 11.sp, color = Color.Gray)
+                            Column(modifier = Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("Rating", fontSize = 10.sp, color = Color.Gray)
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Text("5.0 ⭐", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFB300))
+                                Text("5.0 ⭐", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFB300))
+                                Text("Excellent", fontSize = 9.sp, color = Color(0xFFFFB300))
                             }
                         }
                     }
@@ -2454,6 +2444,7 @@ fun OriginalHomeScreen(viewModel: PawsViewModel) {
     val categoryList by viewModel.categories.collectAsState()
     val allProducts by viewModel.allProducts.collectAsState()
     val petProblems by viewModel.petProblems.collectAsState()
+    val activeProblems = remember(petProblems) { petProblems.filter { it.isActive } }
     var selectedProblemId by remember { mutableStateOf<String?>(null) }
     var activeRemedyProductDetail by remember { mutableStateOf<ProductEntity?>(null) }
     var selectedGuide by remember { mutableStateOf<PetCareGuide?>(null) }
@@ -2618,7 +2609,7 @@ fun OriginalHomeScreen(viewModel: PawsViewModel) {
                 locality = "Madhapur",
                 phone = "9876543212",
                 email = "cityhospital@paws.com",
-                photos = listOf("https://images.unsplash.com/photo-1597633425046-08f5110420b5?auto=format&fit=crop&q=80&w=600"),
+                photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuCRi0uyF8gXfUmsPudBSZXetvg8HcD8VleRwq_bcpRzFzeTA649-c3LZtcjs-XnpZEj2QhEb4WOlT2Gk2b_LAzARdYB4u4BWdIqNTb5qwNc7MmGAt1RbCtaVzh9Le_OHn9hAIgMsZKzOTifvd-rJsy1iuPfP67-Z9cR56Nn_TaSXK55Ws64qFSU1S4TDBBPy8LMprC7zdnwjtjDPpDo6DVWDMGDwNUsMNPyUAqj_jVya8ipStNkkICbQ9GG2dsa3X1KteEbaz65FJM"),
                 isOpen = true,
                 opensAt = "07:00",
                 closesAt = "23:00",
@@ -3248,7 +3239,7 @@ fun OriginalHomeScreen(viewModel: PawsViewModel) {
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                if (petProblems.isNotEmpty()) "${petProblems.size} concerns listed"
+                                if (activeProblems.isNotEmpty()) "${activeProblems.size} concerns listed"
                                 else "Common pet health concerns",
                                 fontSize = 10.sp,
                                 color = Color(0xFFFC8019),
@@ -3293,13 +3284,13 @@ fun OriginalHomeScreen(viewModel: PawsViewModel) {
                             modifier = Modifier.padding(start = 20.dp, bottom = 12.dp)
                         )
 
-                        if (petProblems.isNotEmpty()) {
+                        if (activeProblems.isNotEmpty()) {
                             LazyRow(
                                 contentPadding = PaddingValues(horizontal = 20.dp),
                                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                items(petProblems) { problem ->
+                                items(activeProblems) { problem ->
                                     val isSelected = selectedProblemId == problem.id
                                     Box(
                                         modifier = Modifier
@@ -5793,7 +5784,8 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
         mutableStateOf(
             when {
                 shopState.value?.vetClinicEnabled == true -> "Doctors"
-                shopState.value?.groomingEnabled == true -> "Groomers"
+                shopState.value?.shopEnabled == true -> "Menu"
+                shopState.value?.groomingEnabled == true -> "Grooming"
                 else -> "Menu"
             }
         ) 
@@ -5805,10 +5797,31 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
         mutableStateOf(if (firstSelectedCatId == "cat_groom") null else firstSelectedCatId)
     }
     var reviewsList by remember { mutableStateOf<List<ReviewEntity>>(emptyList()) }
+    val doctorList by viewModel.getDoctorsForShopFlow(shopId).collectAsState(initial = emptyList())
     var servicesList by remember { mutableStateOf<List<ServiceEntity>>(emptyList()) }
     val wishlists by viewModel.wishlists.collectAsState()
     val cartItems by viewModel.cartItems.collectAsState()
     val scope = rememberCoroutineScope()
+
+    val scheduleDatesList = remember {
+        val list = mutableListOf<String>()
+        val format = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+        val cal = java.util.Calendar.getInstance()
+        for (i in 0 until 7) {
+            list.add(format.format(cal.time))
+            cal.add(java.util.Calendar.DAY_OF_YEAR, 1)
+        }
+        list
+    }
+    val timeSlots = listOf(
+        "09:00 AM", "10:30 AM", "12:00 PM", "01:30 PM", "03:00 PM", "04:30 PM", "06:00 PM"
+    )
+    var selectedScheduleDate by remember(shopState.value?.id) { mutableStateOf(scheduleDatesList.firstOrNull() ?: "") }
+    var selectedScheduleTime by remember(shopState.value?.id, selectedScheduleDate) { mutableStateOf("") }
+    val currentUserVal by viewModel.currentUser.collectAsState()
+    val shopAppointments by remember(shopState.value?.id) {
+        viewModel.getAppointmentsForShopFlow(shopState.value?.id ?: "")
+    }.collectAsState(initial = emptyList())
 
     val filteredProductsList = remember(productsList, selectedCategoryId, selectedConcernTag) {
         var result = productsList
@@ -5825,7 +5838,7 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
         result
     }
 
-    val filteredServicesList = remember(servicesList, shopState.value?.groomingEnabled, shopState.value?.vetClinicEnabled) {
+    val filteredServicesList = remember(servicesList, shopState.value?.groomingEnabled, shopState.value?.vetClinicEnabled, activeTab) {
         val s = shopState.value
         if (s == null) emptyList()
         else {
@@ -5835,7 +5848,17 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
                 
                 if (isGrooming && !s.groomingEnabled) false
                 else if (isVet && !s.vetClinicEnabled) false
-                else true
+                else {
+                    if (s.groomingEnabled) {
+                        isGrooming && !isVet
+                    } else {
+                        when (activeTab) {
+                            "Consultation Slots" -> isVet && !isGrooming
+                            "Grooming Packages" -> isGrooming && !isVet
+                            else -> true
+                        }
+                    }
+                }
             }
         }
     }
@@ -6009,7 +6032,39 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
                             .background(Color.Black.copy(alpha = 0.35f))
                     )
 
-                    if (shop.groomingEnabled) {
+                    if (shop.vetClinicEnabled) {
+                        androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
+                            val width = size.width
+                            val height = size.height
+                            val crossSymbols = listOf(
+                                Pair(0.15f, 0.75f),
+                                Pair(0.25f, 0.45f),
+                                Pair(0.45f, 0.85f),
+                                Pair(0.55f, 0.3f),
+                                Pair(0.7f, 0.6f),
+                                Pair(0.85f, 0.8f),
+                                Pair(0.9f, 0.4f)
+                            )
+                            val crossSize = 10.dp.toPx()
+                            val strokeWidth = 2.5.dp.toPx()
+                            crossSymbols.forEach { (xPercent, yPercent) ->
+                                val cx = width * xPercent
+                                val cy = height * yPercent
+                                drawLine(
+                                    color = Color.White.copy(alpha = 0.45f),
+                                    start = androidx.compose.ui.geometry.Offset(cx - crossSize / 2, cy),
+                                    end = androidx.compose.ui.geometry.Offset(cx + crossSize / 2, cy),
+                                    strokeWidth = strokeWidth
+                                )
+                                drawLine(
+                                    color = Color.White.copy(alpha = 0.45f),
+                                    start = androidx.compose.ui.geometry.Offset(cx, cy - crossSize / 2),
+                                    end = androidx.compose.ui.geometry.Offset(cx, cy + crossSize / 2),
+                                    strokeWidth = strokeWidth
+                                )
+                            }
+                        }
+                    } else if (shop.groomingEnabled) {
                         androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
                             val width = size.width
                             val height = size.height
@@ -6085,11 +6140,16 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
                     verticalAlignment = Alignment.Top
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(shop.name, fontSize = 24.sp, fontWeight = FontWeight.Black)
                         Text(
-                            shop.description,
+                            text = shop.name,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Black,
+                            color = if (shop.vetClinicEnabled || shop.groomingEnabled) Color(0xFF0B1C30) else MaterialTheme.colorScheme.onBackground
+                        )
+                        Text(
+                            text = shop.description,
                             fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                            color = if (shop.vetClinicEnabled || shop.groomingEnabled) Color(0xFF434655) else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                             modifier = Modifier.padding(top = 4.dp)
                         )
                         Row(
@@ -6103,7 +6163,7 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
                                     .background(statusColor.copy(alpha = 0.12f), RoundedCornerShape(4.dp))
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
-                                Text(
+                                  Text(
                                     text = statusText,
                                     color = statusColor,
                                     fontSize = 11.sp,
@@ -6114,7 +6174,7 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
                             Text(
                                 text = "Hours: ${shop.opensAt} - ${shop.closesAt}",
                                 fontSize = 11.sp,
-                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                                color = if (shop.vetClinicEnabled || shop.groomingEnabled) Color(0xFF434655) else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
                             )
                         }
 
@@ -6229,36 +6289,69 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    val callBg = when {
+                        shop.vetClinicEnabled -> Color(0xFFDCFCE7)
+                        shop.groomingEnabled -> Color(0xFFE0F2FE)
+                        else -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)
+                    }
+                    val callFg = when {
+                        shop.vetClinicEnabled -> Color(0xFF15803D)
+                        shop.groomingEnabled -> Color(0xFF1E3A8A)
+                        else -> MaterialTheme.colorScheme.onBackground
+                    }
+                    
                     Button(
                         onClick = {
                             val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${shop.phone}"))
                             context.startActivity(intent)
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)),
+                        colors = ButtonDefaults.buttonColors(containerColor = callBg),
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(12.dp),
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp)
                     ) {
-                        Icon(Icons.Default.Call, null, tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.Call, null, tint = callFg, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(if (shop.vetClinicEnabled) "Call Hospital" else "Call Shop", color = MaterialTheme.colorScheme.onBackground, fontSize = 11.sp, maxLines = 1)
+                        Text(if (shop.vetClinicEnabled) "Call Hospital" else "Call Shop", color = callFg, fontSize = 11.sp, maxLines = 1)
                     }
 
+                    val chatBg = when {
+                        shop.vetClinicEnabled -> Color(0xFFE0F2FE)
+                        shop.groomingEnabled -> Color(0xFFDBEAFE)
+                        else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                    }
+                    val chatFg = when {
+                        shop.vetClinicEnabled -> Color(0xFF0369A1)
+                        shop.groomingEnabled -> Color(0xFF1E3A8A)
+                        else -> MaterialTheme.colorScheme.primary
+                    }
+                    
                     Button(
                         onClick = {
                             viewModel.selectActiveChat(shop.id)
                             viewModel.navigateTo(Screen.ChatDetail(shop.id))
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                        colors = ButtonDefaults.buttonColors(containerColor = chatBg),
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(12.dp),
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp)
                     ) {
-                        Icon(Icons.Default.Email, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.Email, null, tint = chatFg, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(if (shop.vetClinicEnabled) "Chat Hospital" else "Chat Shop", color = MaterialTheme.colorScheme.primary, fontSize = 11.sp, maxLines = 1)
+                        Text(if (shop.vetClinicEnabled) "Chat Hospital" else "Chat Shop", color = chatFg, fontSize = 11.sp, maxLines = 1)
                     }
 
+                    val dirBg = when {
+                        shop.vetClinicEnabled -> Color(0xFFDBEAFE)
+                        shop.groomingEnabled -> Color(0xFFE0F2FE)
+                        else -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)
+                    }
+                    val dirFg = when {
+                        shop.vetClinicEnabled -> Color(0xFF1E40AF)
+                        shop.groomingEnabled -> Color(0xFF1E3A8A)
+                        else -> MaterialTheme.colorScheme.onBackground
+                    }
+                    
                     Button(
                         onClick = {
                             val uri = Uri.parse("google.navigation:q=${shop.lat},${shop.lng}")
@@ -6269,14 +6362,14 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
                                 Toast.makeText(context, "Redirecting to Maps info...", Toast.LENGTH_SHORT).show()
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)),
+                        colors = ButtonDefaults.buttonColors(containerColor = dirBg),
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(12.dp),
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp)
                     ) {
-                        Icon(Icons.Default.LocationOn, null, tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.LocationOn, null, tint = dirFg, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Directions", color = MaterialTheme.colorScheme.onBackground, fontSize = 11.sp, maxLines = 1)
+                        Text("Directions", color = dirFg, fontSize = 11.sp, maxLines = 1)
                     }
                 }
 
@@ -6287,23 +6380,22 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
 
         // Segment Tab Layout
         item {
-            val tabs = remember(shop.groomingEnabled, shop.vetClinicEnabled, reviewsList.size) {
-                when {
-                    shop.vetClinicEnabled -> {
-                        listOf("Doctors", "Consultation Slots", "Reviews (${reviewsList.size})", "Hospital Info")
-                    }
-                    shop.groomingEnabled -> {
-                        listOf("Groomers", "Grooming Packages", "Reviews (${reviewsList.size})", "Salon Info")
-                    }
-                    else -> {
-                        listOf("Menu", "Reviews (${reviewsList.size})", "Store Info")
-                    }
+            val tabs = remember(reviewsList.size, shop.vetClinicEnabled, shop.shopEnabled, shop.groomingEnabled) {
+                if (shop.vetClinicEnabled) {
+                    listOf("Doctors", "Reviews", "Store Info")
+                } else {
+                    val list = mutableListOf<String>()
+                    if (shop.shopEnabled) list.add("Menu")
+                    if (shop.groomingEnabled) list.add("Grooming")
+                    list.add("Reviews")
+                    list.add("Store Info")
+                    list
                 }
             }
             
             LaunchedEffect(tabs) {
                 if (activeTab !in tabs && !activeTab.startsWith("Reviews")) {
-                    activeTab = tabs.firstOrNull() ?: "Menu"
+                    activeTab = tabs.firstOrNull() ?: "Doctors"
                 }
             }
 
@@ -6319,382 +6411,682 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
                     val isSelected = activeTab == tab || (tab.startsWith("Reviews") && activeTab == "Reviews")
                     
                     val tabColor = when {
-                        !shop.vetClinicEnabled -> MaterialTheme.colorScheme.primary
-                        tab == "Doctors" -> Color(0xFF0891B2)
-                        tab.startsWith("Consultation") -> Color(0xFF059669)
-                        tab.startsWith("Reviews") -> Color(0xFFD97706)
-                        tab.startsWith("Hospital Info") -> Color(0xFF4F46E5)
-                        else -> MaterialTheme.colorScheme.primary
+                        !shop.vetClinicEnabled -> if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                        tab == "Doctors" -> if (isSelected) Color.White else Color(0xFF15803D)
+                        tab.startsWith("Consultation") -> if (isSelected) Color.White else Color(0xFF0369A1)
+                        tab.startsWith("Reviews") -> if (isSelected) Color.White else Color(0xFF92400E)
+                        tab.startsWith("Hospital Info") -> if (isSelected) Color.White else Color(0xFF1E40AF)
+                        else -> if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                     }
                     
                     val tabBgColor = when {
                         !shop.vetClinicEnabled -> if (isSelected) MaterialTheme.colorScheme.surface else Color.Transparent
-                        tab == "Doctors" -> if (isSelected) Color(0xFFECFEFF) else Color.Transparent
-                        tab.startsWith("Consultation") -> if (isSelected) Color(0xFFD1FAE5) else Color.Transparent
-                        tab.startsWith("Reviews") -> if (isSelected) Color(0xFFFEF3C7) else Color.Transparent
-                        tab.startsWith("Hospital Info") -> if (isSelected) Color(0xFFEEF2FF) else Color.Transparent
+                        tab == "Doctors" -> if (isSelected) Color(0xFF16A34A) else Color(0xFFDCFCE7)
+                        tab.startsWith("Consultation") -> if (isSelected) Color(0xFF0891B2) else Color(0xFFE0F2FE)
+                        tab.startsWith("Reviews") -> if (isSelected) Color(0xFFD97706) else Color(0xFFFEF3C7)
+                        tab.startsWith("Hospital Info") -> if (isSelected) Color(0xFF2563EB) else Color(0xFFDBEAFE)
                         else -> if (isSelected) MaterialTheme.colorScheme.surface else Color.Transparent
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(tabBgColor)
-                            .clickable {
-                                activeTab = if (tab.startsWith("Reviews")) "Reviews" else tab
-                            }
-                            .padding(vertical = 10.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = tab,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) tabColor else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                            fontSize = 11.sp
-                        )
+                    val tabBorderColor = when {
+                        !shop.vetClinicEnabled -> Color.Transparent
+                        tab == "Doctors" -> if (isSelected) Color(0xFF16A34A) else Color(0xFF86EFAC)
+                        tab.startsWith("Consultation") -> if (isSelected) Color(0xFF0891B2) else Color(0xFF7DD3FC)
+                        tab.startsWith("Reviews") -> if (isSelected) Color(0xFFD97706) else Color(0xFFFCD34D)
+                        tab.startsWith("Hospital Info") -> if (isSelected) Color(0xFF2563EB) else Color(0xFF93C5FD)
+                        else -> Color.Transparent
                     }
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-        }
 
-        // VIEW RENDERING: BY TAB
-        when (activeTab) {
-            "Menu" -> {
-                // Horizontal Category filter strip
-                item {
-                    Column(modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)) {
-                        Text(
-                            text = "Product Categories:",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Gray,
-                            modifier = Modifier.padding(start = 20.dp, bottom = 8.dp)
-                        )
-                        LazyRow(
-                            contentPadding = PaddingValues(horizontal = 20.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            item {
-                                val isSelected = selectedCategoryId == null
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(16.dp))
-                                        .background(
-                                            if (isSelected) MaterialTheme.colorScheme.primary 
-                                            else MaterialTheme.colorScheme.surfaceVariant
-                                        )
-                                        .clickable { selectedCategoryId = null }
-                                        .padding(horizontal = 12.dp, vertical = 6.dp)
-                                ) {
-                                    Text(
-                                        text = "All Categories 🏷️",
-                                        fontSize = 10.5.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                            items(categoryList) { cat ->
-                                if (cat.id != "cat_groom") {
-                                    val isSelected = selectedCategoryId == cat.id
                                     Box(
                                         modifier = Modifier
-                                            .clip(RoundedCornerShape(16.dp))
-                                            .background(
-                                                if (isSelected) MaterialTheme.colorScheme.primary 
-                                                else MaterialTheme.colorScheme.surfaceVariant
+                                            .weight(1f)
+                                            .padding(horizontal = 2.dp)
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(tabBgColor)
+                                            .then(
+                                                if (shop.vetClinicEnabled) {
+                                                    Modifier.border(1.5.dp, tabBorderColor, RoundedCornerShape(8.dp))
+                                                } else {
+                                                    Modifier
+                                                }
                                             )
-                                            .clickable { selectedCategoryId = cat.id }
-                                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                                            .clickable {
+                                                activeTab = if (tab.startsWith("Reviews")) "Reviews" else tab
+                                            }
+                                            .padding(vertical = 10.dp),
+                                        contentAlignment = Alignment.Center
                                     ) {
                                         Text(
-                                            text = cat.name,
-                                            fontSize = 10.5.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                            text = tab,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                            color = tabColor,
+                                            fontSize = 11.sp
                                         )
                                     }
                                 }
                             }
+                            Spacer(modifier = Modifier.height(16.dp))
                         }
-                    }
-                }
 
-                // Horizontal concern tag filter strip for shampoos & medicated care
-                item {
-                    Column(modifier = Modifier.padding(bottom = 12.dp)) {
-                        Text(
-                            text = "Filter by Concern (Medicated Shampoos & Care):",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Gray,
-                            modifier = Modifier.padding(start = 20.dp, bottom = 8.dp)
-                        )
-                        LazyRow(
-                            contentPadding = PaddingValues(horizontal = 20.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            listOf(
-                                Pair(null, "All Items 🏷️"),
-                                Pair("itching", "Itching 🧼"),
-                                Pair("ticks", "Ticks & Fleas 🕷️"),
-                                Pair("dandruff", "Dandruff Care ❄️"),
-                                Pair("fungal", "Fungal Infections 🍄")
-                            ).forEach { (tagKey, tagLabel) ->
-                                item {
-                                    val isSelected = selectedConcernTag == tagKey
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(16.dp))
-                                            .background(
-                                                if (isSelected) MaterialTheme.colorScheme.primary 
-                                                else MaterialTheme.colorScheme.surfaceVariant
-                                            )
-                                            .clickable { selectedConcernTag = tagKey }
-                                            .padding(horizontal = 12.dp, vertical = 6.dp)
-                                    ) {
-                                        Text(
-                                            text = tagLabel,
-                                            fontSize = 10.5.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (filteredProductsList.isEmpty()) {
-                    item {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(48.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text("No catalog items match this concern filter.", color = Color.Gray, fontSize = 12.sp)
-                        }
-                    }
-                } else {
-                    items(filteredProductsList) { product ->
-                        val qty = cartItems[product.id] ?: 0
-                        ProductCatalogRow(
-                            product = product,
-                            quantity = qty,
-                            onAdd = { viewModel.addToCart(product, shop) },
-                            onRemove = { viewModel.removeFromCart(product.id) }
-                        )
-                    }
-                }
-            }
-
-            "Groomers" -> {
-                item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp)
-                    ) {
-                        Text("Available Groomers", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        
-                        val groomers = listOf(
-                            Triple("Rohan Sharma", "Master Stylist (Haircuts & Styling, 8 years exp)", "https://lh3.googleusercontent.com/aida-public/AB6AXuAn2LMbNYuqvAlSJ3Vsv3UiJVRa9B9YUYi39ShyxYeRMqbb6gwbm_4Iotbu_QZm-5pxwrOvETau5MJVPL3XcKNg6qJVbEke8w6buRQkmUgagREG15ZIZTBzIbtKGwCVgqAao1NSa_ZZsJpM9KgiC_VrK9O7aF2eMr6Gc5ES_fCKqnlSM8pjQ43E5RjzkRFt3L-lFoX38HEPBd99oYiAvt9cFIUV6eaqq44WCx2QdvoFE-V8XtAwCc_uwI9A53BXcQdxiXfZv7X09sw"),
-                            Triple("Emily Davis", "Medicated Bath Specialist (Skin & Coat Care, 5 years exp)", "https://lh3.googleusercontent.com/aida-public/AB6AXuAXx7J-sz-fV3Y_VS7BUI6xREHCtu84yd5izEqlWLTC8qY3WVnPddQFvYVf1Uguayi9ZhyWEQqeq7VVZ8JBry3BUH8fQZe9pYp60LQlAR5WW6EqklajhvhlVd5UfSEbAEEdBxS2KPuNI2uYuzXZDjavgaQPJdIW6hobWpxBmcbsK-_aYymv4nOhGWpCChcYO1573y__YOHNSOI3lnkq3dbHgykjeQTBzaa7j5UA6cZ14CiudAIZpXucpgIZNwKuerA1rpKJ82bpAXk"),
-                            Triple("Vikram Singh", "Puppy Grooming Specialist (Gentle Handling, 4 years exp)", "https://lh3.googleusercontent.com/aida-public/AB6AXuAKwIVhg0jtyF9l-ZpnLelxtm7dPs0cNiFMAyw_WbKRSfJ-i0uLTr96yc3YnkabFFIt0-hMNtQHjQbpSi78KFLnVwvykST98Q7q0yq-VpxoJsmDMPV-o5KN9bm1J7OvZmRRt5brgcoASNXXfKdmBQQQhUfDC321lcBVF-97a8rpivLlEdfo5BOwTnpqhCSm8jeONbNd_hZQynrJzMvK0xF-OekAviLapXfyl7_GJi-uwVhc2mIOs3PLunPO4AZkbC_lh_X_RficrVc"),
-                            Triple("Jessica Mercer", "Nail & Paw Care Expert (De-shedding & Trim, 6 years exp)", "https://lh3.googleusercontent.com/aida-public/AB6AXuBT5ErbZE34PrwsulcWscKJ_B29WnP6Zwmi5Sz2EjhV5cvCCn_K2U7urMNkV264lKZSPFKFcFuZM1moXeoBQ1_wXXUxPhnv2akkA5rSWnMpbYXSbGtRW4Csd4PAET2wQzCHCmsbbjs3pnqzj5iLiW9dnhR2xdBtKzLoWSQAk0YXYRQozbUch0dnnnCH92O28KO5zYUrY3imnc5gx2YoYxndhvxmKULayQWn2kzoDyfz3E924jYVICJx2V11prYiqbH_d-YBqXRsnxs")
-                        )
-                        
-                        groomers.forEach { (name, specialty, imgUrl) ->
-                            Card(
-                                shape = RoundedCornerShape(16.dp),
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 6.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(12.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Image(
-                                        painter = rememberAsyncImagePainter(imgUrl),
-                                        contentDescription = name,
-                                        modifier = Modifier
-                                            .size(56.dp)
-                                            .clip(CircleShape),
-                                        contentScale = ContentScale.Crop
-                                    )
-                                    Spacer(modifier = Modifier.width(16.dp))
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(name, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                        Text(specialty, fontSize = 12.sp, color = Color.Gray)
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Box(
+                        // VIEW RENDERING: BY TAB
+                        when (activeTab) {
+                            "Menu" -> {
+                                if (!shop.shopEnabled) {
+                                    item {
+                                        Card(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(20.dp),
+                                            colors = CardDefaults.cardColors(containerColor = Color.LightGray.copy(alpha = 0.12f)),
+                                            border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.2f))
+                                        ) {
+                                            Column(
                                                 modifier = Modifier
-                                                    .size(8.dp)
-                                                    .background(Color(0xFF4CAF50), CircleShape)
-                                            )
-                                            Spacer(modifier = Modifier.width(6.dp))
-                                            Text("Available", fontSize = 11.sp, color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
+                                                    .fillMaxWidth()
+                                                    .padding(32.dp),
+                                                horizontalAlignment = Alignment.CenterHorizontally
+                                            ) {
+                                                Text("🏪", fontSize = 48.sp)
+                                                Spacer(modifier = Modifier.height(16.dp))
+                                                Text(
+                                                    text = "Store supplies temporarily unavailable",
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 15.sp,
+                                                    color = Color.Gray,
+                                                    textAlign = TextAlign.Center
+                                                )
+                                            }
                                         }
                                     }
-                                    IconButton(
-                                        onClick = { activeTab = "Grooming Packages" },
-                                        modifier = Modifier.background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.ArrowForward,
-                                            contentDescription = "Book Package",
-                                            tint = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            
-            "Doctors" -> {
-                item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp)
-                    ) {
-                        Text("Available Doctors", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        
-                        val doctors = listOf(
-                            Triple("Dr. Sarah Jenkins", "Emergency Surgery", "https://lh3.googleusercontent.com/aida-public/AB6AXuAXx7J-sz-fV3Y_VS7BUI6xREHCtu84yd5izEqlWLTC8qY3WVnPddQFvYVf1Uguayi9ZhyWEQqeq7VVZ8JBry3BUH8fQZe9pYp60LQlAR5WW6EqklajhvhlVd5UfSEbAEEdBxS2KPuNI2uYuzXZDjavgaQPJdIW6hobWpxBmcbsK-_aYymv4nOhGWpCChcYO1573y__YOHNSOI3lnkq3dbHgykjeQTBzaa7j5UA6cZ14CiudAIZpXucpgIZNwKuerA1rpKJ82bpAXk"),
-                            Triple("Dr. Elena Rossi", "Holistic Medicine & General Care", "https://lh3.googleusercontent.com/aida-public/AB6AXuAn2LMbNYuqvAlSJ3Vsv3UiJVRa9B9YUYi39ShyxYeRMqbb6gwbm_4Iotbu_QZm-5pxwrOvETau5MJVPL3XcKNg6qJVbEke8w6buRQkmUgagREG15ZIZTBzIbtKGwCVgqAao1NSa_ZZsJpM9KgiC_VrK9O7aF2eMr6Gc5ES_fCKqnlSM8pjQ43E5RjzkRFt3L-lFoX38HEPBd99oYiAvt9cFIUV6eaqq44WCx2QdvoFE-V8XtAwCc_uwI9A53BXcQdxiXfZv7X09sw"),
-                            Triple("Dr. Michael Chang", "Internal Medicine", "https://lh3.googleusercontent.com/aida-public/AB6AXuAKwIVhg0jtyF9l-ZpnLelxtm7dPs0cNiFMAyw_WbKRSfJ-i0uLTr96yc3YnkabFFIt0-hMNtQHjQbpSi78KFLnVwvykST98Q7q0yq-VpxoJsmDMPV-o5KN9bm1J7OvZmRRt5brgcoASNXXfKdmBQQQhUfDC321lcBVF-97a8rpivLlEdfo5BOwTnpqhCSm8jeONbNd_hZQynrJzMvK0xF-OekAviLapXfyl7_GJi-uwVhc2mIOs3PLunPO4AZkbC_lh_X_RficrVc"),
-                            Triple("Dr. James Wilson", "Preventive Care & Diagnostics", "https://lh3.googleusercontent.com/aida-public/AB6AXuBT5ErbZE34PrwsulcWscKJ_B29WnP6Zwmi5Sz2EjhV5cvCCn_K2U7urMNkV264lKZSPFKFcFuZM1moXeoBQ1_wXXUxPhnv2akkA5rSWnMpbYXSbGtRW4Csd4PAET2wQzCHCmsbbjs3pnqzj5iLiW9dnhR2xdBtKzLoWSQAk0YXYRQozbUch0dnnnCH92O28KO5zYUrY3imnc5gx2YoYxndhvxmKULayQWn2kzoDyfz3E924jYVICJx2V11prYiqbH_d-YBqXRsnxs")
-                        )
-                        
-                        doctors.forEach { (name, specialty, imgUrl) ->
-                            Card(
-                                shape = RoundedCornerShape(16.dp),
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 6.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(12.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Image(
-                                        painter = rememberAsyncImagePainter(imgUrl),
-                                        contentDescription = name,
-                                        modifier = Modifier
-                                            .size(56.dp)
-                                            .clip(CircleShape),
-                                        contentScale = ContentScale.Crop
-                                    )
-                                    Spacer(modifier = Modifier.width(16.dp))
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(name, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                        Text(specialty, fontSize = 12.sp, color = Color.Gray)
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(8.dp)
-                                                    .background(Color(0xFF4CAF50), CircleShape)
+                                } else {
+                                    // Horizontal Category filter strip
+                                    item {
+                                        Column(modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)) {
+                                            Text(
+                                                text = "Product Categories:",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.Gray,
+                                                modifier = Modifier.padding(start = 20.dp, bottom = 8.dp)
                                             )
-                                            Spacer(modifier = Modifier.width(6.dp))
-                                            Text("Available", fontSize = 11.sp, color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
+                                            LazyRow(
+                                                contentPadding = PaddingValues(horizontal = 20.dp),
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                                modifier = Modifier.fillMaxWidth()
+                                            ) {
+                                                item {
+                                                    val isSelected = selectedCategoryId == null
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .clip(RoundedCornerShape(16.dp))
+                                                            .background(
+                                                                if (isSelected) MaterialTheme.colorScheme.primary 
+                                                                else MaterialTheme.colorScheme.surfaceVariant
+                                                            )
+                                                            .clickable { selectedCategoryId = null }
+                                                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                                                    ) {
+                                                        Text(
+                                                            text = "All Categories 🏷️",
+                                                            fontSize = 10.5.sp,
+                                                            fontWeight = FontWeight.Bold,
+                                                            color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                                        )
+                                                    }
+                                                }
+                                                items(categoryList) { cat ->
+                                                    if (cat.id != "cat_groom") {
+                                                        val isSelected = selectedCategoryId == cat.id
+                                                        Box(
+                                                            modifier = Modifier
+                                                                .clip(RoundedCornerShape(16.dp))
+                                                                .background(
+                                                                    if (isSelected) MaterialTheme.colorScheme.primary 
+                                                                    else MaterialTheme.colorScheme.surfaceVariant
+                                                                )
+                                                                .clickable { selectedCategoryId = cat.id }
+                                                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                                                        ) {
+                                                            Text(
+                                                                text = cat.name,
+                                                                fontSize = 10.5.sp,
+                                                                fontWeight = FontWeight.Bold,
+                                                                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
-                                    IconButton(
-                                        onClick = { activeTab = "Consultation Slots" },
-                                        modifier = Modifier.background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.ArrowForward,
-                                            contentDescription = "Book Consultation",
-                                            tint = MaterialTheme.colorScheme.primary
-                                        )
+
+                                    // Horizontal concern tag filter strip for shampoos & medicated care
+                                    item {
+                                        Column(modifier = Modifier.padding(bottom = 12.dp)) {
+                                            Text(
+                                                text = "Filter by Concern (Medicated Shampoos & Care):",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.Gray,
+                                                modifier = Modifier.padding(start = 20.dp, bottom = 8.dp)
+                                            )
+                                            LazyRow(
+                                                contentPadding = PaddingValues(horizontal = 20.dp),
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                                modifier = Modifier.fillMaxWidth()
+                                            ) {
+                                                listOf(
+                                                    Pair(null, "All Items 🏷️"),
+                                                    Pair("itching", "Itching 🧼"),
+                                                    Pair("ticks", "Ticks & Fleas 🕷️"),
+                                                    Pair("dandruff", "Dandruff Care ❄️"),
+                                                    Pair("fungal", "Fungal Infections 🍄")
+                                                ).forEach { (tagKey, tagLabel) ->
+                                                    item {
+                                                        val isSelected = selectedConcernTag == tagKey
+                                                        Box(
+                                                            modifier = Modifier
+                                                                .clip(RoundedCornerShape(16.dp))
+                                                                .background(
+                                                                    if (isSelected) MaterialTheme.colorScheme.primary 
+                                                                    else MaterialTheme.colorScheme.surfaceVariant
+                                                                )
+                                                                .clickable { selectedConcernTag = tagKey }
+                                                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                                                        ) {
+                                                            Text(
+                                                                text = tagLabel,
+                                                                fontSize = 10.5.sp,
+                                                                fontWeight = FontWeight.Bold,
+                                                                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    if (filteredProductsList.isEmpty()) {
+                                        item {
+                                            Column(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(48.dp),
+                                                horizontalAlignment = Alignment.CenterHorizontally
+                                            ) {
+                                                Text("No catalog items match this concern filter.", color = Color.Gray, fontSize = 12.sp)
+                                            }
+                                        }
+                                    } else {
+                                        items(filteredProductsList) { product ->
+                                            val qty = cartItems[product.id] ?: 0
+                                            ProductCatalogRow(
+                                                product = product,
+                                                quantity = qty,
+                                                onAdd = { viewModel.addToCart(product, shop) },
+                                                onRemove = { viewModel.removeFromCart(product.id) }
+                                            )
+                                        }
                                     }
                                 }
                             }
-                        }
-                    }
-                }
-            }
 
-            "Consultation Slots", "Grooming Packages", "Grooming & Vet Slots" -> {
-                if (filteredServicesList.isEmpty()) {
-                    item {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(48.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text("No services active at this time.", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
-                        }
-                    }
-                } else {
-                    item {
-                        val headerText = if (activeTab == "Consultation Slots") "Veterinary Consultation Services" else "Grooming Packages & Services"
-                        Text(
-                            text = headerText,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
-                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
-                        )
-                    }
-                    items(filteredServicesList) { service ->
-                        ServiceCatalogRow(
-                            service = service,
-                            viewModel = viewModel,
-                            shopId = shop.id
-                        )
-                    }
-                }
-            }
+                            "Grooming" -> {
+                                if (!shop.groomingEnabled) {
+                                    item {
+                                        Card(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(20.dp),
+                                            colors = CardDefaults.cardColors(containerColor = Color.LightGray.copy(alpha = 0.12f)),
+                                            border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.2f))
+                                        ) {
+                                            Column(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(32.dp),
+                                                horizontalAlignment = Alignment.CenterHorizontally
+                                            ) {
+                                                Text("✂️🚿", fontSize = 48.sp)
+                                                Spacer(modifier = Modifier.height(16.dp))
+                                                Text(
+                                                    text = "Grooming services temporarily unavailable at this salon",
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 15.sp,
+                                                    color = Color.Gray,
+                                                    textAlign = TextAlign.Center
+                                                )
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    item {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 20.dp, vertical = 8.dp)
+                                        ) {
+                                            // Category selection grid
+                                            Text(
+                                                text = "Select Service Category",
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 14.sp,
+                                                color = Color(0xFF0F172A),
+                                                modifier = Modifier.padding(bottom = 12.dp)
+                                            )
+                                            
+                                            var selectedGroomCat by remember { mutableStateOf("bath") }
+                                            val categoriesGroom = listOf(
+                                                Pair("Bathing", "bath"),
+                                                Pair("Haircuts", "haircut"),
+                                                Pair("Combo (Full Groom)", "bath_and_haircut"),
+                                                Pair("Nail Trim", "nail_trim"),
+                                                Pair("Ear Cleaning", "ear_cleaning")
+                                            )
+                                            
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                            ) {
+                                                categoriesGroom.forEach { (label, typeCode) ->
+                                                    val isCatSelected = selectedGroomCat == typeCode
+                                                    val catBg = if (isCatSelected) Color(0xFF1E3A8A) else Color.White
+                                                    val catText = if (isCatSelected) Color.White else Color(0xFF1E3A8A)
+                                                    val catBorder = if (isCatSelected) Color.Transparent else Color(0xFF1E3A8A).copy(alpha = 0.3f)
+                                                    
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .clip(RoundedCornerShape(20.dp))
+                                                            .background(catBg)
+                                                            .border(1.dp, catBorder, RoundedCornerShape(20.dp))
+                                                            .clickable { selectedGroomCat = typeCode }
+                                                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                                                    ) {
+                                                        Text(
+                                                            text = label,
+                                                            color = catText,
+                                                            fontSize = 12.sp,
+                                                            fontWeight = FontWeight.SemiBold
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                            
+                                            Spacer(modifier = Modifier.height(20.dp))
+                                            
+                                            val activeGroomingServices by viewModel.getActiveGroomingServicesForShopFlow(shop.id).collectAsState(initial = emptyList())
+                                            
+                                            val filteredVariants = remember(activeGroomingServices, selectedGroomCat) {
+                                                activeGroomingServices.filter { 
+                                                    it.serviceType == selectedGroomCat || 
+                                                    (selectedGroomCat == "bath_and_haircut" && (it.serviceType == "bath_and_haircut" || it.serviceType == "full_grooming"))
+                                                }.groupBy { it.variantName }
+                                            }
+                                            
+                                            if (filteredVariants.isEmpty()) {
+                                                Card(
+                                                    shape = RoundedCornerShape(12.dp),
+                                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                                    border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                                                    modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)
+                                                ) {
+                                                    Box(
+                                                        modifier = Modifier.fillMaxWidth().padding(32.dp),
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                        Text(
+                                                            text = "No services available in this category.",
+                                                            color = Color.Gray,
+                                                            fontSize = 13.sp,
+                                                            fontWeight = FontWeight.Medium
+                                                        )
+                                                    }
+                                                }
+                                            } else {
+                                                filteredVariants.forEach { (variantName, servicesList) ->
+                                                    var selectedServiceSize by remember(variantName) { 
+                                                        mutableStateOf(servicesList.firstOrNull()?.petSizeCategory ?: "small") 
+                                                    }
+                                                    
+                                                    val activeService = servicesList.find { it.petSizeCategory == selectedServiceSize } 
+                                                        ?: servicesList.firstOrNull()
+                                                    
+                                                    if (activeService != null) {
+                                                        Card(
+                                                            shape = RoundedCornerShape(16.dp),
+                                                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                                                            border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                                                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+                                                        ) {
+                                                            Column {
+                                                                // Image Carousel
+                                                                val images = activeService.imageUrls.ifEmpty { listOf("https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?w=400") }
+                                                                var currentImgIdx by remember(variantName) { mutableStateOf(0) }
+                                                                if (currentImgIdx >= images.size) {
+                                                                    currentImgIdx = 0
+                                                                }
+                                                                
+                                                                Box(modifier = Modifier.fillMaxWidth().height(180.dp)) {
+                                                                    Image(
+                                                                        painter = rememberAsyncImagePainter(images[currentImgIdx]),
+                                                                        contentDescription = null,
+                                                                        modifier = Modifier.fillMaxSize(),
+                                                                        contentScale = ContentScale.Crop
+                                                                    )
+                                                                    
+                                                                    if (images.size > 1) {
+                                                                        IconButton(
+                                                                            onClick = { currentImgIdx = (currentImgIdx - 1 + images.size) % images.size },
+                                                                            modifier = Modifier
+                                                                                .align(Alignment.CenterStart)
+                                                                                .padding(8.dp)
+                                                                                .background(Color.Black.copy(alpha = 0.4f), CircleShape)
+                                                                                .size(32.dp)
+                                                                        ) {
+                                                                            Icon(Icons.Default.KeyboardArrowLeft, contentDescription = "Prev", tint = Color.White)
+                                                                        }
+                                                                        
+                                                                        IconButton(
+                                                                            onClick = { currentImgIdx = (currentImgIdx + 1) % images.size },
+                                                                            modifier = Modifier
+                                                                                .align(Alignment.CenterEnd)
+                                                                                .padding(8.dp)
+                                                                                .background(Color.Black.copy(alpha = 0.4f), CircleShape)
+                                                                                .size(32.dp)
+                                                                        ) {
+                                                                            Icon(Icons.Default.KeyboardArrowRight, contentDescription = "Next", tint = Color.White)
+                                                                        }
+                                                                        
+                                                                        Row(
+                                                                            modifier = Modifier
+                                                                                .align(Alignment.BottomCenter)
+                                                                                .padding(8.dp),
+                                                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                                                        ) {
+                                                                            images.forEachIndexed { idx, _ ->
+                                                                                Box(
+                                                                                    modifier = Modifier
+                                                                                        .size(6.dp)
+                                                                                        .background(if (idx == currentImgIdx) Color.White else Color.White.copy(alpha = 0.5f), CircleShape)
+                                                                                )
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                                
+                                                                // Card Body
+                                                                Column(modifier = Modifier.padding(16.dp)) {
+                                                                    Text(
+                                                                        text = variantName,
+                                                                        fontWeight = FontWeight.Bold,
+                                                                        fontSize = 16.sp,
+                                                                        color = Color(0xFF1E293B)
+                                                                    )
+                                                                    Spacer(modifier = Modifier.height(4.dp))
+                                                                    Text(
+                                                                        text = activeService.description,
+                                                                        fontSize = 12.sp,
+                                                                        color = Color(0xFF64748B),
+                                                                        lineHeight = 16.sp
+                                                                    )
+                                                                    
+                                                                    Spacer(modifier = Modifier.height(12.dp))
+                                                                    
+                                                                    // Size Selection Price Chips
+                                                                    Row(
+                                                                        modifier = Modifier.fillMaxWidth(),
+                                                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                                                    ) {
+                                                                        servicesList.forEach { s ->
+                                                                            val isSizeSelected = selectedServiceSize == s.petSizeCategory
+                                                                            val chipBg = if (isSizeSelected) Color(0xFFEFF6FF) else Color(0xFFF1F5F9)
+                                                                            val chipText = if (isSizeSelected) Color(0xFF1D4ED8) else Color(0xFF475569)
+                                                                            val chipBorder = if (isSizeSelected) Color(0xFF3B82F6) else Color.Transparent
+                                                                            
+                                                                            Box(
+                                                                                modifier = Modifier
+                                                                                    .clip(RoundedCornerShape(8.dp))
+                                                                                    .background(chipBg)
+                                                                                    .border(1.dp, chipBorder, RoundedCornerShape(8.dp))
+                                                                                    .clickable { selectedServiceSize = s.petSizeCategory }
+                                                                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                                                                            ) {
+                                                                                Text(
+                                                                                    text = "${s.petSizeCategory.capitalize()} (₹${s.price.toInt()})",
+                                                                                    color = chipText,
+                                                                                    fontSize = 11.sp,
+                                                                                    fontWeight = FontWeight.SemiBold
+                                                                                )
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                    
+                                                                    Spacer(modifier = Modifier.height(16.dp))
+                                                                    
+                                                                    // Duration & Book button
+                                                                    Row(
+                                                                        modifier = Modifier.fillMaxWidth(),
+                                                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                                                        verticalAlignment = Alignment.CenterVertically
+                                                                    ) {
+                                                                        Column {
+                                                                            Text("Duration", fontSize = 10.sp, color = Color(0xFF64748B))
+                                                                            Text("${activeService.durationMinutes} mins", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
+                                                                        }
+                                                                        
+                                                                        Button(
+                                                                            onClick = {
+                                                                                viewModel.navigateTo(
+                                                                                    Screen.GroomingSlotPicker(
+                                                                                        shopId = shop.id,
+                                                                                        serviceId = activeService.id,
+                                                                                        variantName = activeService.variantName,
+                                                                                        price = activeService.price,
+                                                                                        durationMinutes = activeService.durationMinutes,
+                                                                                        petSizeCategory = activeService.petSizeCategory
+                                                                                    )
+                                                                                )
+                                                                            },
+                                                                            shape = RoundedCornerShape(8.dp),
+                                                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E3A8A))
+                                                                        ) {
+                                                                            Text("Book This", color = Color.White)
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
 
-            "Reviews" -> {
-                item {
-                    ReviewsTabScreen(
-                        reviews = reviewsList,
-                        shopId = shop.id,
-                        onSubmitReview = { rating, comment -> viewModel.submitReview(shop.id, rating, comment) }
-                    )
-                }
-            }
-
-            "Hospital Info" -> {
+                            "Doctors" -> {
+                                if (!shop.vetClinicEnabled) {
+                                    item {
+                                        Card(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(20.dp),
+                                            colors = CardDefaults.cardColors(containerColor = Color.LightGray.copy(alpha = 0.12f)),
+                                            border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.2f))
+                                        ) {
+                                            Column(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(32.dp),
+                                                horizontalAlignment = Alignment.CenterHorizontally
+                                            ) {
+                                                Text("🏥🩺", fontSize = 48.sp)
+                                                Spacer(modifier = Modifier.height(16.dp))
+                                                Text(
+                                                    text = "Doctor consultation services temporarily unavailable at this clinic",
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 15.sp,
+                                                    color = Color.Gray,
+                                                    textAlign = TextAlign.Center
+                                                )
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    item {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(20.dp)
+                                        ) {
+                                            Row(
+                                                modifier = Modifier
+                                                    .padding(bottom = 12.dp)
+                                                    .background(Color(0xFFDCFCE7), RoundedCornerShape(999.dp))
+                                                    .border(2.dp, Color(0xFF86EFAC), RoundedCornerShape(999.dp))
+                                                    .padding(horizontal = 16.dp, vertical = 7.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Person,
+                                                    contentDescription = null,
+                                                    tint = Color(0xFF15803D),
+                                                    modifier = Modifier.size(18.dp)
+                                                )
+                                                Text(
+                                                    text = "Available Doctors",
+                                                    fontWeight = FontWeight.ExtraBold,
+                                                    color = Color(0xFF15803D),
+                                                    fontSize = 14.sp
+                                                )
+                                            }
+                                            Text("${doctorList.size} vets on duty today", color = Color.Gray, fontSize = 11.sp, modifier = Modifier.padding(bottom = 12.dp))
+                                            
+                                            doctorList.forEach { doctor ->
+                                                Card(
+                                                    shape = RoundedCornerShape(16.dp),
+                                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF0FDF4)),
+                                                    border = BorderStroke(2.dp, Color(0xFFD1FAE5)),
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(vertical = 8.dp)
+                                                        .clickable {
+                                                            viewModel.navigateTo(
+                                                                Screen.DoctorSlotPicker(
+                                                                    shopId = shop.id,
+                                                                    doctorId = doctor.id,
+                                                                    serviceId = "consultation",
+                                                                    price = if (shop.id == "mock_city_hospital") 600.0 else 400.0
+                                                                )
+                                                            )
+                                                        }
+                                                ) {
+                                                    Row(
+                                                        modifier = Modifier.padding(16.dp),
+                                                        verticalAlignment = Alignment.CenterVertically
+                                                    ) {
+                                                        Image(
+                                                            painter = rememberAsyncImagePainter(doctor.photoUrl),
+                                                            contentDescription = null,
+                                                            modifier = Modifier
+                                                                .size(64.dp)
+                                                                .clip(CircleShape)
+                                                                .border(2.dp, Color(0xFF10B981), CircleShape),
+                                                            contentScale = ContentScale.Crop
+                                                        )
+                                                        Spacer(modifier = Modifier.width(16.dp))
+                                                        Column(modifier = Modifier.weight(1f)) {
+                                                            Text(
+                                                                text = doctor.name,
+                                                                fontWeight = FontWeight.Bold,
+                                                                fontSize = 16.sp,
+                                                                color = Color(0xFF065F46)
+                                                            )
+                                                            Text(
+                                                                text = doctor.specialization,
+                                                                fontSize = 12.sp,
+                                                                color = Color(0xFF047857)
+                                                            )
+                                                            Text(
+                                                                text = doctor.qualification,
+                                                                fontSize = 11.sp,
+                                                                color = Color.Gray
+                                                            )
+                                                            Spacer(modifier = Modifier.height(4.dp))
+                                                            Text(
+                                                                text = "Working: ${doctor.workingDays.joinToString(", ")}",
+                                                                fontSize = 10.sp,
+                                                                color = Color.Gray
+                                                            )
+                                                        }
+                                                        Icon(
+                                                            imageVector = Icons.Default.KeyboardArrowRight,
+                                                            contentDescription = null,
+                                                            tint = Color(0xFF10B981)
+                                                        )
+                                                    }
+                                                }
+                                                Spacer(modifier = Modifier.height(8.dp))
+                                            }
+                                        }
+                                    }
+                                    
+                                    item {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 20.dp, vertical = 12.dp)
+                                        ) {
+                                            Row(
+                                                modifier = Modifier
+                                                    .background(Color(0xFFDBEAFE), RoundedCornerShape(999.dp))
+                                                    .border(2.dp, Color(0xFF93C5FD), RoundedCornerShape(999.dp))
+                                                    .padding(horizontal = 16.dp, vertical = 7.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Info,
+                                                    contentDescription = null,
+                                                    tint = Color(0xFF1E40AF),
+                                                    modifier = Modifier.size(18.dp)
+                                                )
+                                                Text(
+                                                    text = "Hospital Information",
+                                                    fontWeight = FontWeight.ExtraBold,
+                                                    color = Color(0xFF1E40AF),
+                                                    fontSize = 14.sp
+                                                )
+                                            }
+                                            Spacer(modifier = Modifier.height(6.dp))
+                                            Text(
+                                                text = "Everything you need to know before your visit",
+                                                color = Color.Gray,
+                                                fontSize = 11.sp
+                                            )
+                                        }
+                                    }
                 item {
                     StoreInfoTabScreen(shop = shop)
                 }
                 item {
                     Card(
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFEFF6FF)),
+                        border = BorderStroke(2.dp, Color(0xFFBFDBFE)),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 20.dp, vertical = 12.dp)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text("Hospital Facilities", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text(
+                                text = "Hospital Facilities", 
+                                fontWeight = FontWeight.Bold, 
+                                fontSize = 14.sp,
+                                color = Color(0xFF1E40AF)
+                            )
                             Spacer(modifier = Modifier.height(12.dp))
                             val facilities = listOf(
                                 Pair(Icons.Default.Info, "X-Ray & Imaging"),
@@ -6712,65 +7104,79 @@ fun ShopDetailScreen(viewModel: PawsViewModel, shopId: String) {
                                     Icon(
                                         imageVector = icon,
                                         contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
+                                        tint = Color(0xFF2563EB),
                                         modifier = Modifier.size(18.dp)
                                     )
                                     Spacer(modifier = Modifier.width(10.dp))
-                                    Text(name, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
+                                    Text(
+                                        text = name, 
+                                        fontSize = 12.sp, 
+                                        color = Color(0xFF1D4ED8),
+                                        fontWeight = FontWeight.SemiBold
+                                    )
                                 }
                             }
                         }
                     }
                 }
             }
+        }
 
-            "Salon Info" -> {
+            "Reviews" -> {
                 item {
-                    StoreInfoTabScreen(shop = shop)
-                }
-                item {
-                    Card(
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 12.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text("Salon Features & Facilities", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                            Spacer(modifier = Modifier.height(12.dp))
-                            val features = listOf(
-                                Pair(Icons.Default.Star, "Luxury Bubble Bath Tubs"),
-                                Pair(Icons.Default.Info, "Professional Hair Styling"),
-                                Pair(Icons.Default.CheckCircle, "Gentle Nail Care & Trimming"),
-                                Pair(Icons.Default.Favorite, "Aromatherapy Pet Spa")
-                            )
-                            features.forEach { (icon, name) ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 6.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = icon,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(10.dp))
-                                    Text(name, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
-                                }
-                            }
+                    ReviewsTabScreen(
+                        reviews = reviewsList,
+                        shopId = shop.id,
+                        onSubmitReview = { rating, comment ->
+                            viewModel.submitReview(shop.id, rating, comment)
                         }
-                    }
+                    )
                 }
             }
 
             "Store Info" -> {
                 item {
                     StoreInfoTabScreen(shop = shop)
+                }
+                if (shop.groomingEnabled) {
+                    item {
+                        Card(
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 12.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text("Salon Features & Facilities", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Spacer(modifier = Modifier.height(12.dp))
+                                val features = listOf(
+                                    Pair(Icons.Default.Star, "Luxury Bubble Bath Tubs"),
+                                    Pair(Icons.Default.Info, "Professional Hair Styling"),
+                                    Pair(Icons.Default.CheckCircle, "Gentle Nail Care & Trimming"),
+                                    Pair(Icons.Default.Favorite, "Aromatherapy Pet Spa")
+                                )
+                                features.forEach { (icon, name) ->
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 6.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = icon,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(10.dp))
+                                        Text(name, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -6843,6 +7249,22 @@ fun ProductCatalogRow(
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                             fontSize = 11.sp,
                             textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough
+                        )
+                    }
+                }
+
+                if (!product.sampleAttachedProductId.isNullOrEmpty()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Box(
+                        modifier = Modifier
+                            .background(Color(0xFFE8F5E9), RoundedCornerShape(4.dp))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = "🎁 Free Sample: ${product.sampleDescription.ifEmpty { "Included" }}",
+                            color = Color(0xFF2E7D32),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
@@ -7098,6 +7520,11 @@ fun ReviewsTabScreen(
 // Sub Component: Info Content Tab
 @Composable
 fun StoreInfoTabScreen(shop: ShopEntity) {
+    val isVet = shop.vetClinicEnabled
+    val cardBg = if (isVet) Color(0xFFEFF6FF) else MaterialTheme.colorScheme.surface
+    val cardBorderColor = if (isVet) Color(0xFFBFDBFE) else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)
+    val cardBorderWidth = if (isVet) 2.dp else 1.dp
+    
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -7106,30 +7533,62 @@ fun StoreInfoTabScreen(shop: ShopEntity) {
     ) {
         Card(
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f))
+            colors = CardDefaults.cardColors(containerColor = cardBg),
+            border = BorderStroke(cardBorderWidth, cardBorderColor)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Operational Info", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                Text(
+                    text = "Operational Info", 
+                    fontWeight = FontWeight.Bold, 
+                    fontSize = 14.sp,
+                    color = if (isVet) Color(0xFF1E40AF) else MaterialTheme.colorScheme.onSurface
+                )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Address: ${shop.address}", fontSize = 12.sp, lineHeight = 18.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+                Text(
+                    text = "Address: ${shop.address}", 
+                    fontSize = 12.sp, 
+                    lineHeight = 18.sp, 
+                    color = if (isVet) Color(0xFF1D4ED8) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Phone Support: ${shop.phone}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
-                Text("Merchant Email: ${shop.email}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+                Text(
+                    text = "Phone Support: ${shop.phone}", 
+                    fontSize = 12.sp, 
+                    color = if (isVet) Color(0xFF1D4ED8) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
+                Text(
+                    text = "Merchant Email: ${shop.email}", 
+                    fontSize = 12.sp, 
+                    color = if (isVet) Color(0xFF1D4ED8) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
             }
         }
 
         Card(
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f))
+            colors = CardDefaults.cardColors(containerColor = cardBg),
+            border = BorderStroke(cardBorderWidth, cardBorderColor)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Standard Operating Timings", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                Text(
+                    text = "Standard Operating Timings", 
+                    fontWeight = FontWeight.Bold, 
+                    fontSize = 14.sp,
+                    color = if (isVet) Color(0xFF1E40AF) else MaterialTheme.colorScheme.onSurface
+                )
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Monday - Sunday", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
-                    Text("${shop.opensAt} - ${shop.closesAt}", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        text = "Monday - Sunday", 
+                        fontSize = 12.sp, 
+                        color = if (isVet) Color(0xFF1D4ED8).copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                    Text(
+                        text = "${shop.opensAt} - ${shop.closesAt}", 
+                        fontSize = 12.sp, 
+                        fontWeight = FontWeight.Bold, 
+                        color = if (isVet) Color(0xFF2563EB) else MaterialTheme.colorScheme.primary
+                    )
                 }
             }
         }
@@ -7726,6 +8185,49 @@ fun OrderTrackingScreen(viewModel: PawsViewModel, orderId: String) {
             }
         }
 
+        // ── DELIVERY LOCATION & ADDRESS DETAILS PANEL ─────────────────────────────
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 6.dp),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("Delivery Location & Address", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.primary)
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = null,
+                        tint = Color(0xFFFC8019),
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        val userProfile by viewModel.currentUser.collectAsState()
+                        val citiesList by viewModel.cities.collectAsState(initial = emptyList())
+                        val cityName = citiesList.find { it.id == (userProfile?.cityId ?: shop.cityId) }?.name ?: "Hyderabad"
+                        val stateName = citiesList.find { it.id == (userProfile?.cityId ?: shop.cityId) }?.state ?: "Telangana"
+                        
+                        Text(
+                            text = "City: $cityName, $stateName",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = order.deliveryAddress,
+                            fontSize = 12.sp,
+                            color = Color.Gray
+                        )
+                    }
+                }
+            }
+        }
+
         // Status Timeline Vertical Tracker
         Card(
             modifier = Modifier
@@ -7963,7 +8465,7 @@ fun SearchScreen(viewModel: PawsViewModel) {
                 locality = "Madhapur",
                 phone = "9876543212",
                 email = "cityhospital@paws.com",
-                photos = listOf("https://images.unsplash.com/photo-1597633425046-08f5110420b5?auto=format&fit=crop&q=80&w=600"),
+                photos = listOf("https://lh3.googleusercontent.com/aida-public/AB6AXuCRi0uyF8gXfUmsPudBSZXetvg8HcD8VleRwq_bcpRzFzeTA649-c3LZtcjs-XnpZEj2QhEb4WOlT2Gk2b_LAzARdYB4u4BWdIqNTb5qwNc7MmGAt1RbCtaVzh9Le_OHn9hAIgMsZKzOTifvd-rJsy1iuPfP67-Z9cR56Nn_TaSXK55Ws64qFSU1S4TDBBPy8LMprC7zdnwjtjDPpDo6DVWDMGDwNUsMNPyUAqj_jVya8ipStNkkICbQ9GG2dsa3X1KteEbaz65FJM"),
                 isOpen = true,
                 opensAt = "07:00",
                 closesAt = "23:00",
@@ -8788,6 +9290,8 @@ fun UserProfileScreen(viewModel: PawsViewModel) {
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 ProfileOptionRow(icon = Icons.Default.DateRange, title = "Appointments", subtitle = "Manage pet checkups & upcoming visits", onClick = { viewModel.navigateTo(Screen.Appointments) })
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                ProfileOptionRow(icon = Icons.Default.DateRange, title = "Grooming Bookings", subtitle = "Manage grooming spa visits & history", onClick = { viewModel.navigateTo(Screen.MyGroomingBookings) })
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 ProfileOptionRow(icon = Icons.Default.CheckCircle, title = "Medication Log", subtitle = "Track daily pills & chewable doses", onClick = { viewModel.navigateTo(Screen.TabletsIssued) })
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 ProfileOptionRow(icon = Icons.Default.Star, title = "Health & Vaccinations", subtitle = "Full vaccination history & health records", onClick = { viewModel.navigateTo(Screen.Vaccinations) })
@@ -9006,6 +9510,120 @@ fun MerchantDashboardScreen(viewModel: PawsViewModel) {
                 }
             }
 
+            if (shop.groomingEnabled) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 6.dp)
+                        .clickable { viewModel.navigateTo(Screen.MerchantGroomingServices) },
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E3A8A))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text("✂️ Grooming Service Manager", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.White)
+                            Text("Setup variant offerings & size tier pricing", fontSize = 11.sp, color = Color.White.copy(alpha = 0.75f))
+                        }
+                        Icon(Icons.Default.ArrowForward, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                    }
+                }
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 6.dp)
+                        .clickable { viewModel.navigateTo(Screen.MerchantGroomingSlots) },
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E3A8A))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text("📅 Grooming Slot Manager", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.White)
+                            Text("Block slots & edit capacity for date ranges", fontSize = 11.sp, color = Color.White.copy(alpha = 0.75f))
+                        }
+                        Icon(Icons.Default.ArrowForward, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                    }
+                }
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 6.dp)
+                        .clickable { viewModel.navigateTo(Screen.MerchantGroomingQueue) },
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E3A8A))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text("📋 Grooming Bookings Queue", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.White)
+                            Text("Track today's queue & update statuses", fontSize = 11.sp, color = Color.White.copy(alpha = 0.75f))
+                        }
+                        Icon(Icons.Default.ArrowForward, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                    }
+                }
+            }
+
+            if (shop.vetClinicEnabled) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 6.dp)
+                        .clickable { viewModel.navigateTo(Screen.MerchantDoctors) },
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF007D55))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text("🩺 Doctor Consultation Manager", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.White)
+                            Text("Manage vet profiles, slot times & block dates", fontSize = 11.sp, color = Color.White.copy(alpha = 0.75f))
+                        }
+                        Icon(Icons.Default.ArrowForward, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                    }
+                }
+            }
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 6.dp)
+                    .clickable { viewModel.navigateTo(Screen.MerchantCoupons) },
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFC8019))
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text("🎟️ Coupon & Discount Creator", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.White)
+                        Text("Voucher campaigns & discount percentages", fontSize = 11.sp, color = Color.White.copy(alpha = 0.75f))
+                    }
+                    Icon(Icons.Default.ArrowForward, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                }
+            }
+
 
             Card(
                 modifier = Modifier
@@ -9038,7 +9656,7 @@ fun MerchantDashboardScreen(viewModel: PawsViewModel) {
                 }
             }
 
-            // Grooming and Vet Services Channel Toggles Card
+            // Shop, Grooming and Vet Services Channel Toggles Card
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -9049,7 +9667,26 @@ fun MerchantDashboardScreen(viewModel: PawsViewModel) {
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text("Services Channel Availability 🛠️", fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text("Shop (Products & Supplies)", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                            Text("Toggle on/off store supplies listing", fontSize = 10.sp, color = Color.Gray)
+                        }
+                        Switch(
+                            checked = shop.shopEnabled,
+                            onCheckedChange = { viewModel.updateShopEnabledStatus(shop.id, it) }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                    HorizontalDivider()
+                    Spacer(modifier = Modifier.height(12.dp))
                     
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -9076,12 +9713,35 @@ fun MerchantDashboardScreen(viewModel: PawsViewModel) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("Vet Doctor Clinic", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
-                            Text("Toggle on/off vet clinic doctor availability", fontSize = 10.sp, color = Color.Gray)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("Vet Doctor Clinic", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                                if (!shop.isVetVerified) {
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Icon(
+                                        imageVector = Icons.Default.Lock,
+                                        contentDescription = "Awaiting verification",
+                                        tint = Color.Red,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                }
+                            }
+                            Text(
+                                text = if (!shop.isVetVerified) "Awaiting Vet License approval from Super Admin" 
+                                       else "Toggle on/off vet clinic doctor availability", 
+                                fontSize = 10.sp, 
+                                color = if (!shop.isVetVerified) Color(0xFFC62828) else Color.Gray
+                            )
                         }
                         Switch(
                             checked = shop.vetClinicEnabled,
-                            onCheckedChange = { viewModel.updateShopServices(shop.id, grooming = shop.groomingEnabled, vet = it) }
+                            onCheckedChange = { 
+                                if (shop.isVetVerified) {
+                                    viewModel.updateShopServices(shop.id, grooming = shop.groomingEnabled, vet = it)
+                                } else {
+                                    Toast.makeText(context, "Cannot enable Hospital: Awaiting Vet License approval.", Toast.LENGTH_LONG).show()
+                                }
+                            },
+                            enabled = shop.isVetVerified
                         )
                     }
                 }
@@ -9460,12 +10120,18 @@ fun ServiceCatalogRow(service: ServiceEntity, viewModel: PawsViewModel, shopId: 
     val context = LocalContext.current
     var showBookingDialog by remember { mutableStateOf(false) }
     
+    val isVet = shopId == "mock_city_hospital" || shopId == "mock_petcare_wellness"
+    val cardBg = if (isVet) Color(0xFFE0F2FE) else MaterialTheme.colorScheme.surface
+    val cardBorderColor = if (isVet) Color(0xFFBAE6FD) else Color.Transparent
+    val cardBorderWidth = if (isVet) 2.dp else 0.dp
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 8.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(containerColor = cardBg),
+        border = if (isVet) BorderStroke(cardBorderWidth, cardBorderColor) else null
     ) {
         Row(
             modifier = Modifier
@@ -9475,14 +10141,29 @@ fun ServiceCatalogRow(service: ServiceEntity, viewModel: PawsViewModel, shopId: 
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(service.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                Text(service.category, color = Color.Gray, fontSize = 12.sp)
+                Text(
+                    text = service.name, 
+                    fontWeight = FontWeight.Bold, 
+                    fontSize = 16.sp,
+                    color = if (isVet) Color(0xFF0369A1) else MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = service.category, 
+                    color = if (isVet) Color(0xFF0369A1).copy(alpha = 0.8f) else Color.Gray, 
+                    fontSize = 12.sp
+                )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("₹${service.price}", fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary, fontSize = 15.sp)
+                Text(
+                    text = "₹${service.price}", 
+                    fontWeight = FontWeight.ExtraBold, 
+                    color = if (isVet) Color(0xFF0891B2) else MaterialTheme.colorScheme.primary, 
+                    fontSize = 15.sp
+                )
             }
             Button(
                 onClick = { showBookingDialog = true },
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                colors = if (isVet) ButtonDefaults.buttonColors(containerColor = Color(0xFF0891B2)) else ButtonDefaults.buttonColors()
             ) {
                 Text("Book Slot")
             }
@@ -9491,7 +10172,7 @@ fun ServiceCatalogRow(service: ServiceEntity, viewModel: PawsViewModel, shopId: 
 
     if (showBookingDialog) {
         val currentUserVal by viewModel.currentUser.collectAsState()
-        var petName by remember { mutableStateOf(currentUserVal?.petName ?: "") }
+        val petNameBooked = currentUserVal?.petName?.takeIf { it.isNotBlank() } ?: "Max"
         
         // Generate next 7 days dynamically
         val datesList = remember {
@@ -9529,18 +10210,6 @@ fun ServiceCatalogRow(service: ServiceEntity, viewModel: PawsViewModel, shopId: 
                     Text("Book Appointment 📅", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    OutlinedTextField(
-                        value = petName,
-                        onValueChange = { petName = it },
-                        label = { Text("Pet Name") },
-                        placeholder = { Text("e.g. Buddy") },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        singleLine = true
-                    )
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
                     Text(
                         text = "Select Date:",
                         fontSize = 11.sp,
@@ -9566,8 +10235,8 @@ fun ServiceCatalogRow(service: ServiceEntity, viewModel: PawsViewModel, shopId: 
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(12.dp))
                                     .background(
-                                        if (isSelected) MaterialTheme.colorScheme.primary 
-                                        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                        if (isSelected) (if (isVet) Color(0xFF0891B2) else MaterialTheme.colorScheme.primary)
+                                        else (if (isVet) Color(0xFFE0F2FE) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
                                     )
                                     .clickable { selectedDate = date }
                                     .padding(horizontal = 14.dp, vertical = 8.dp)
@@ -9576,7 +10245,7 @@ fun ServiceCatalogRow(service: ServiceEntity, viewModel: PawsViewModel, shopId: 
                                     friendly,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = if (isSelected) Color.White else (if (isVet) Color(0xFF0369A1) else MaterialTheme.colorScheme.onSurfaceVariant)
                                 )
                             }
                         }
@@ -9612,15 +10281,15 @@ fun ServiceCatalogRow(service: ServiceEntity, viewModel: PawsViewModel, shopId: 
                                         .clip(RoundedCornerShape(12.dp))
                                         .background(
                                             if (isBooked) Color.Black
-                                            else if (isSelected) MaterialTheme.colorScheme.primary
-                                            else MaterialTheme.colorScheme.surfaceVariant
+                                            else if (isSelected) (if (isVet) Color(0xFF0891B2) else MaterialTheme.colorScheme.primary)
+                                            else (if (isVet) Color(0xFFE0F2FE) else MaterialTheme.colorScheme.surfaceVariant)
                                         )
                                         .clickable(enabled = !isBooked) {
                                             selectedTime = slot
                                         }
                                         .border(
                                             width = 1.dp,
-                                            color = if (isBooked) Color.Black else if (isSelected) Color.Transparent else Color.LightGray.copy(alpha = 0.5f),
+                                            color = if (isBooked) Color.Black else if (isSelected) Color.Transparent else (if (isVet) Color(0xFFBAE6FD) else Color.LightGray.copy(alpha = 0.5f)),
                                             shape = RoundedCornerShape(12.dp)
                                         )
                                         .padding(vertical = 10.dp),
@@ -9632,7 +10301,7 @@ fun ServiceCatalogRow(service: ServiceEntity, viewModel: PawsViewModel, shopId: 
                                         fontWeight = FontWeight.Bold,
                                         color = if (isBooked) Color.Gray 
                                                else if (isSelected) Color.White 
-                                               else MaterialTheme.colorScheme.onSurfaceVariant,
+                                               else (if (isVet) Color(0xFF0369A1) else MaterialTheme.colorScheme.onSurfaceVariant),
                                         textAlign = TextAlign.Center
                                     )
                                 }
@@ -9648,10 +10317,6 @@ fun ServiceCatalogRow(service: ServiceEntity, viewModel: PawsViewModel, shopId: 
                         }
                         Button(
                             onClick = {
-                                if (petName.trim().isEmpty()) {
-                                    Toast.makeText(context, "Please enter pet name", Toast.LENGTH_SHORT).show()
-                                    return@Button
-                                }
                                 val currentUserVal = viewModel.currentUser.value
                                 val userPhone = currentUserVal?.phone ?: "9876543210"
                                 val userEmail = (currentUserVal?.fullName ?: "arjun").replace(" ", "").lowercase() + "@example.com"
@@ -9670,7 +10335,7 @@ fun ServiceCatalogRow(service: ServiceEntity, viewModel: PawsViewModel, shopId: 
                                             price = service.price,
                                             date = selectedDate,
                                             time = selectedTime,
-                                            petName = petName
+                                            petName = petNameBooked
                                         )
                                         showBookingDialog = false
                                         Toast.makeText(context, "Appointment Booked! Payment ID: $paymentId", Toast.LENGTH_LONG).show()
@@ -9680,7 +10345,8 @@ fun ServiceCatalogRow(service: ServiceEntity, viewModel: PawsViewModel, shopId: 
                                     }
                                 )
                             },
-                            modifier = Modifier.weight(1.5f)
+                            modifier = Modifier.weight(1.5f),
+                            colors = if (isVet) ButtonDefaults.buttonColors(containerColor = Color(0xFF0891B2)) else ButtonDefaults.buttonColors()
                         ) {
                             Text("Pay & Book")
                         }
@@ -9957,7 +10623,7 @@ fun CareCalendarSheet(viewModel: PawsViewModel, onDismiss: () -> Unit) {
                                     // One click booking link
                                     Button(
                                         onClick = {
-                                            viewModel.navigateTo(Screen.ShopDetail("shop_hyd_2")) // Open Puppy Love Groomers
+                                            viewModel.navigateTo(Screen.ShopDetail("shop_hyd_2")) // Open Paws & Co. Grooming Loft
                                             onDismiss()
                                         },
                                         modifier = Modifier.fillMaxWidth(),
@@ -9966,7 +10632,7 @@ fun CareCalendarSheet(viewModel: PawsViewModel, onDismiss: () -> Unit) {
                                     ) {
                                         Icon(Icons.Default.DateRange, null, modifier = Modifier.size(16.dp), tint = Color.White)
                                         Spacer(modifier = Modifier.width(6.dp))
-                                        Text("Book Tick-Cooling Bath at Puppy Love 🏪", fontSize = 10.5.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                                        Text("Book Tick-Cooling Bath at Paws & Co. Loft 🏪", fontSize = 10.5.sp, color = Color.White, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -10080,7 +10746,7 @@ fun CareCalendarSheet(viewModel: PawsViewModel, onDismiss: () -> Unit) {
                                                 Icon(Icons.Default.DateRange, null, modifier = Modifier.size(14.dp), tint = Color.White)
                                                 Spacer(modifier = Modifier.width(6.dp))
                                                 Text(
-                                                    text = if (isVaccine) "Book Vaccination at Royal Canine Hub 🏪" else "Book Grooming at Puppy Love 🏪",
+                                                    text = if (isVaccine) "Book Vaccination at Royal Canine Hub 🏪" else "Book Grooming at Paws & Co. Loft 🏪",
                                                     fontSize = 10.sp,
                                                     color = Color.White,
                                                     fontWeight = FontWeight.Bold
@@ -10330,6 +10996,8 @@ fun SuperAdminScreen(viewModel: PawsViewModel) {
             ) {
                 val navItems = listOf(
                     Triple("shops", "🏪 Shop Approvals", pendingShops.size),
+                    Triple("vet_license", "🩺 Vet Licensing", shopsList.filter { it.vetLicenseNumber.isNotEmpty() && !it.isVetVerified }.size),
+                    Triple("financials", "💰 Financials", 0),
                     Triple("captains", "🛵 Captain Approvals", pendingCaptains.size),
                     Triple("users", "👥 User Management", 0),
                     Triple("banners", "🖼️ Promo Banners", allBanners.size),
@@ -10489,6 +11157,118 @@ fun SuperAdminScreen(viewModel: PawsViewModel) {
                 }
             }
         }
+        }
+
+        if (selectedTab == "vet_license") {
+            Text("Vet Clinic License Approvals 🩺", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(10.dp))
+
+            val pendingVets = shopsList.filter { it.vetLicenseNumber.isNotEmpty() && !it.isVetVerified }
+            if (pendingVets.isEmpty()) {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Box(modifier = Modifier.padding(24.dp), contentAlignment = Alignment.Center) {
+                        Text("No pending vet clinic license approvals.", color = Color.Gray, fontSize = 13.sp)
+                    }
+                }
+            } else {
+                pendingVets.forEach { shop ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(shop.name, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                            Text("Phone: ${shop.phone} • Locality: ${shop.locality}", fontSize = 12.sp, color = Color.Gray)
+                            Text("License Number: ${shop.vetLicenseNumber}", fontWeight = FontWeight.SemiBold, color = Color(0xFFFC8019), fontSize = 13.sp, modifier = Modifier.padding(top = 4.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Button(
+                                onClick = { viewModel.approveVetLicense(shop.id) },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2DB37A))
+                            ) {
+                                Text("Approve Vet License & Verify", color = Color.White)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (selectedTab == "financials") {
+            Text("Platform Financial Settings 💰", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            val platformCommission by viewModel.platformCommission.collectAsState()
+            val deliveryFeeTier by viewModel.deliveryFeeTier.collectAsState()
+            
+            var commissionText by remember(platformCommission) { mutableStateOf(platformCommission.toString()) }
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.5f))
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Text("Commission & Fee Tiers", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text("Platform Commission (%)", fontSize = 12.sp, color = Color.Gray)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = commissionText,
+                                onValueChange = { commissionText = it },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                modifier = Modifier.weight(1f),
+                                singleLine = true
+                            )
+                            Button(
+                                onClick = {
+                                    val newComm = commissionText.toDoubleOrNull()
+                                    if (newComm != null && newComm >= 0 && newComm <= 100) {
+                                        viewModel.setPlatformCommission(newComm)
+                                        Toast.makeText(context, "Commission updated to $newComm%", Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        Toast.makeText(context, "Please enter a valid percentage (0-100)", Toast.LENGTH_SHORT).show()
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFC8019))
+                            ) {
+                                Text("Update")
+                            }
+                        }
+                    }
+
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text("Delivery Fee Tier (Current: ₹${deliveryFeeTier.toInt()})", fontSize = 12.sp, color = Color.Gray)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            listOf(10.0, 20.0, 30.0).forEach { tier ->
+                                val isSelected = deliveryFeeTier == tier
+                                Button(
+                                    onClick = { viewModel.setDeliveryFeeTier(tier) },
+                                    modifier = Modifier.weight(1f),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = if (isSelected) Color(0xFFFC8019) else Color(0xFFF0F0F0),
+                                        contentColor = if (isSelected) Color.White else Color.Black
+                                    ),
+                                    shape = RoundedCornerShape(8.dp)
+                                ) {
+                                    Text("₹${tier.toInt()}")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         if (selectedTab == "captains") {
@@ -13181,9 +13961,9 @@ fun AppointmentCard(
 
     val clinicName = when (appointment.shopId) {
         "shop_hyd_1" -> "Royal Canine Hub"
-        "shop_hyd_2" -> "Puppy Love Groomers"
-        "mock_paws_bubbles" -> "Paws & Bubbles Spa"
-        "mock_grooming_room" -> "The Grooming Room"
+        "shop_hyd_2" -> "Paws & Co. Grooming Loft"
+        "mock_paws_bubbles" -> "Fur & Fluff Boutique Spa"
+        "mock_grooming_room" -> "The Dapper Dog Salon"
         "mock_city_hospital" -> "City Pet Hospital"
         "mock_petcare_wellness" -> "PetCare Wellness Center"
         else -> "PawsApp Care Partner"
@@ -14028,6 +14808,9 @@ fun MerchantInventoryScreen(viewModel: PawsViewModel) {
     var editingProduct by remember { mutableStateOf<ProductEntity?>(null) }
     var editStockText by remember { mutableStateOf("") }
     var editPriceText by remember { mutableStateOf("") }
+    var selectedSampleId by remember { mutableStateOf<String?>(null) }
+    var sampleDescText by remember { mutableStateOf("") }
+    var sampleDropdownExpanded by remember { mutableStateOf(false) }
 
     // Color tokens matching Stitch design system
     val primary = Color(0xFF004AC6)
@@ -14084,6 +14867,64 @@ fun MerchantInventoryScreen(viewModel: PawsViewModel) {
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
+
+                    // Attached Free Sample dropdown selector
+                    Text("Attach Free Sample 🎁", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = onSurface)
+                    
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        val currentSampleProduct = products.find { it.id == selectedSampleId }
+                        val buttonText = currentSampleProduct?.let { "🎁 ${it.name} (₹${it.price})" } ?: "No Sample Selected"
+                        
+                        OutlinedButton(
+                            onClick = { sampleDropdownExpanded = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(buttonText, maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 12.sp)
+                                Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                            }
+                        }
+                        
+                        DropdownMenu(
+                            expanded = sampleDropdownExpanded,
+                            onDismissRequest = { sampleDropdownExpanded = false },
+                            modifier = Modifier.fillMaxWidth(0.85f)
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("None / Clear Sample", fontSize = 13.sp) },
+                                onClick = {
+                                    selectedSampleId = null
+                                    sampleDropdownExpanded = false
+                                }
+                            )
+                            val otherProducts = products.filter { it.id != editingProduct?.id }
+                            otherProducts.forEach { prod ->
+                                DropdownMenuItem(
+                                    text = { Text("🎁 ${prod.name} (Stock: ${prod.stockCount})", fontSize = 13.sp) },
+                                    onClick = {
+                                        selectedSampleId = prod.id
+                                        sampleDropdownExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    if (selectedSampleId != null) {
+                        OutlinedTextField(
+                            value = sampleDescText,
+                            onValueChange = { sampleDescText = it },
+                            label = { Text("Sample Description (e.g. Free 50g cup)") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+                    }
+
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         OutlinedButton(
                             onClick = { showEditDialog = false },
@@ -14092,7 +14933,16 @@ fun MerchantInventoryScreen(viewModel: PawsViewModel) {
                         Button(
                             onClick = {
                                 val stock = editStockText.toIntOrNull() ?: editingProduct!!.stockCount
-                                scope.launch { viewModel.updateProductStock(editingProduct!!.id, stock) }
+                                val price = editPriceText.toDoubleOrNull() ?: editingProduct!!.price
+                                scope.launch {
+                                    viewModel.updateProductDetails(
+                                        productId = editingProduct!!.id,
+                                        stockCount = stock,
+                                        price = price,
+                                        sampleProductId = selectedSampleId,
+                                        sampleDesc = sampleDescText
+                                    )
+                                }
                                 showEditDialog = false
                             },
                             modifier = Modifier.weight(1f),
@@ -14289,6 +15139,8 @@ fun MerchantInventoryScreen(viewModel: PawsViewModel) {
                                 editingProduct = product
                                 editStockText = product.stockCount.toString()
                                 editPriceText = product.price.toString()
+                                selectedSampleId = product.sampleAttachedProductId
+                                sampleDescText = product.sampleDescription ?: ""
                                 showEditDialog = true
                             },
                             primary = primary,
@@ -18852,6 +19704,165 @@ fun PawsappHomeScreen(viewModel: PawsViewModel) {
             }
 
             item {
+                val appts by viewModel.activeAppointments.collectAsState()
+                val bookings by viewModel.myGroomingBookings.collectAsState(initial = emptyList())
+
+                val rescheduleAppts = remember(appts) {
+                    appts.filter { it.status == "reschedule_pending" }
+                }
+                val rescheduleBookings = remember(bookings) {
+                    bookings.filter { it.status == "reschedule_pending" }
+                }
+
+                if (rescheduleAppts.isNotEmpty() || rescheduleBookings.isNotEmpty()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "Pending Reschedule Requests 🗓️",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        rescheduleAppts.forEach { appt ->
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(16.dp),
+                                border = BorderStroke(1.5.dp, Color(0xFFFEF3C7)),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFDF5))
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    Text(
+                                        text = appt.serviceName,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 14.sp,
+                                        color = Color(0xFF92400E)
+                                    )
+                                    Text(
+                                        text = "Proposed New Slot: ${appt.rescheduleDate} at ${appt.rescheduleTime}",
+                                        fontSize = 12.sp,
+                                        color = Color.DarkGray,
+                                        modifier = Modifier.padding(vertical = 4.dp)
+                                    )
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Button(
+                                            onClick = {
+                                                viewModel.acceptReschedule(appt) { success ->
+                                                    if (success) {
+                                                        Toast.makeText(context, "Reschedule Accepted!", Toast.LENGTH_SHORT).show()
+                                                    }
+                                                }
+                                            },
+                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)),
+                                            modifier = Modifier.weight(1f),
+                                            shape = RoundedCornerShape(8.dp)
+                                        ) {
+                                            Text("Accept", color = Color.White, fontSize = 12.sp)
+                                        }
+                                        OutlinedButton(
+                                            onClick = {
+                                                viewModel.declineReschedule(appt) { success ->
+                                                    if (success) {
+                                                        Toast.makeText(context, "Reschedule Declined (Booking Cancelled)", Toast.LENGTH_SHORT).show()
+                                                    }
+                                                }
+                                            },
+                                            border = BorderStroke(1.dp, Color.Red),
+                                            modifier = Modifier.weight(1f),
+                                            shape = RoundedCornerShape(8.dp)
+                                        ) {
+                                            Text("Decline", color = Color.Red, fontSize = 12.sp)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        rescheduleBookings.forEach { booking ->
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(16.dp),
+                                border = BorderStroke(1.5.dp, Color(0xFFFEF3C7)),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFDF5))
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    val bookingTitle = remember(booking.serviceId) {
+                                        val parts = booking.serviceId.split("_")
+                                        if (parts.size >= 4) {
+                                            parts[3].replaceFirstChar { it.uppercase() } + " Grooming"
+                                        } else {
+                                            "Grooming Package"
+                                        }
+                                    }
+                                    Text(
+                                        text = bookingTitle,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 14.sp,
+                                        color = Color(0xFF92400E)
+                                    )
+                                    Text(
+                                        text = "Proposed New Slot: ${booking.rescheduleDate} at ${booking.rescheduleTime}",
+                                        fontSize = 12.sp,
+                                        color = Color.DarkGray,
+                                        modifier = Modifier.padding(vertical = 4.dp)
+                                    )
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Button(
+                                            onClick = {
+                                                viewModel.getOrGenerateSlotsForDate(booking.shopId, booking.rescheduleDate ?: "") { slotsList ->
+                                                    val newTimeStr = booking.rescheduleTime ?: ""
+                                                    val match = slotsList.find { it.slotTime == newTimeStr }
+                                                    if (match != null) {
+                                                        viewModel.acceptGroomingReschedule(booking, match.id, booking.rescheduleDate ?: "", newTimeStr) { success ->
+                                                            if (success) {
+                                                                Toast.makeText(context, "Reschedule Accepted!", Toast.LENGTH_SHORT).show()
+                                                            }
+                                                        }
+                                                    } else {
+                                                        Toast.makeText(context, "No available slots found for proposed time.", Toast.LENGTH_LONG).show()
+                                                    }
+                                                }
+                                            },
+                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)),
+                                            modifier = Modifier.weight(1f),
+                                            shape = RoundedCornerShape(8.dp)
+                                        ) {
+                                            Text("Accept", color = Color.White, fontSize = 12.sp)
+                                        }
+                                        OutlinedButton(
+                                            onClick = {
+                                                viewModel.declineGroomingReschedule(booking) { success ->
+                                                    if (success) {
+                                                        Toast.makeText(context, "Reschedule Declined (Booking Cancelled)", Toast.LENGTH_SHORT).show()
+                                                    }
+                                                }
+                                            },
+                                            border = BorderStroke(1.dp, Color.Red),
+                                            modifier = Modifier.weight(1f),
+                                            shape = RoundedCornerShape(8.dp)
+                                        ) {
+                                            Text("Decline", color = Color.Red, fontSize = 12.sp)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            item {
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     modifier = Modifier
@@ -18974,12 +19985,14 @@ fun PawsappHomeScreen(viewModel: PawsViewModel) {
                 ) {
                     val shopsNearby = shopsList.filter { it.id == "mock_posh_paws" || it.id == "mock_healthy_hounds" }
                     items(shopsNearby) { shop ->
+                        val isAvailable = shop.shopEnabled
                         Card(
                             shape = RoundedCornerShape(16.dp),
                             border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.2f)),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            colors = CardDefaults.cardColors(containerColor = if (isAvailable) Color.White else Color(0xFFF1F5F9)),
                             modifier = Modifier
                                 .width(220.dp)
+                                .then(if (!isAvailable) Modifier.alpha(0.5f) else Modifier)
                                 .clickable { viewModel.navigateTo(Screen.ShopDetail(shop.id)) }
                         ) {
                             Column {
@@ -19000,6 +20013,21 @@ fun PawsappHomeScreen(viewModel: PawsViewModel) {
                                         modifier = Modifier.fillMaxSize(),
                                         contentScale = ContentScale.Crop
                                     )
+                                    if (!isAvailable) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .background(Color.Black.copy(alpha = 0.4f)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                "Unavailable",
+                                                color = Color.White,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 12.sp
+                                            )
+                                        }
+                                    }
                                     Box(
                                         modifier = Modifier
                                             .align(Alignment.TopEnd)
@@ -19051,12 +20079,14 @@ fun PawsappHomeScreen(viewModel: PawsViewModel) {
                 ) {
                     val hospitalsNearby = shopsList.filter { it.id == "mock_city_hospital" || it.id == "mock_petcare_wellness" || (it.vetClinicEnabled && it.id.startsWith("shop_")) }
                     items(hospitalsNearby) { hospital ->
+                        val isAvailable = hospital.vetClinicEnabled
                         Card(
                             shape = RoundedCornerShape(16.dp),
                             border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.2f)),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            colors = CardDefaults.cardColors(containerColor = if (isAvailable) Color.White else Color(0xFFF1F5F9)),
                             modifier = Modifier
                                 .width(220.dp)
+                                .then(if (!isAvailable) Modifier.alpha(0.5f) else Modifier)
                                 .clickable { viewModel.navigateTo(Screen.ShopDetail(hospital.id)) }
                         ) {
                             Column {
@@ -19077,6 +20107,21 @@ fun PawsappHomeScreen(viewModel: PawsViewModel) {
                                         modifier = Modifier.fillMaxSize(),
                                         contentScale = ContentScale.Crop
                                     )
+                                    if (!isAvailable) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .background(Color.Black.copy(alpha = 0.4f)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                "Unavailable",
+                                                color = Color.White,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 12.sp
+                                            )
+                                        }
+                                    }
                                     Box(
                                         modifier = Modifier
                                             .align(Alignment.TopEnd)
@@ -19128,12 +20173,14 @@ fun PawsappHomeScreen(viewModel: PawsViewModel) {
                 ) {
                     val groomingNearby = shopsList.filter { it.id == "mock_paws_bubbles" || it.id == "mock_grooming_room" || (it.groomingEnabled && it.id.startsWith("shop_")) }
                     items(groomingNearby) { groomer ->
+                        val isAvailable = groomer.groomingEnabled
                         Card(
                             shape = RoundedCornerShape(16.dp),
                             border = BorderStroke(1.dp, Color(0xFFC3C6D7).copy(alpha = 0.2f)),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            colors = CardDefaults.cardColors(containerColor = if (isAvailable) Color.White else Color(0xFFF1F5F9)),
                             modifier = Modifier
                                 .width(220.dp)
+                                .then(if (!isAvailable) Modifier.alpha(0.5f) else Modifier)
                                 .clickable { viewModel.navigateTo(Screen.ShopDetail(groomer.id)) }
                         ) {
                             Column {
@@ -19154,6 +20201,21 @@ fun PawsappHomeScreen(viewModel: PawsViewModel) {
                                         modifier = Modifier.fillMaxSize(),
                                         contentScale = ContentScale.Crop
                                     )
+                                    if (!isAvailable) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .background(Color.Black.copy(alpha = 0.4f)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                "Unavailable",
+                                                color = Color.White,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 12.sp
+                                            )
+                                        }
+                                    }
                                     Box(
                                         modifier = Modifier
                                             .align(Alignment.TopEnd)
@@ -19333,3 +20395,3068 @@ fun PromoCarouselSection() {
         }
     }
 }
+
+// =========================================================================
+// GROOMING MODULE SCREENS (SCREENS B, C, D, E, F, G)
+// =========================================================================
+
+// --- SCREEN B: SLOT PICKER ---
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+fun GroomingSlotPickerScreen(
+    viewModel: PawsViewModel,
+    shopId: String,
+    serviceId: String,
+    variantName: String,
+    price: Double,
+    durationMinutes: Int,
+    petSizeCategory: String
+) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val currentUser by viewModel.currentUser.collectAsState()
+    
+    // Pets List — use activePets StateFlow which is already filtered for current user
+    val pets by viewModel.activePets.collectAsState()
+    var selectedPet by remember { mutableStateOf<PetEntity?>(null) }
+    var petExpanded by remember { mutableStateOf(false) }
+    
+    // Auto-detect or confirm size
+    var confirmedSize by remember(selectedPet) {
+        val weightVal = selectedPet?.weight?.filter { it.isDigit() || it == '.' }?.toDoubleOrNull()
+        val detected = when {
+            weightVal == null -> null
+            weightVal < 10.0 -> "small"
+            weightVal <= 25.0 -> "medium"
+            else -> "large"
+        }
+        mutableStateOf(detected)
+    }
+
+    // Load active variants for this shop to see if size is available
+    val activeServices by viewModel.getActiveGroomingServicesForShopFlow(shopId).collectAsState(initial = emptyList())
+    val variantServices = remember(activeServices, variantName) {
+        activeServices.filter { it.variantName == variantName }
+    }
+    
+    // Find matching service for the confirmed pet size category
+    val matchingService = remember(variantServices, confirmedSize) {
+        variantServices.find { it.petSizeCategory == confirmedSize }
+    }
+
+    // Calendar
+    val calendarDates = remember {
+        val list = mutableListOf<String>()
+        val formatCorrect = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+        val cal = java.util.Calendar.getInstance()
+        for (i in 0 until 14) {
+            list.add(formatCorrect.format(cal.time))
+            cal.add(java.util.Calendar.DAY_OF_YEAR, 1)
+        }
+        list
+    }
+    
+    // Auto-generate slots in database
+    LaunchedEffect(shopId) {
+        calendarDates.forEach { date ->
+            viewModel.getOrGenerateSlotsForDate(shopId, date) { }
+        }
+    }
+    
+    // Collect all slots for date range to disable dates with zero slots
+    val slotsRangeState by remember(shopId) {
+        viewModel.getGroomingSlotsForDateRangeFlow(shopId, calendarDates.first(), calendarDates.last())
+    }.collectAsState(initial = emptyList())
+    
+    var selectedDate by remember { mutableStateOf("") }
+    
+    // Observe slots for the selected date
+    val slotsForDate = remember(slotsRangeState, selectedDate) {
+        slotsRangeState.filter { it.slotDate == selectedDate }
+    }
+    
+    var selectedSlot by remember(selectedDate) { mutableStateOf<GroomingSlotEntity?>(null) }
+    var specialInstructions by remember { mutableStateOf("") }
+    var isSubmitting by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF8FAFC))
+            .verticalScroll(rememberScrollState())
+    ) {
+        // Top Toolbar
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { viewModel.navigateBack() }) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Grooming Slot Picker",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF0F172A)
+            )
+        }
+
+        Column(modifier = Modifier.padding(16.dp)) {
+            // STEP 1: Select Pet
+            Text("Step 1: Select Pet Profile", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color(0xFF1E3A8A))
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Box(modifier = Modifier.fillMaxWidth()) {
+                OutlinedButton(
+                    onClick = { petExpanded = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
+                ) {
+                    Text(
+                        text = selectedPet?.name ?: "Choose Pet Profile",
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                
+                DropdownMenu(
+                    expanded = petExpanded,
+                    onDismissRequest = { petExpanded = false },
+                    modifier = Modifier.fillMaxWidth(0.9f)
+                ) {
+                    pets.forEach { pet ->
+                        DropdownMenuItem(
+                            text = { Text("${pet.name} (${pet.breed} - ${pet.weight})") },
+                            onClick = {
+                                selectedPet = pet
+                                petExpanded = false
+                            }
+                        )
+                    }
+                    if (pets.isEmpty()) {
+                        DropdownMenuItem(
+                            text = { Text("No pets registered. Tap to register") },
+                            onClick = {
+                                petExpanded = false
+                                Toast.makeText(context, "Please create a pet profile first!", Toast.LENGTH_LONG).show()
+                            }
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // Auto-detected / confirmed size chips
+            if (selectedPet != null) {
+                Card(
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        val weightText = selectedPet?.weight ?: ""
+                        Text(
+                            text = "Pet Weight: $weightText",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF475569)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Confirm Size Category:",
+                            fontSize = 11.sp,
+                            color = Color.Gray
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            listOf("small", "medium", "large").forEach { sz ->
+                                val isSzSel = confirmedSize == sz
+                                FilterChip(
+                                    selected = isSzSel,
+                                    onClick = { confirmedSize = sz },
+                                    label = { Text(sz.capitalize()) }
+                                )
+                            }
+                        }
+                        
+                        if (confirmedSize != null) {
+                            if (matchingService == null) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Not available for your pet's size.",
+                                    color = Color.Red,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            } else {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                                    Text(
+                                        text = "Price: ₹${matchingService.price.toInt()}",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF16A34A)
+                                    )
+                                    Text(
+                                        text = "Duration: ${matchingService.durationMinutes} mins",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF1E3A8A)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(20.dp))
+            
+            // STEP 2: Calendar
+            Text("Step 2: Select Date", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color(0xFF1E3A8A))
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(calendarDates) { date ->
+                    val slotsForThisDate = slotsRangeState.filter { it.slotDate == date }
+                    val isAvailable = slotsForThisDate.isNotEmpty() && slotsForThisDate.any { !it.isBlocked && it.bookedCount < it.capacity }
+                    val isSel = selectedDate == date
+                    
+                    val dateFriendly = try {
+                        val inF = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+                        val outF = java.text.SimpleDateFormat("EEE\ndd MMM", java.util.Locale.US)
+                        outF.format(inF.parse(date))
+                    } catch(e: Exception) { date }
+                    
+                    val bg = when {
+                        isSel -> Color(0xFF1E3A8A)
+                        !isAvailable -> Color(0xFFF1F5F9)
+                        else -> Color.White
+                    }
+                    val textCol = when {
+                        isSel -> Color.White
+                        !isAvailable -> Color.LightGray
+                        else -> Color(0xFF1E293B)
+                    }
+                    val borderCol = when {
+                        isSel -> Color.Transparent
+                        !isAvailable -> Color(0xFFE2E8F0)
+                        else -> Color(0xFFCBD5E1)
+                    }
+                    
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(bg)
+                            .border(1.dp, borderCol, RoundedCornerShape(12.dp))
+                            .clickable(enabled = isAvailable) { selectedDate = date }
+                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = dateFriendly,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = textCol,
+                                textAlign = TextAlign.Center
+                            )
+                            if (!isAvailable) {
+                                Text(
+                                    text = "Booked",
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Red.copy(alpha = 0.6f)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(20.dp))
+            
+            // STEP 3: Time slots
+            if (selectedDate.isNotEmpty()) {
+                Text("Step 3: Select Time Slot", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color(0xFF1E3A8A))
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    slotsForDate.forEach { slot ->
+                        val isBlocked = slot.isBlocked
+                        val isFull = slot.bookedCount >= slot.capacity
+                        val isSlotSel = selectedSlot?.id == slot.id
+                        
+                        val chipBg = when {
+                            isSlotSel -> Color(0xFF1E3A8A)
+                            isBlocked || isFull -> Color(0xFFE2E8F0)
+                            else -> Color.White
+                        }
+                        val chipTextCol = when {
+                            isSlotSel -> Color.White
+                            isBlocked || isFull -> Color(0xFF94A3B8)
+                            else -> Color(0xFF334155)
+                        }
+                        val chipBorder = when {
+                            isSlotSel -> Color.Transparent
+                            isBlocked || isFull -> Color.Transparent
+                            else -> Color(0xFFCBD5E1)
+                        }
+                        
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(chipBg)
+                                .border(1.dp, chipBorder, RoundedCornerShape(8.dp))
+                                .clickable(enabled = !isBlocked && !isFull) { selectedSlot = slot }
+                                .padding(horizontal = 12.dp, vertical = 10.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = slot.slotTime,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = chipTextCol
+                                )
+                                if (isBlocked) {
+                                    Text("Blocked", fontSize = 8.sp, color = Color.Red, fontWeight = FontWeight.Bold)
+                                } else if (isFull) {
+                                    Text("Fully Booked", fontSize = 8.sp, color = Color.Red, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(20.dp))
+            
+            // STEP 4: Special Instructions
+            Text("Step 4: Special Instructions (Optional)", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color(0xFF1E3A8A))
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            OutlinedTextField(
+                value = specialInstructions,
+                onValueChange = { if (it.length <= 300) specialInstructions = it },
+                modifier = Modifier.fillMaxWidth(),
+                maxLines = 4,
+                placeholder = { Text("Enter any details e.g. coat condition, allergies, or size details (max 300 chars)") },
+                shape = RoundedCornerShape(8.dp)
+            )
+            Text(
+                text = "${specialInstructions.length}/300 chars",
+                fontSize = 10.sp,
+                color = Color.Gray,
+                modifier = Modifier.align(Alignment.End).padding(top = 4.dp)
+            )
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            // STEP 5: Summary card & Confirm button
+            if (selectedPet != null && selectedDate.isNotEmpty() && selectedSlot != null && matchingService != null) {
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFEFF6FF)),
+                    border = BorderStroke(1.dp, Color(0xFFBFDBFE)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Booking Summary", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF1E3A8A))
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("Service:", fontSize = 13.sp, color = Color.Gray)
+                            Text("$variantName (${confirmedSize?.capitalize()})", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("Pet:", fontSize = 13.sp, color = Color.Gray)
+                            Text(selectedPet?.name ?: "", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("Date & Time:", fontSize = 13.sp, color = Color.Gray)
+                            Text("$selectedDate at ${selectedSlot?.slotTime}", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("Duration:", fontSize = 13.sp, color = Color.Gray)
+                            Text("${matchingService.durationMinutes} mins", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                        HorizontalDivider(color = Color(0xFFBFDBFE))
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("Total Price:", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            Text("₹${matchingService.price.toInt()}", fontSize = 18.sp, fontWeight = FontWeight.Black, color = Color(0xFF16A34A))
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(20.dp))
+                
+                Button(
+                    onClick = {
+                        isSubmitting = true
+                        viewModel.bookGroomingSlot(
+                            shopId = shopId,
+                            serviceId = matchingService.id,
+                            slotId = selectedSlot!!.id,
+                            petId = selectedPet!!.id,
+                            petSizeCategory = confirmedSize!!,
+                            specialInstructions = specialInstructions,
+                            totalPrice = matchingService.price,
+                            onSuccess = { bookingId ->
+                                isSubmitting = false
+                                viewModel.navigateTo(Screen.GroomingBookingConfirmation(bookingId))
+                            },
+                            onError = { errMsg ->
+                                isSubmitting = false
+                                Toast.makeText(context, errMsg, Toast.LENGTH_LONG).show()
+                            }
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E3A8A)),
+                    enabled = !isSubmitting
+                ) {
+                    Text(
+                        text = if (isSubmitting) "Confirming..." else "Confirm Booking",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp
+                    )
+                }
+            }
+        }
+    }
+}
+
+// --- SCREEN C: BOOKING CONFIRMATION ---
+@Composable
+fun GroomingBookingConfirmationScreen(viewModel: PawsViewModel, bookingId: String) {
+    var bookingState by remember { mutableStateOf<GroomingBookingEntity?>(null) }
+    var serviceState by remember { mutableStateOf<GroomingServiceEntity?>(null) }
+    var shopState by remember { mutableStateOf<ShopEntity?>(null) }
+    var petState by remember { mutableStateOf<PetEntity?>(null) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    LaunchedEffect(bookingId) {
+        viewModel.getGroomingBookingById(bookingId) { bk ->
+            bookingState = bk
+        }
+        bookingState?.let { bk ->
+            viewModel.getGroomingServiceById(bk.serviceId) { s -> serviceState = s }
+            shopState = viewModel.getShopById(bk.shopId)
+            viewModel.getPetsForOwnerFlow(bk.consumerId).collect { plist ->
+                petState = plist.find { p -> p.id == bk.petId }
+            }
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .size(80.dp)
+                .background(Color(0xFFDCFCE7), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = "Success",
+                tint = Color(0xFF16A34A),
+                modifier = Modifier.size(48.dp)
+            )
+        }
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        Text(
+            text = "Booking Confirmed!",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Black,
+            color = Color(0xFF1E3A8A)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Your grooming appointment is registered successfully.",
+            fontSize = 14.sp,
+            color = Color.Gray,
+            textAlign = TextAlign.Center
+        )
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        val booking = bookingState
+        if (booking != null) {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),
+                border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Booking ID:", fontSize = 12.sp, color = Color.Gray)
+                        Text("#${booking.id}", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Shop Name:", fontSize = 12.sp, color = Color.Gray)
+                        Text(shopState?.name ?: "", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Service Name:", fontSize = 12.sp, color = Color.Gray)
+                        Text(serviceState?.variantName ?: "", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Pet Name:", fontSize = 12.sp, color = Color.Gray)
+                        Text(petState?.name ?: "Buddy", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Size Category:", fontSize = 12.sp, color = Color.Gray)
+                        Text(booking.petSizeCategory.capitalize(), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Price:", fontSize = 12.sp, color = Color.Gray)
+                        Text("₹${booking.totalPrice.toInt()}", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF16A34A))
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedButton(
+                    onClick = {
+                        try {
+                            val intent = android.content.Intent(android.content.Intent.ACTION_INSERT).apply {
+                                data = android.provider.CalendarContract.Events.CONTENT_URI
+                                putExtra(android.provider.CalendarContract.Events.TITLE, "Pet Grooming: ${serviceState?.variantName} for ${petState?.name ?: "Buddy"}")
+                                putExtra(android.provider.CalendarContract.Events.DESCRIPTION, "Shop: ${shopState?.name}. Booking ID: #${booking.id}")
+                            }
+                            context.startActivity(intent)
+                        } catch(e: Exception) {
+                            Toast.makeText(context, "Calendar application not found.", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("Add to Calendar")
+                }
+                
+                Button(
+                    onClick = {
+                        viewModel.clearHistoryAndNavigate(Screen.Home)
+                        viewModel.navigateTo(Screen.MyGroomingBookings)
+                    },
+                    modifier = Modifier.weight(1.5f),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E3A8A))
+                ) {
+                    Text("View My Bookings", color = Color.White)
+                }
+            }
+        }
+    }
+}
+
+// --- SCREEN D: MY GROOMING BOOKINGS (CONSUMER) ---
+@Composable
+fun MyGroomingBookingsScreen(viewModel: PawsViewModel) {
+    val bookings by viewModel.myGroomingBookings.collectAsState(initial = emptyList())
+    var selectedTab by remember { mutableStateOf(0) } // 0 = Upcoming, 1 = Past
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    val (upcoming, past) = remember(bookings) {
+        bookings.partition {
+            it.status == "pending" || it.status == "confirmed" || it.status == "in_progress"
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF8FAFC))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { viewModel.navigateBack() }) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "My Grooming Bookings",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF0F172A)
+            )
+        }
+
+        // Tabs
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 12.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(Color(0xFFE2E8F0))
+                .padding(3.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(if (selectedTab == 0) Color.White else Color.Transparent)
+                    .clickable { selectedTab = 0 }
+                    .padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Upcoming", fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Normal, fontSize = 13.sp)
+            }
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(if (selectedTab == 1) Color.White else Color.Transparent)
+                    .clickable { selectedTab = 1 }
+                    .padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Past History", fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal, fontSize = 13.sp)
+            }
+        }
+
+        val displayList = if (selectedTab == 0) upcoming else past
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            contentPadding = PaddingValues(bottom = 24.dp)
+        ) {
+            items(displayList) { booking ->
+                var serviceState by remember { mutableStateOf<GroomingServiceEntity?>(null) }
+                var shopState by remember { mutableStateOf<ShopEntity?>(null) }
+                var petState by remember { mutableStateOf<PetEntity?>(null) }
+                
+                LaunchedEffect(booking.id) {
+                    viewModel.getGroomingServiceById(booking.serviceId) { s -> serviceState = s }
+                    shopState = viewModel.getShopById(booking.shopId)
+                    viewModel.getPetsForOwnerFlow(booking.consumerId).collect { plist ->
+                        petState = plist.find { p -> p.id == booking.petId }
+                    }
+                }
+                
+                Card(
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text(
+                                text = serviceState?.variantName ?: "Grooming Service",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp,
+                                color = Color(0xFF0F172A)
+                            )
+                            val statusBg = when (booking.status) {
+                                "pending" -> Color(0xFFFFE4E6)
+                                "confirmed" -> Color(0xFFDCFCE7)
+                                "in_progress" -> Color(0xFFE0F2FE)
+                                "completed" -> Color(0xFFF1F5F9)
+                                else -> Color(0xFFFEE2E2)
+                            }
+                            val statusText = when (booking.status) {
+                                "pending" -> Color(0xFFE11D48)
+                                "confirmed" -> Color(0xFF16A34A)
+                                "in_progress" -> Color(0xFF0284C7)
+                                "completed" -> Color(0xFF475569)
+                                else -> Color(0xFFDC2626)
+                            }
+                            
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(statusBg)
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = booking.status.capitalize(),
+                                    color = statusText,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(text = "Shop: ${shopState?.name ?: ""}", fontSize = 12.sp, color = Color(0xFF64748B))
+                        Text(text = "Pet Name: ${petState?.name ?: "Buddy"}", fontSize = 12.sp, color = Color(0xFF64748B))
+                        
+                        val dateFriendly = try {
+                            val inF = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+                            val outF = java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.US)
+                            outF.format(inF.parse(booking.slotId.split("_").getOrNull(1) ?: booking.slotId))
+                        } catch(e: Exception) { booking.slotId }
+                        
+                        val timeVal = booking.slotId.split("_").getOrNull(2) ?: ""
+                        
+                        Text(text = "Date/Time: $dateFriendly at $timeVal", fontSize = 12.sp, color = Color(0xFF64748B))
+                        Text(text = "Price: ₹${booking.totalPrice.toInt()}", fontSize = 12.sp, color = Color(0xFF64748B))
+                        
+                        val cancelEligible = remember(booking) {
+                            try {
+                                val slotDate = booking.slotId.split("_").getOrNull(1) ?: ""
+                                val slotTime = booking.slotId.split("_").getOrNull(2) ?: ""
+                                val format = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.US)
+                                val slotDateTime = format.parse("$slotDate $slotTime")
+                                val diff = (slotDateTime?.time ?: 0L) - System.currentTimeMillis()
+                                (booking.status == "pending" || booking.status == "confirmed") && diff > (2 * 60 * 60 * 1000)
+                            } catch(e: Exception) {
+                                false
+                            }
+                        }
+                        
+                        if (cancelEligible && selectedTab == 0) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Button(
+                                onClick = {
+                                    viewModel.cancelGroomingBooking(booking.id) {
+                                        Toast.makeText(context, "Booking cancelled successfully.", Toast.LENGTH_SHORT).show()
+                                    }
+                                },
+                                shape = RoundedCornerShape(6.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF4444)),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Cancel Booking", color = Color.White)
+                            }
+                        }
+                    }
+                }
+            }
+            if (displayList.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().padding(48.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No grooming bookings found.", color = Color.Gray, fontSize = 13.sp)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// --- SCREEN E: MERCHANT SERVICES MANAGER ---
+@Composable
+fun MerchantGroomingServicesScreen(viewModel: PawsViewModel) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val merchantShop by viewModel.merchantShop.collectAsState()
+    val allServices by viewModel.getAllGroomingServicesForShopFlow(merchantShop?.id ?: "").collectAsState(initial = emptyList())
+
+    val allTaxonomy = listOf(
+        Pair("bath", "Basic Bath"),
+        Pair("bath", "Medicated Bath"),
+        Pair("bath", "De-shedding Bath"),
+        Pair("bath", "Flea & Tick Bath"),
+        Pair("haircut", "Breed-Standard Cut"),
+        Pair("haircut", "Puppy Cut"),
+        Pair("haircut", "Lion Cut"),
+        Pair("haircut", "Summer Cut"),
+        Pair("haircut", "Paw & Face Trim Only"),
+        Pair("bath_and_haircut", "Full Groom Package"),
+        Pair("nail_trim", "Nail Trim"),
+        Pair("ear_cleaning", "Ear Cleaning")
+    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF8FAFC))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { viewModel.navigateBack() }) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Grooming Service Manager",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF0F172A)
+            )
+        }
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(bottom = 24.dp)
+        ) {
+            items(allTaxonomy) { (serviceType, variantName) ->
+                val matchingServices = allServices.filter { it.variantName == variantName && it.serviceType == serviceType }
+                val isActive = matchingServices.any { it.isActive }
+                
+                var offered by remember(matchingServices) { mutableStateOf(isActive) }
+                
+                // Form states
+                val firstMatch = matchingServices.firstOrNull()
+                var description by remember(matchingServices) { mutableStateOf(firstMatch?.description ?: "") }
+                var durationStr by remember(matchingServices) { mutableStateOf(firstMatch?.durationMinutes?.toString() ?: "45") }
+                
+                var priceSmall by remember(matchingServices) { mutableStateOf(matchingServices.find { it.petSizeCategory == "small" }?.price?.toInt()?.toString() ?: "") }
+                var priceMedium by remember(matchingServices) { mutableStateOf(matchingServices.find { it.petSizeCategory == "medium" }?.price?.toInt()?.toString() ?: "") }
+                var priceLarge by remember(matchingServices) { mutableStateOf(matchingServices.find { it.petSizeCategory == "large" }?.price?.toInt()?.toString() ?: "") }
+                
+                // Images state (minimum 1, maximum 5)
+                val initialImages = remember(matchingServices) {
+                    firstMatch?.imageUrls ?: listOf("https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?w=400")
+                }
+                val imageUrls = remember(matchingServices) { mutableStateListOf<String>().apply { addAll(initialImages) } }
+                var newUrlInput by remember { mutableStateOf("") }
+                
+                // Combo specific states
+                var selectedBathVariant by remember { mutableStateOf("") }
+                var selectedHaircutVariant by remember { mutableStateOf("") }
+                var discountStr by remember { mutableStateOf("100") }
+                
+                // Populate initial combo choices
+                LaunchedEffect(matchingServices) {
+                    if (serviceType == "bath_and_haircut") {
+                        val desc = firstMatch?.description ?: ""
+                        // simple parsing e.g. "Combo: Basic Bath + Puppy Cut"
+                        val parts = desc.replace("Combo: ", "").split(" + ")
+                        selectedBathVariant = parts.getOrNull(0) ?: "Basic Bath"
+                        selectedHaircutVariant = parts.getOrNull(1) ?: "Puppy Cut"
+                    }
+                }
+
+                Card(
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(variantName, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF1E293B))
+                                Text(serviceType.uppercase(), fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                            }
+                            Switch(
+                                checked = offered,
+                                onCheckedChange = { offered = it }
+                            )
+                        }
+
+                        if (offered) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            HorizontalDivider()
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            // Description
+                            Text("Description", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF475569))
+                            Spacer(modifier = Modifier.height(4.dp))
+                            OutlinedTextField(
+                                value = description,
+                                onValueChange = { description = it },
+                                placeholder = { Text("Write brief service description") },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            
+                            Spacer(modifier = Modifier.height(10.dp))
+                            
+                            // Duration
+                            Text("Duration (Minutes)", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF475569))
+                            Spacer(modifier = Modifier.height(4.dp))
+                            OutlinedTextField(
+                                value = durationStr,
+                                onValueChange = { durationStr = it.filter { c -> c.isDigit() } },
+                                placeholder = { Text("Duration e.g. 45") },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            // PRICING INPUTS (Combo vs Regular)
+                            if (serviceType == "bath_and_haircut") {
+                                Text("Configure Combo Package Parts", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1E3A8A))
+                                Spacer(modifier = Modifier.height(6.dp))
+                                
+                                val activeBaths = allServices.filter { it.serviceType == "bath" && it.isActive }.map { it.variantName }.distinct()
+                                val activeHaircuts = allServices.filter { it.serviceType == "haircut" && it.isActive }.map { it.variantName }.distinct()
+                                
+                                Text("Select Bath Variant Component:", fontSize = 10.sp, color = Color.Gray)
+                                Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    (if(activeBaths.isEmpty()) listOf("Basic Bath") else activeBaths).forEach { name ->
+                                        FilterChip(
+                                            selected = selectedBathVariant == name || (selectedBathVariant.isEmpty() && name == "Basic Bath"),
+                                            onClick = { selectedBathVariant = name },
+                                            label = { Text(name, fontSize = 10.sp) }
+                                        )
+                                    }
+                                }
+                                
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text("Select Haircut Variant Component:", fontSize = 10.sp, color = Color.Gray)
+                                Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    (if(activeHaircuts.isEmpty()) listOf("Puppy Cut") else activeHaircuts).forEach { name ->
+                                        FilterChip(
+                                            selected = selectedHaircutVariant == name || (selectedHaircutVariant.isEmpty() && name == "Puppy Cut"),
+                                            onClick = { selectedHaircutVariant = name },
+                                            label = { Text(name, fontSize = 10.sp) }
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text("Combo Package Discount (₹)", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF475569))
+                                Spacer(modifier = Modifier.height(4.dp))
+                                OutlinedTextField(
+                                    value = discountStr,
+                                    onValueChange = { discountStr = it.filter { c -> c.isDigit() } },
+                                    placeholder = { Text("Discount amount e.g. 100") },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                
+                                // Calculate combo price dynamically
+                                val discountVal = discountStr.toDoubleOrNull() ?: 0.0
+                                val bathName = selectedBathVariant.ifEmpty { "Basic Bath" }
+                                val haircutName = selectedHaircutVariant.ifEmpty { "Puppy Cut" }
+                                
+                                val bathSmall = allServices.find { it.variantName == bathName && it.petSizeCategory == "small" && it.isActive }?.price ?: 0.0
+                                val bathMed = allServices.find { it.variantName == bathName && it.petSizeCategory == "medium" && it.isActive }?.price ?: 0.0
+                                val bathLarge = allServices.find { it.variantName == bathName && it.petSizeCategory == "large" && it.isActive }?.price ?: 0.0
+                                
+                                val hairSmall = allServices.find { it.variantName == haircutName && it.petSizeCategory == "small" && it.isActive }?.price ?: 0.0
+                                val hairMed = allServices.find { it.variantName == haircutName && it.petSizeCategory == "medium" && it.isActive }?.price ?: 0.0
+                                val hairLarge = allServices.find { it.variantName == haircutName && it.petSizeCategory == "large" && it.isActive }?.price ?: 0.0
+                                
+                                val calcSmall = if (bathSmall > 0 && hairSmall > 0) Math.max(0.0, bathSmall + hairSmall - discountVal) else 0.0
+                                val calcMed = if (bathMed > 0 && hairMed > 0) Math.max(0.0, bathMed + hairMed - discountVal) else 0.0
+                                val calcLarge = if (bathLarge > 0 && hairLarge > 0) Math.max(0.0, bathLarge + hairLarge - discountVal) else 0.0
+                                
+                                priceSmall = if (calcSmall > 0) calcSmall.toInt().toString() else ""
+                                priceMedium = if (calcMed > 0) calcMed.toInt().toString() else ""
+                                priceLarge = if (calcLarge > 0) calcLarge.toInt().toString() else ""
+                                
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Text("Calculated Pricing Tiers (Read-Only):", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF475569))
+                                Row(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text("Small", fontSize = 10.sp, color = Color.Gray)
+                                        Text(if(calcSmall > 0) "₹${calcSmall.toInt()}" else "N/A", fontWeight = FontWeight.Bold)
+                                    }
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text("Medium", fontSize = 10.sp, color = Color.Gray)
+                                        Text(if(calcMed > 0) "₹${calcMed.toInt()}" else "N/A", fontWeight = FontWeight.Bold)
+                                    }
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text("Large", fontSize = 10.sp, color = Color.Gray)
+                                        Text(if(calcLarge > 0) "₹${calcLarge.toInt()}" else "N/A", fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                            } else {
+                                Text("Pricing Tiers (₹) - Enter at least 1 size to activate", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF475569))
+                                Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    OutlinedTextField(
+                                        value = priceSmall,
+                                        onValueChange = { priceSmall = it.filter { c -> c.isDigit() } },
+                                        placeholder = { Text("Small") },
+                                        label = { Text("Small") },
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    OutlinedTextField(
+                                        value = priceMedium,
+                                        onValueChange = { priceMedium = it.filter { c -> c.isDigit() } },
+                                        placeholder = { Text("Medium") },
+                                        label = { Text("Medium") },
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    OutlinedTextField(
+                                        value = priceLarge,
+                                        onValueChange = { priceLarge = it.filter { c -> c.isDigit() } },
+                                        placeholder = { Text("Large") },
+                                        label = { Text("Large") },
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            // Image Upload management
+                            Text("Photos (1 - 5 images)", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF475569))
+                            Spacer(modifier = Modifier.height(6.dp))
+                            
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                imageUrls.forEachIndexed { index, url ->
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Image(
+                                            painter = rememberAsyncImagePainter(url),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(36.dp).clip(RoundedCornerShape(4.dp)),
+                                            contentScale = ContentScale.Crop
+                                        )
+                                        Text(
+                                            text = url.take(30) + "...",
+                                            fontSize = 11.sp,
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                        // Move Up
+                                        if (index > 0) {
+                                            IconButton(
+                                                onClick = {
+                                                    val temp = imageUrls[index]
+                                                    imageUrls[index] = imageUrls[index - 1]
+                                                    imageUrls[index - 1] = temp
+                                                },
+                                                modifier = Modifier.size(24.dp)
+                                            ) {
+                                                Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Move Up", modifier = Modifier.size(16.dp))
+                                            }
+                                        }
+                                        // Move Down
+                                        if (index < imageUrls.size - 1) {
+                                            IconButton(
+                                                onClick = {
+                                                    val temp = imageUrls[index]
+                                                    imageUrls[index] = imageUrls[index + 1]
+                                                    imageUrls[index + 1] = temp
+                                                },
+                                                modifier = Modifier.size(24.dp)
+                                            ) {
+                                                Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Move Down", modifier = Modifier.size(16.dp))
+                                            }
+                                        }
+                                        // Remove Button
+                                        IconButton(
+                                            onClick = { imageUrls.removeAt(index) },
+                                            modifier = Modifier.size(24.dp)
+                                        ) {
+                                            Icon(Icons.Default.Delete, contentDescription = "Remove", tint = Color.Red, modifier = Modifier.size(16.dp))
+                                        }
+                                    }
+                                }
+
+                                if (imageUrls.size < 5) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        OutlinedTextField(
+                                            value = newUrlInput,
+                                            onValueChange = { newUrlInput = it },
+                                            placeholder = { Text("Paste new Image URL") },
+                                            modifier = Modifier.weight(1f),
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        Button(
+                                            onClick = {
+                                                if (newUrlInput.trim().isNotEmpty()) {
+                                                    imageUrls.add(newUrlInput.trim())
+                                                    newUrlInput = ""
+                                                }
+                                            },
+                                            shape = RoundedCornerShape(8.dp)
+                                        ) {
+                                            Text("Add")
+                                        }
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            // Enforce 1 photo rule
+                            val photoError = imageUrls.isEmpty()
+                            if (photoError) {
+                                Text(
+                                    text = "Add at least 1 photo to activate.",
+                                    color = Color.Red,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 12.sp,
+                                    modifier = Modifier.padding(bottom = 8.dp)
+                                )
+                            }
+
+                            Button(
+                                onClick = {
+                                    // Save service for active prices
+                                    val finalDesc = if (serviceType == "bath_and_haircut") {
+                                        "Combo: ${selectedBathVariant.ifEmpty { "Basic Bath" }} + ${selectedHaircutVariant.ifEmpty { "Puppy Cut" }}"
+                                    } else description
+                                    
+                                    val parsedDuration = durationStr.toIntOrNull() ?: 45
+                                    
+                                    // Delete all first for this variant, then save new active ones
+                                    matchingServices.forEach { s ->
+                                        viewModel.deleteGroomingService(s.id)
+                                    }
+                                    
+                                    val pSmall = priceSmall.toDoubleOrNull() ?: 0.0
+                                    if (pSmall > 0) {
+                                        viewModel.saveGroomingService(serviceType, variantName, finalDesc, "small", pSmall, parsedDuration, imageUrls.toList(), true)
+                                    }
+                                    val pMed = priceMedium.toDoubleOrNull() ?: 0.0
+                                    if (pMed > 0) {
+                                        viewModel.saveGroomingService(serviceType, variantName, finalDesc, "medium", pMed, parsedDuration, imageUrls.toList(), true)
+                                    }
+                                    val pLarge = priceLarge.toDoubleOrNull() ?: 0.0
+                                    if (pLarge > 0) {
+                                        viewModel.saveGroomingService(serviceType, variantName, finalDesc, "large", pLarge, parsedDuration, imageUrls.toList(), true)
+                                    }
+                                    
+                                    Toast.makeText(context, "${variantName} saved successfully!", Toast.LENGTH_SHORT).show()
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(8.dp),
+                                enabled = !photoError,
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E3A8A))
+                            ) {
+                                Text("Save Variant Settings", color = Color.White)
+                            }
+                        } else {
+                            // If toggled off, make sure we deactivate them in database
+                            if (matchingServices.any { it.isActive }) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Button(
+                                    onClick = {
+                                        matchingServices.forEach { s ->
+                                            viewModel.updateGroomingService(s.copy(isActive = false))
+                                        }
+                                        Toast.makeText(context, "${variantName} toggled inactive", Toast.LENGTH_SHORT).show()
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray)
+                                ) {
+                                    Text("Apply Deactivation", color = Color.Black)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// --- SCREEN F: MERCHANT SLOT MANAGER ---
+@Composable
+fun MerchantGroomingSlotsScreen(viewModel: PawsViewModel) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val merchantShop by viewModel.merchantShop.collectAsState()
+    
+    // Calendar 30 days
+    val dates = remember {
+        val list = mutableListOf<String>()
+        val format = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+        val cal = java.util.Calendar.getInstance()
+        for (i in 0 until 30) {
+            list.add(format.format(cal.time))
+            cal.add(java.util.Calendar.DAY_OF_YEAR, 1)
+        }
+        list
+    }
+    
+    var selectedDate by remember { mutableStateOf(dates.firstOrNull() ?: "") }
+    
+    // Slots for the selected date
+    val shopId = merchantShop?.id ?: ""
+    val slots by viewModel.getGroomingSlotsForShopAndDateFlow(shopId, selectedDate).collectAsState(initial = emptyList())
+    
+    // Pre-generate slots on date change
+    LaunchedEffect(shopId, selectedDate) {
+        if (shopId.isNotEmpty() && selectedDate.isNotEmpty()) {
+            viewModel.getOrGenerateSlotsForDate(shopId, selectedDate) { }
+        }
+    }
+
+    // Bulk edit inputs
+    var showBulkDialog by remember { mutableStateOf(false) }
+    var bulkStart by remember { mutableStateOf(dates.first()) }
+    var bulkEnd by remember { mutableStateOf(dates.last()) }
+    val bulkDays = remember { mutableStateListOf(2, 3, 4, 5, 6, 7) } // Monday-Saturday (2-7 in Calendar)
+    var bulkCapacity by remember { mutableStateOf("2") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF8FAFC))
+            .verticalScroll(rememberScrollState())
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { viewModel.navigateBack() }) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Grooming Slot Manager",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF0F172A)
+            )
+        }
+
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Bulk Edit trigger
+            Button(
+                onClick = { showBulkDialog = true },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E3A8A))
+            ) {
+                Text("Bulk-Edit Slot Capacity", color = Color.White)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Date horizontal strip
+            Text("Select Date to View Slots", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color(0xFF475569))
+            Spacer(modifier = Modifier.height(6.dp))
+            
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth().height(64.dp)
+            ) {
+                items(dates) { date ->
+                    val isSel = selectedDate == date
+                    val bg = if (isSel) Color(0xFF1E3A8A) else Color.White
+                    val textCol = if (isSel) Color.White else Color(0xFF334155)
+                    val borderCol = if (isSel) Color.Transparent else Color(0xFFE2E8F0)
+                    
+                    val friendlyDate = try {
+                        val inF = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+                        val outF = java.text.SimpleDateFormat("EEE\ndd", java.util.Locale.US)
+                        outF.format(inF.parse(date))
+                    } catch(e: Exception) { date }
+
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(bg)
+                            .border(1.dp, borderCol, RoundedCornerShape(8.dp))
+                            .clickable { selectedDate = date }
+                            .padding(horizontal = 14.dp, vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = friendlyDate,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = textCol,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Time Slots List
+            Text("Time Slots for $selectedDate", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color(0xFF475569))
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                slots.forEach { slot ->
+                    val isBlocked = slot.isBlocked
+                    val isFull = slot.bookedCount >= slot.capacity
+                    
+                    val colorSt = when {
+                        isBlocked -> Color(0xFF94A3B8) // Grey
+                        isFull -> Color(0xFFEF4444) // Red
+                        slot.bookedCount > 0 -> Color(0xFFEAB308) // Yellow
+                        else -> Color(0xFF22C55E) // Green
+                    }
+
+                    Card(
+                        shape = RoundedCornerShape(8.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(12.dp)
+                                        .background(colorSt, CircleShape)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text(slot.slotTime, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                    Text("Capacity: ${slot.capacity} • Booked: ${slot.bookedCount}", fontSize = 11.sp, color = Color.Gray)
+                                }
+                            }
+                            
+                            // Block/Unblock toggle button
+                            Button(
+                                onClick = { viewModel.toggleSlotBlocked(slot) },
+                                shape = RoundedCornerShape(6.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (slot.isBlocked) Color(0xFF22C55E) else Color(0xFF94A3B8)
+                                )
+                            ) {
+                                Text(if (slot.isBlocked) "Unblock" else "Block", color = Color.White, fontSize = 11.sp)
+                            }
+                        }
+                    }
+                }
+                if (slots.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                        Text("Loading slots...", color = Color.Gray)
+                    }
+                }
+            }
+        }
+    }
+
+    // Bulk Dialog
+    if (showBulkDialog) {
+        AlertDialog(
+            onDismissRequest = { showBulkDialog = false },
+            title = { Text("Bulk-Edit Capacity") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Select Date Range:", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(
+                            value = bulkStart,
+                            onValueChange = { bulkStart = it },
+                            label = { Text("Start (YYYY-MM-DD)", fontSize = 10.sp) },
+                            modifier = Modifier.weight(1f)
+                        )
+                        OutlinedTextField(
+                            value = bulkEnd,
+                            onValueChange = { bulkEnd = it },
+                            label = { Text("End (YYYY-MM-DD)", fontSize = 10.sp) },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+
+                    Text("Select Days:", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    // Sun = 1, Mon = 2, ...
+                    val dayNames = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+                    Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        for (d in 1..7) {
+                            val active = bulkDays.contains(d)
+                            FilterChip(
+                                selected = active,
+                                onClick = {
+                                    if (active) bulkDays.remove(d) else bulkDays.add(d)
+                                },
+                                label = { Text(dayNames[d - 1], fontSize = 10.sp) }
+                            )
+                        }
+                    }
+
+                    OutlinedTextField(
+                        value = bulkCapacity,
+                        onValueChange = { bulkCapacity = it.filter { c -> c.isDigit() } },
+                        label = { Text("Capacity (e.g. 2)") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val cap = bulkCapacity.toIntOrNull() ?: 1
+                        viewModel.bulkEditSlotCapacity(shopId, bulkStart, bulkEnd, bulkDays.toList(), cap) {
+                            showBulkDialog = false
+                            Toast.makeText(context, "Bulk capacity updated!", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                ) {
+                    Text("Apply Changes")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showBulkDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+}
+
+// --- SCREEN G: MERCHANT BOOKINGS QUEUE ---
+@Composable
+fun MerchantGroomingQueueScreen(viewModel: PawsViewModel) {
+    val bookings by viewModel.merchantGroomingBookings.collectAsState(initial = emptyList())
+    var selectedBookingDetail by remember { mutableStateOf<GroomingBookingEntity?>(null) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    var showRescheduleWarningBooking by remember { mutableStateOf<GroomingBookingEntity?>(null) }
+    var showProposeRescheduleBooking by remember { mutableStateOf<GroomingBookingEntity?>(null) }
+    var proposeRescheduleDate by remember { mutableStateOf("") }
+    var proposeRescheduleTime by remember { mutableStateOf("") }
+
+    // Sort queue by Date & Time
+    val sortedQueue = remember(bookings) {
+        bookings.sortedWith(compareBy<GroomingBookingEntity> { it.slotId.split("_").getOrNull(1) ?: "" }
+            .thenBy { it.slotId.split("_").getOrNull(2) ?: "" })
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF8FAFC))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { viewModel.navigateBack() }) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Grooming Bookings Queue",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF0F172A)
+            )
+        }
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            contentPadding = PaddingValues(bottom = 24.dp)
+        ) {
+            items(sortedQueue) { booking ->
+                var serviceState by remember { mutableStateOf<GroomingServiceEntity?>(null) }
+                var ownerState by remember { mutableStateOf<ProfileEntity?>(null) }
+                var petState by remember { mutableStateOf<PetEntity?>(null) }
+
+                LaunchedEffect(booking.id) {
+                    viewModel.getGroomingServiceById(booking.serviceId) { s -> serviceState = s }
+                    viewModel.getProfileById(booking.consumerId) { owner -> ownerState = owner }
+                    viewModel.getPetsForOwnerFlow(booking.consumerId).collect { plist ->
+                        petState = plist.find { p -> p.id == booking.petId }
+                    }
+                }
+
+                Card(
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                    modifier = Modifier.fillMaxWidth().clickable { selectedBookingDetail = booking }
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text(
+                                text = "${serviceState?.variantName ?: "Grooming"} • ${booking.petSizeCategory.uppercase()}",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
+                            )
+                            val statusBg = when (booking.status) {
+                                "pending" -> Color(0xFFFFE4E6)
+                                "confirmed" -> Color(0xFFDCFCE7)
+                                "in_progress" -> Color(0xFFE0F2FE)
+                                "completed" -> Color(0xFFF1F5F9)
+                                else -> Color(0xFFFEE2E2)
+                            }
+                            val statusText = when (booking.status) {
+                                "pending" -> Color(0xFFE11D48)
+                                "confirmed" -> Color(0xFF16A34A)
+                                "in_progress" -> Color(0xFF0284C7)
+                                "completed" -> Color(0xFF475569)
+                                else -> Color(0xFFDC2626)
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(statusBg)
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = booking.status.capitalize(),
+                                    color = statusText,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text("Pet: ${petState?.name ?: "Buddy"} (${petState?.breed ?: ""})", fontSize = 12.sp, color = Color.Gray)
+                        
+                        val dateFriendly = try {
+                            val inF = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+                            val outF = java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.US)
+                            outF.format(inF.parse(booking.slotId.split("_").getOrNull(1) ?: booking.slotId))
+                        } catch(e: Exception) { booking.slotId }
+                        
+                        val timeVal = booking.slotId.split("_").getOrNull(2) ?: ""
+                        
+                        Text("Scheduled: $dateFriendly at $timeVal", fontSize = 12.sp, color = Color.Gray)
+                        
+                        if (booking.specialInstructions?.isNotEmpty() == true) {
+                            Text(
+                                text = "Notes: \"${booking.specialInstructions}\"",
+                                fontSize = 11.sp,
+                                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                                color = Color(0xFF1D4ED8),
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Status Progression Action Buttons
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            when (booking.status) {
+                                "pending" -> {
+                                    Button(
+                                        onClick = { viewModel.updateGroomingBookingStatus(booking.id, "confirmed") },
+                                        shape = RoundedCornerShape(6.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF22C55E)),
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text("Confirm", color = Color.White, fontSize = 11.sp)
+                                    }
+                                }
+                                "confirmed" -> {
+                                    Button(
+                                        onClick = { viewModel.updateGroomingBookingStatus(booking.id, "in_progress") },
+                                        shape = RoundedCornerShape(6.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6)),
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text("Start Groom", color = Color.White, fontSize = 11.sp)
+                                    }
+                                }
+                                "in_progress" -> {
+                                    Button(
+                                        onClick = { viewModel.updateGroomingBookingStatus(booking.id, "completed") },
+                                        shape = RoundedCornerShape(6.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF16A34A)),
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text("Complete", color = Color.White, fontSize = 11.sp)
+                                    }
+                                }
+                            }
+                            
+                            if (booking.status != "completed" && booking.status != "cancelled" && booking.status != "no_show" && booking.status != "reschedule_pending") {
+                                OutlinedButton(
+                                    onClick = { viewModel.updateGroomingBookingStatus(booking.id, "no_show") },
+                                    shape = RoundedCornerShape(6.dp),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text("No-Show", color = Color(0xFFEAB308), fontSize = 11.sp)
+                                }
+                                Button(
+                                    onClick = { showRescheduleWarningBooking = booking },
+                                    shape = RoundedCornerShape(6.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFEA619)),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text("Reschedule", color = Color.White, fontSize = 11.sp)
+                                }
+                                OutlinedButton(
+                                    onClick = {
+                                        viewModel.declineGroomingReschedule(booking) {
+                                            Toast.makeText(context, "Transaction refunded to customer online", Toast.LENGTH_SHORT).show()
+                                        }
+                                    },
+                                    shape = RoundedCornerShape(6.dp),
+                                    modifier = Modifier.weight(1.2f)
+                                ) {
+                                    Text("Refund & Cancel", color = Color.Red, fontSize = 9.sp)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (sortedQueue.isEmpty()) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(48.dp), contentAlignment = Alignment.Center) {
+                        Text("No direct grooming bookings in the queue.", color = Color.Gray)
+                    }
+                }
+            }
+        }
+    }
+
+    // Detail Dialog
+    val detail = selectedBookingDetail
+    if (detail != null) {
+        var serviceState by remember { mutableStateOf<GroomingServiceEntity?>(null) }
+        var ownerState by remember { mutableStateOf<ProfileEntity?>(null) }
+        var petState by remember { mutableStateOf<PetEntity?>(null) }
+
+        LaunchedEffect(detail.id) {
+            viewModel.getGroomingServiceById(detail.serviceId) { s -> serviceState = s }
+            viewModel.getProfileById(detail.consumerId) { owner -> ownerState = owner }
+            viewModel.getPetsForOwnerFlow(detail.consumerId).collect { plist ->
+                petState = plist.find { p -> p.id == detail.petId }
+            }
+        }
+
+        AlertDialog(
+            onDismissRequest = { selectedBookingDetail = null },
+            title = { Text("Booking Detail Information") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Booking ID: #${detail.id}", fontWeight = FontWeight.Bold)
+                    Text("Service: ${serviceState?.variantName ?: ""}")
+                    Text("Pet: ${petState?.name ?: "Buddy"} (${petState?.breed ?: ""}, Age: ${petState?.ageText ?: ""}, Weight: ${petState?.weight ?: ""})")
+                    Text("Size Category: ${detail.petSizeCategory.uppercase()}")
+                    Text("Special Allergies: ${petState?.allergies ?: "None"}", color = Color.Red)
+                    Text("Total Paid: ₹${detail.totalPrice.toInt()}")
+                    
+                    Spacer(modifier = Modifier.height(10.dp))
+                    HorizontalDivider()
+                    Spacer(modifier = Modifier.height(10.dp))
+                    
+                    Text("Owner Details:", fontWeight = FontWeight.Bold)
+                    Text("Name: ${ownerState?.fullName ?: ""}")
+                    Text("Phone: ${ownerState?.phone ?: ""}")
+                    Text("Email: ${ownerState?.email ?: ""}")
+                }
+            },
+            confirmButton = {
+                Button(onClick = { selectedBookingDetail = null }) {
+                    Text("Close Details")
+                }
+            }
+        )
+    }
+
+    // Rescheduling warning and proposing dialogs
+    showRescheduleWarningBooking?.let { booking ->
+        var ownerPhone by remember { mutableStateOf("") }
+        LaunchedEffect(booking.id) {
+            viewModel.getProfileById(booking.consumerId) { profile ->
+                ownerPhone = profile?.phone ?: ""
+            }
+        }
+        AlertDialog(
+            onDismissRequest = { showRescheduleWarningBooking = null },
+            title = { Text("⚠️ Contact Customer First") },
+            text = {
+                Text("Please call the customer at +91 $ownerPhone first to confirm they agree to reschedule.\n\nIf they agree, click Proceed. Otherwise, click Refund & Cancel to void the booking.")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showProposeRescheduleBooking = booking
+                        proposeRescheduleDate = booking.slotId.split("_").getOrNull(1) ?: ""
+                        proposeRescheduleTime = booking.slotId.split("_").getOrNull(2) ?: ""
+                        showRescheduleWarningBooking = null
+                    }
+                ) {
+                    Text("Proceed to Reschedule")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = {
+                        viewModel.declineGroomingReschedule(booking) {
+                            Toast.makeText(context, "Transaction refunded to customer online", Toast.LENGTH_SHORT).show()
+                        }
+                        showRescheduleWarningBooking = null
+                    },
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
+                ) {
+                    Text("Refund & Cancel")
+                }
+            }
+        )
+    }
+
+    showProposeRescheduleBooking?.let { booking ->
+        AlertDialog(
+            onDismissRequest = { showProposeRescheduleBooking = null },
+            title = { Text("Propose Reschedule Slot") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Enter the new proposed date and time slot for grooming.")
+                    OutlinedTextField(
+                        value = proposeRescheduleDate,
+                        onValueChange = { proposeRescheduleDate = it },
+                        label = { Text("Date (YYYY-MM-DD)") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = proposeRescheduleTime,
+                        onValueChange = { proposeRescheduleTime = it },
+                        label = { Text("Time (e.g. 10:00 AM)") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (!proposeRescheduleDate.matches(Regex("\\d{4}-\\d{2}-\\d{2}"))) {
+                            Toast.makeText(context, "Please enter a valid YYYY-MM-DD date", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        if (proposeRescheduleTime.trim().isEmpty()) {
+                            Toast.makeText(context, "Please enter a time slot", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        viewModel.proposeGroomingReschedule(booking, proposeRescheduleDate, proposeRescheduleTime) { success ->
+                            if (success) {
+                                Toast.makeText(context, "Reschedule proposal sent to customer!", Toast.LENGTH_SHORT).show()
+                                showProposeRescheduleBooking = null
+                            }
+                        }
+                    }
+                ) {
+                    Text("Send Proposal")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showProposeRescheduleBooking = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+}
+
+
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+fun DoctorSlotPickerScreen(
+    viewModel: PawsViewModel,
+    shopId: String,
+    doctorId: String,
+    serviceId: String,
+    price: Double
+) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val currentUser by viewModel.currentUser.collectAsState()
+    val pets by viewModel.activePets.collectAsState()
+    
+    var selectedPet by remember { mutableStateOf<PetEntity?>(null) }
+    var petExpanded by remember { mutableStateOf(false) }
+    var petInputName by remember { mutableStateOf("") }
+    
+    val concernList = remember {
+        listOf(
+            "Fever",
+            "Ticks",
+            "Itching",
+            "Skin Issues",
+            "Fracture",
+            "Tick Fever"
+        )
+    }
+    var selectedConcern by remember { mutableStateOf("Fever") }
+    var concernExpanded by remember { mutableStateOf(false) }
+    
+    var doctorState by remember { mutableStateOf<DoctorEntity?>(null) }
+    
+    LaunchedEffect(doctorId) {
+        viewModel.getDoctorById(doctorId) { doc ->
+            doctorState = doc
+        }
+    }
+    
+    val dateList = remember {
+        val list = mutableListOf<String>()
+        val format = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+        val cal = java.util.Calendar.getInstance()
+        for (i in 0 until 7) {
+            list.add(format.format(cal.time))
+            cal.add(java.util.Calendar.DAY_OF_YEAR, 1)
+        }
+        list
+    }
+    
+    var selectedDate by remember { mutableStateOf(dateList.firstOrNull() ?: "") }
+    
+    LaunchedEffect(shopId, doctorId, selectedDate) {
+        if (selectedDate.isNotEmpty()) {
+            viewModel.getOrGenerateDoctorSlotsForDate(shopId, doctorId, selectedDate) {}
+        }
+    }
+    
+    val slots by viewModel.getDoctorSlotsFlow(shopId, doctorId, selectedDate).collectAsState(initial = emptyList())
+    var selectedSlot by remember { mutableStateOf<DoctorSlotEntity?>(null) }
+    
+    LaunchedEffect(selectedDate) {
+        selectedSlot = null
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Book Consultation", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = { viewModel.navigateBack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp)
+        ) {
+            doctorState?.let { doc ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF0FDF4)),
+                    border = BorderStroke(2.dp, Color(0xFFD1FAE5))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = rememberAsyncImagePainter(doc.photoUrl),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(72.dp)
+                                .clip(CircleShape)
+                                .border(2.dp, Color(0xFF10B981), CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column {
+                            Text(doc.name, fontWeight = FontWeight.ExtraBold, fontSize = 18.sp, color = Color(0xFF065F46))
+                            Text(doc.specialization, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color(0xFF047857))
+                            Text(doc.qualification, fontSize = 12.sp, color = Color.Gray)
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text("Select Consultation Date", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(10.dp))
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(dateList) { dateStr ->
+                    val isSelected = selectedDate == dateStr
+                    val parsedDate = remember(dateStr) {
+                        try {
+                            val parser = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+                            parser.parse(dateStr)
+                        } catch (e: Exception) {
+                            null
+                        }
+                    }
+                    val dayName = remember(parsedDate) {
+                        if (parsedDate != null) {
+                            java.text.SimpleDateFormat("EEE", java.util.Locale.US).format(parsedDate)
+                        } else ""
+                    }
+                    val dayNumber = remember(parsedDate) {
+                        if (parsedDate != null) {
+                            java.text.SimpleDateFormat("d", java.util.Locale.US).format(parsedDate)
+                        } else ""
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (isSelected) Color(0xFF10B981) else Color(0xFFF1F5F9))
+                            .clickable { selectedDate = dateStr }
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(dayName.uppercase(), fontSize = 10.sp, color = if (isSelected) Color.White else Color.Gray, fontWeight = FontWeight.Bold)
+                            Text(dayNumber, fontSize = 18.sp, color = if (isSelected) Color.White else Color.Black, fontWeight = FontWeight.Black)
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text("Select Available Slot", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(10.dp))
+
+            if (slots.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No available consultation slots for this date.", color = Color.Gray, fontSize = 13.sp)
+                }
+            } else {
+                androidx.compose.foundation.layout.FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    slots.forEach { slot ->
+                        val isBookedOut = slot.bookedCount >= slot.capacity
+                        val isBlocked = slot.isBlocked
+                        val isDisabled = isBookedOut || isBlocked
+                        val isSelected = selectedSlot?.id == slot.id
+
+                        val bg = when {
+                            isSelected -> Color(0xFF10B981)
+                            isDisabled -> Color(0xFFE2E8F0)
+                            else -> Color(0xFFECFEFF)
+                        }
+                        val fg = when {
+                            isSelected -> Color.White
+                            isDisabled -> Color.Gray
+                            else -> Color(0xFF0369A1)
+                        }
+                        val border = when {
+                            isSelected -> Color.Transparent
+                            isDisabled -> Color.Transparent
+                            else -> Color(0xFF0EA5E9).copy(alpha = 0.3f)
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(bg)
+                                .border(1.dp, border, RoundedCornerShape(8.dp))
+                                .clickable(enabled = !isDisabled) { selectedSlot = slot }
+                                .padding(horizontal = 14.dp, vertical = 8.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = slot.slotTime,
+                                    color = fg,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                if (isDisabled) {
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Icon(
+                                        imageVector = Icons.Default.Lock,
+                                        contentDescription = "Unavailable",
+                                        tint = Color.Gray,
+                                        modifier = Modifier.size(10.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text("Select Concern / Reason for Consultation", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Box(modifier = Modifier.fillMaxWidth()) {
+                OutlinedButton(
+                    onClick = { concernExpanded = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(selectedConcern, color = Color.Black)
+                        Icon(Icons.Default.ArrowDropDown, null)
+                    }
+                }
+                DropdownMenu(
+                    expanded = concernExpanded,
+                    onDismissRequest = { concernExpanded = false }
+                ) {
+                    concernList.forEach { concern ->
+                        DropdownMenuItem(
+                            text = { Text(concern) },
+                            onClick = {
+                                selectedConcern = concern
+                                concernExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            val isHighPriority = selectedConcern == "Fracture" || selectedConcern == "Tick Fever"
+            if (isHighPriority) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFFFEE2E2), RoundedCornerShape(8.dp))
+                        .border(1.5.dp, Color(0xFFFCA5A5), RoundedCornerShape(8.dp))
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(Icons.Default.Warning, null, tint = Color(0xFFDC2626))
+                    Text(
+                        text = "🚨 High Priority! The doctor will be notified immediately to arrange a fast slot.",
+                        color = Color(0xFF991B1B),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text("Select or Enter Pet Name", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(10.dp))
+
+            if (pets.isNotEmpty()) {
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    OutlinedButton(
+                        onClick = { petExpanded = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(selectedPet?.name ?: "Choose a Registered Pet", color = Color.Black)
+                            Icon(Icons.Default.ArrowDropDown, null)
+                        }
+                    }
+                    DropdownMenu(
+                        expanded = petExpanded,
+                        onDismissRequest = { petExpanded = false }
+                    ) {
+                        pets.forEach { pet ->
+                            DropdownMenuItem(
+                                text = { Text("${pet.name} (${pet.breed})") },
+                                onClick = {
+                                    selectedPet = pet
+                                    petInputName = pet.name
+                                    petExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+
+            OutlinedTextField(
+                value = petInputName,
+                onValueChange = { petInputName = it },
+                label = { Text("Pet Name") },
+                placeholder = { Text("e.g. Buddy, Max") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("Billing details", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Consultation Fee", color = Color.Gray, fontSize = 13.sp)
+                        Text("₹$price", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Platform Service Fee", color = Color.Gray, fontSize = 13.sp)
+                        Text("₹30.0", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    HorizontalDivider()
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Total Amount", fontWeight = FontWeight.Black, fontSize = 15.sp)
+                        Text("₹${price + 30.0}", fontWeight = FontWeight.Black, color = Color(0xFF10B981), fontSize = 15.sp)
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Button(
+                onClick = {
+                    if (selectedSlot == null) {
+                        Toast.makeText(context, "Please select an available consultation slot.", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+                    if (petInputName.trim().isEmpty()) {
+                        Toast.makeText(context, "Please select or enter a pet name.", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+
+                    val currentUserVal = viewModel.currentUser.value
+                    val userPhone = currentUserVal?.phone ?: "9876543210"
+                    val userEmail = (currentUserVal?.fullName ?: "arjun").replace(" ", "").lowercase() + "@example.com"
+                    val grandTotal = price + 30.0
+
+                    PaymentManager.startRazorpayCheckout(
+                        context = context,
+                        amountInRupees = grandTotal,
+                        orderId = "chk_doc_" + java.util.UUID.randomUUID().toString().take(6),
+                        email = userEmail,
+                        phone = userPhone,
+                        onSuccess = { paymentId ->
+                            val priorityStr = if (isHighPriority) "High" else "Normal"
+                            viewModel.bookDoctorAppointment(
+                                shopId = shopId,
+                                serviceId = serviceId,
+                                serviceName = "Doctor Consultation - ${doctorState?.name ?: "Vet"}",
+                                price = grandTotal,
+                                date = selectedDate,
+                                time = selectedSlot?.slotTime ?: "",
+                                petName = petInputName,
+                                doctorId = doctorId,
+                                slotId = selectedSlot?.id,
+                                concern = selectedConcern,
+                                priority = priorityStr,
+                                onSuccess = {
+                                    val notificationTitle = if (isHighPriority) "🚨 High Priority Consultation" else "Appointment Booked"
+                                    val notificationMsg = if (isHighPriority) {
+                                        "New high priority case ($selectedConcern) booked for ${doctorState?.name ?: "Vet"}! Please review slot or call customer at +91 $userPhone."
+                                    } else {
+                                        "Consultation booked for ${doctorState?.name ?: "Vet"} on $selectedDate at ${selectedSlot?.slotTime}."
+                                    }
+                                    com.example.data.NotificationManager.fireInstantNotification(context, notificationTitle, notificationMsg)
+
+                                    Toast.makeText(context, "Consultation Booked Successfully! ID: $paymentId", Toast.LENGTH_LONG).show()
+                                    viewModel.navigateBack()
+                                },
+                                onError = { err ->
+                                    Toast.makeText(context, "Booking Failed: $err", Toast.LENGTH_LONG).show()
+                                }
+                            )
+                        },
+                        onFailure = { error ->
+                            Toast.makeText(context, "Payment Failed: $error", Toast.LENGTH_LONG).show()
+                        }
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981))
+            ) {
+                Text("Pay & Book Consultation • ₹${price + 30.0}", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 15.sp)
+            }
+        }
+    }
+}
+
+
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+fun MerchantDoctorsScreen(viewModel: PawsViewModel) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val merchantShop by viewModel.merchantShop.collectAsState()
+    val shop = merchantShop ?: return
+
+    val doctorList by viewModel.getDoctorsForShopFlow(shop.id).collectAsState(initial = emptyList())
+
+    var activeTab by remember { mutableStateOf("doctors") } // "doctors" | "queue"
+
+    var isAddingDoctor by remember { mutableStateOf(false) }
+    var docName by remember { mutableStateOf("") }
+    var docPhoto by remember { mutableStateOf("") }
+    var docQual by remember { mutableStateOf("") }
+    var docSpec by remember { mutableStateOf("") }
+
+    val allDays = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    var selectedDays by remember { mutableStateOf(setOf("Mon", "Tue", "Wed", "Thu", "Fri")) }
+
+    val standardHourSlots = listOf(
+        "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
+        "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM",
+        "05:00 PM", "06:00 PM"
+    )
+    var selectedSlots by remember { mutableStateOf(setOf("09:00 AM", "10:00 AM", "02:00 PM", "03:00 PM")) }
+
+    var editingDoctorAvailability by remember { mutableStateOf<DoctorEntity?>(null) }
+    var blockDateInput by remember { mutableStateOf("") }
+    val blockedSlotsList = remember { mutableStateListOf<DoctorSlotEntity>() }
+
+    var showRescheduleWarningAppt by remember { mutableStateOf<AppointmentEntity?>(null) }
+    var showProposeRescheduleAppt by remember { mutableStateOf<AppointmentEntity?>(null) }
+    var proposeApptDate by remember { mutableStateOf("") }
+    var proposeApptTime by remember { mutableStateOf("") }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Consultation & Doctors", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = { viewModel.navigateBack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.LightGray.copy(alpha = 0.2f))
+                    .padding(4.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (activeTab == "doctors") Color.White else Color.Transparent)
+                        .clickable { activeTab = "doctors" }
+                        .padding(vertical = 10.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("Manage Doctors 🩺", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = if (activeTab == "doctors") Color(0xFF007D55) else Color.Gray)
+                }
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (activeTab == "queue") Color.White else Color.Transparent)
+                        .clickable { activeTab = "queue" }
+                        .padding(vertical = 10.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("Appointments Queue 📅", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = if (activeTab == "queue") Color(0xFF007D55) else Color.Gray)
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (activeTab == "doctors") {
+                if (isAddingDoctor) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+                        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Text("Add New Vet Profile 🩺", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+
+                            OutlinedTextField(
+                                value = docName,
+                                onValueChange = { docName = it },
+                                label = { Text("Doctor's Full Name") },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true
+                            )
+
+                            OutlinedTextField(
+                                value = docPhoto,
+                                onValueChange = { docPhoto = it },
+                                label = { Text("Photo URL") },
+                                placeholder = { Text("Leave blank for default avatar") },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true
+                            )
+
+                            OutlinedTextField(
+                                value = docQual,
+                                onValueChange = { docQual = it },
+                                label = { Text("Qualifications (e.g. BVSc, MVSc)") },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true
+                            )
+
+                            OutlinedTextField(
+                                value = docSpec,
+                                onValueChange = { docSpec = it },
+                                label = { Text("Specialization (e.g. Canine Surgery)") },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true
+                            )
+
+                            Text("Select Working Days", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            androidx.compose.foundation.layout.FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                allDays.forEach { day ->
+                                    val isChecked = selectedDays.contains(day)
+                                    FilterChip(
+                                        selected = isChecked,
+                                        onClick = {
+                                            selectedDays = if (isChecked) selectedDays - day else selectedDays + day
+                                        },
+                                        label = { Text(day) }
+                                    )
+                                }
+                            }
+
+                            Text("Select Default Hour Slots", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            androidx.compose.foundation.layout.FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                standardHourSlots.forEach { slot ->
+                                    val isChecked = selectedSlots.contains(slot)
+                                    FilterChip(
+                                        selected = isChecked,
+                                        onClick = {
+                                            selectedSlots = if (isChecked) selectedSlots - slot else selectedSlots + slot
+                                        },
+                                        label = { Text(slot) }
+                                    )
+                                }
+                            }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Button(
+                                    onClick = {
+                                        if (docName.trim().isEmpty() || docQual.trim().isEmpty() || docSpec.trim().isEmpty()) {
+                                            Toast.makeText(context, "Please enter name, qualification, and specialization.", Toast.LENGTH_SHORT).show()
+                                            return@Button
+                                        }
+                                        viewModel.saveDoctor(
+                                            id = null,
+                                            shopId = shop.id,
+                                            name = docName,
+                                            photoUrl = docPhoto,
+                                            qualification = docQual,
+                                            specialization = docSpec,
+                                            workingDays = selectedDays.toList(),
+                                            activeSlots = selectedSlots.toList(),
+                                            isAvailable = true,
+                                            onResult = {
+                                                Toast.makeText(context, "Doctor Profile Saved!", Toast.LENGTH_SHORT).show()
+                                                isAddingDoctor = false
+                                                docName = ""
+                                                docPhoto = ""
+                                                docQual = ""
+                                                docSpec = ""
+                                            }
+                                        )
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text("Save Doctor")
+                                }
+
+                                OutlinedButton(
+                                    onClick = { isAddingDoctor = false },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text("Cancel")
+                                }
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(20.dp))
+                } else {
+                    Button(
+                        onClick = { isAddingDoctor = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("+ Add New Vet Profile")
+                    }
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
+
+                Text("Registered Vet Doctors (${doctorList.size})", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Spacer(modifier = Modifier.height(10.dp))
+
+                if (doctorList.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().padding(48.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No doctors registered. Please add a doctor profile.", color = Color.Gray, fontSize = 13.sp)
+                    }
+                } else {
+                    doctorList.forEach { doc ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.5f))
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Image(
+                                        painter = rememberAsyncImagePainter(doc.photoUrl.ifEmpty { "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=200" }),
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .size(60.dp)
+                                            .clip(CircleShape)
+                                            .border(2.dp, Color(0xFF10B981), CircleShape),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                    Spacer(modifier = Modifier.width(16.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(doc.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                        Text(doc.specialization, fontSize = 12.sp, color = Color(0xFF007D55))
+                                        Text(doc.qualification, fontSize = 11.sp, color = Color.Gray)
+                                    }
+                                    IconButton(onClick = { viewModel.deleteDoctor(doc.id) }) {
+                                        Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red)
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text("Working: ${doc.workingDays.joinToString(", ")}", fontSize = 11.sp, color = Color.Gray)
+                                Text("Default Slots: ${doc.activeSlots.joinToString(", ")}", fontSize = 11.sp, color = Color.Gray)
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Button(
+                                        onClick = {
+                                            editingDoctorAvailability = if (editingDoctorAvailability?.id == doc.id) null else doc
+                                            blockDateInput = ""
+                                            blockedSlotsList.clear()
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer),
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(8.dp)
+                                    ) {
+                                        Text(if (editingDoctorAvailability?.id == doc.id) "Close Editor" else "Manage Availability", fontSize = 11.sp)
+                                    }
+                                }
+
+                                if (editingDoctorAvailability?.id == doc.id) {
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    HorizontalDivider()
+                                    Spacer(modifier = Modifier.height(12.dp))
+
+                                    Text("Manage Time Slots (Toggle Default Active Times)", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                    Spacer(modifier = Modifier.height(8.dp))
+
+                                    androidx.compose.foundation.layout.FlowRow(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        standardHourSlots.forEach { slotTime ->
+                                            val isActive = doc.activeSlots.contains(slotTime)
+                                            Box(
+                                                modifier = Modifier
+                                                    .clip(RoundedCornerShape(8.dp))
+                                                    .background(if (isActive) Color(0xFFE8F5E9) else Color(0xFFF1F5F9))
+                                                    .border(1.dp, if (isActive) Color(0xFF81C784) else Color.Transparent, RoundedCornerShape(8.dp))
+                                                    .clickable {
+                                                        val newSlots = if (isActive) doc.activeSlots - slotTime else doc.activeSlots + slotTime
+                                                        viewModel.saveDoctor(
+                                                            id = doc.id,
+                                                            shopId = doc.shopId,
+                                                            name = doc.name,
+                                                            photoUrl = doc.photoUrl,
+                                                            qualification = doc.qualification,
+                                                            specialization = doc.specialization,
+                                                            workingDays = doc.workingDays,
+                                                            activeSlots = newSlots,
+                                                            isAvailable = doc.isAvailable
+                                                        )
+                                                    }
+                                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                                            ) {
+                                                Text(slotTime, fontSize = 11.sp, color = if (isActive) Color(0xFF2E7D32) else Color.Black)
+                                            }
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Text("Block Specific Holiday/Date", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                    Spacer(modifier = Modifier.height(8.dp))
+
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        OutlinedTextField(
+                                            value = blockDateInput,
+                                            onValueChange = { blockDateInput = it },
+                                            label = { Text("Date (YYYY-MM-DD)") },
+                                            placeholder = { Text("e.g. 2026-10-24") },
+                                            modifier = Modifier.weight(1f).height(56.dp),
+                                            singleLine = true
+                                        )
+                                        Button(
+                                            onClick = {
+                                                if (!blockDateInput.matches(Regex("\\d{4}-\\d{2}-\\d{2}"))) {
+                                                    Toast.makeText(context, "Enter a valid YYYY-MM-DD date.", Toast.LENGTH_SHORT).show()
+                                                    return@Button
+                                                }
+                                                viewModel.getOrGenerateDoctorSlotsForDate(doc.shopId, doc.id, blockDateInput) { slots ->
+                                                    blockedSlotsList.clear()
+                                                    blockedSlotsList.addAll(slots)
+                                                }
+                                            },
+                                            modifier = Modifier.height(56.dp)
+                                        ) {
+                                            Text("Fetch Slots")
+                                        }
+                                    }
+
+                                    if (blockedSlotsList.isNotEmpty()) {
+                                        Spacer(modifier = Modifier.height(12.dp))
+                                        Text("Slots for date $blockDateInput:", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Color.Gray)
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                            blockedSlotsList.forEachIndexed { index, slot ->
+                                                Row(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .background(Color.White)
+                                                        .border(1.dp, Color.LightGray.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
+                                                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Text(slot.slotTime, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                                        Text(if (slot.isBlocked) "Blocked" else "Active", fontSize = 11.sp, color = if (slot.isBlocked) Color.Red else Color(0xFF2E7D32))
+                                                        Spacer(modifier = Modifier.width(8.dp))
+                                                        Switch(
+                                                            checked = slot.isBlocked,
+                                                            onCheckedChange = { checked ->
+                                                                viewModel.toggleDoctorSlotBlocked(slot)
+                                                                blockedSlotsList[index] = slot.copy(isBlocked = checked)
+                                                            }
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Consultation Bookings Queue
+                val appointments by viewModel.getAppointmentsForShopFlow(shop.id).collectAsState(initial = emptyList())
+                val sortedAppts = remember(appointments) {
+                    appointments.sortedWith(compareBy<AppointmentEntity> { it.appointmentDate }.thenBy { it.appointmentTime })
+                }
+                
+                Text("Doctor Consultations Queue (${sortedAppts.size})", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Spacer(modifier = Modifier.height(10.dp))
+
+                if (sortedAppts.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxWidth().padding(48.dp), contentAlignment = Alignment.Center) {
+                        Text("No doctor appointments booked at this clinic yet.", color = Color.Gray, fontSize = 13.sp)
+                    }
+                } else {
+                    sortedAppts.forEach { appt ->
+                        var doctorName by remember { mutableStateOf("Vet Doctor") }
+                        var ownerPhone by remember { mutableStateOf("") }
+                        var ownerName by remember { mutableStateOf("") }
+                        
+                        LaunchedEffect(appt.id) {
+                            appt.doctorId?.let { docId ->
+                                viewModel.getDoctorById(docId) { doc -> doctorName = doc?.name ?: "Vet Doctor" }
+                            }
+                            viewModel.getProfileById(appt.consumerId) { p ->
+                                ownerPhone = p?.phone ?: ""
+                                ownerName = p?.fullName ?: ""
+                            }
+                        }
+
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            border = BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.5f))
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                    Text("Pet: ${appt.petName}", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                    val statusColor = when (appt.status) {
+                                        "pending" -> Color(0xFFFFE4E6)
+                                        "confirmed" -> Color(0xFFDCFCE7)
+                                        "completed" -> Color(0xFFF1F5F9)
+                                        else -> Color(0xFFFEE2E2)
+                                    }
+                                    val statusText = when (appt.status) {
+                                        "pending" -> Color(0xFFE11D48)
+                                        "confirmed" -> Color(0xFF16A34A)
+                                        "completed" -> Color(0xFF475569)
+                                        else -> Color(0xFFDC2626)
+                                    }
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(6.dp))
+                                            .background(statusColor)
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
+                                        Text(appt.status.uppercase(), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = statusText)
+                                    }
+                                }
+                                
+                                Text("Doctor: $doctorName", fontSize = 12.sp, color = Color(0xFF007D55), fontWeight = FontWeight.Bold)
+                                Text("Customer: $ownerName ($ownerPhone)", fontSize = 12.sp, color = Color.Gray)
+                                Text("Scheduled: ${appt.appointmentDate} at ${appt.appointmentTime}", fontSize = 12.sp, color = Color.Gray)
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text("Concern: ${appt.concern.ifEmpty { "General Consultation" }}", fontSize = 12.sp, color = Color.DarkGray, fontWeight = FontWeight.SemiBold)
+                                    if (appt.priority == "High") {
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .background(Color(0xFFFFE4E6))
+                                                .border(1.dp, Color(0xFFFCA5A5), RoundedCornerShape(6.dp))
+                                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                        ) {
+                                            Text("🚨 HIGH PRIORITY", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFFDC2626))
+                                        }
+                                    }
+                                }
+
+                                if (appt.status != "completed" && appt.status != "cancelled" && appt.status != "no_show" && appt.status != "reschedule_pending") {
+                                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        Button(
+                                            onClick = { viewModel.updateAppointmentStatus(appt.id, "completed") },
+                                            shape = RoundedCornerShape(6.dp),
+                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF22C55E)),
+                                            modifier = Modifier.weight(1f)
+                                        ) {
+                                            Text("Complete", fontSize = 11.sp, color = Color.White)
+                                        }
+                                        OutlinedButton(
+                                            onClick = { viewModel.updateAppointmentStatus(appt.id, "no_show") },
+                                            shape = RoundedCornerShape(6.dp),
+                                            modifier = Modifier.weight(1f)
+                                        ) {
+                                            Text("No-Show", fontSize = 11.sp, color = Color(0xFFEAB308))
+                                        }
+                                        Button(
+                                            onClick = { showRescheduleWarningAppt = appt },
+                                            shape = RoundedCornerShape(6.dp),
+                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFEA619)),
+                                            modifier = Modifier.weight(1f)
+                                        ) {
+                                            Text("Reschedule", fontSize = 11.sp, color = Color.White)
+                                        }
+                                        OutlinedButton(
+                                            onClick = {
+                                                val slotId = "doc_slot_${appt.doctorId}_${appt.appointmentDate}_${appt.appointmentTime.replace(" ", "").replace(":", "")}"
+                                                viewModel.cancelAppointmentWithRefund(appt, slotId) {
+                                                    Toast.makeText(context, "Transaction refunded to customer online", Toast.LENGTH_SHORT).show()
+                                                }
+                                            },
+                                            shape = RoundedCornerShape(6.dp),
+                                            modifier = Modifier.weight(1.2f)
+                                        ) {
+                                            Text("Refund & Cancel", fontSize = 9.sp, color = Color.Red)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Doctor reschedule warning and proposal dialogs
+    showRescheduleWarningAppt?.let { appt ->
+        var ownerPhone by remember { mutableStateOf("") }
+        LaunchedEffect(appt.id) {
+            viewModel.getProfileById(appt.consumerId) { p ->
+                ownerPhone = p?.phone ?: ""
+            }
+        }
+        AlertDialog(
+            onDismissRequest = { showRescheduleWarningAppt = null },
+            title = { Text("⚠️ Contact Customer First") },
+            text = {
+                Text("Please call the customer at +91 $ownerPhone first to confirm they agree to reschedule.\n\nIf they agree, click Proceed. Otherwise, click Refund & Cancel to void the booking.")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showProposeRescheduleAppt = appt
+                        proposeApptDate = appt.appointmentDate
+                        proposeApptTime = appt.appointmentTime
+                        showRescheduleWarningAppt = null
+                    }
+                ) {
+                    Text("Proceed to Reschedule")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = {
+                        val slotId = "doc_slot_${appt.doctorId}_${appt.appointmentDate}_${appt.appointmentTime.replace(" ", "").replace(":", "")}"
+                        viewModel.cancelAppointmentWithRefund(appt, slotId) {
+                            Toast.makeText(context, "Transaction refunded to customer online", Toast.LENGTH_SHORT).show()
+                        }
+                        showRescheduleWarningAppt = null
+                    },
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
+                ) {
+                    Text("Refund & Cancel")
+                }
+            }
+        )
+    }
+
+    showProposeRescheduleAppt?.let { appt ->
+        AlertDialog(
+            onDismissRequest = { showProposeRescheduleAppt = null },
+            title = { Text("Propose Reschedule Slot") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Enter the new proposed date and time slot for doctor consultation.")
+                    OutlinedTextField(
+                        value = proposeApptDate,
+                        onValueChange = { proposeApptDate = it },
+                        label = { Text("Date (YYYY-MM-DD)") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = proposeApptTime,
+                        onValueChange = { proposeApptTime = it },
+                        label = { Text("Time (e.g. 10:30 AM)") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (!proposeApptDate.matches(Regex("\\d{4}-\\d{2}-\\d{2}"))) {
+                            Toast.makeText(context, "Please enter a valid YYYY-MM-DD date", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        if (proposeApptTime.trim().isEmpty()) {
+                            Toast.makeText(context, "Please enter a time slot", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        viewModel.proposeReschedule(appt, proposeApptDate, proposeApptTime) { success ->
+                            if (success) {
+                                Toast.makeText(context, "Reschedule proposal sent to customer!", Toast.LENGTH_SHORT).show()
+                                showProposeRescheduleAppt = null
+                            }
+                        }
+                    }
+                ) {
+                    Text("Send Proposal")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showProposeRescheduleAppt = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+}
+
+
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+fun MerchantCouponsScreen(viewModel: PawsViewModel) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val merchantShop by viewModel.merchantShop.collectAsState()
+    val shop = merchantShop ?: return
+
+    val couponsList by viewModel.getCouponsForShopFlow(shop.id).collectAsState(initial = emptyList())
+
+    var couponCode by remember { mutableStateOf("") }
+    var discountPercentText by remember { mutableStateOf("") }
+    var maxDiscountText by remember { mutableStateOf("") }
+    var minOrderText by remember { mutableStateOf("") }
+    var isActive by remember { mutableStateOf(true) }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("🎟️ Coupon Creator", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = { viewModel.navigateBack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+                border = BorderStroke(1.5.dp, Color(0xFFFC8019).copy(alpha = 0.2f))
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text("Create New Shop Coupon 🎟️", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color(0xFFFC8019))
+
+                    OutlinedTextField(
+                        value = couponCode,
+                        onValueChange = { couponCode = it.filter { char -> char.isLetterOrDigit() }.take(15) },
+                        label = { Text("Coupon Code (e.g. FLAT20)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+
+                    OutlinedTextField(
+                        value = discountPercentText,
+                        onValueChange = { discountPercentText = it },
+                        label = { Text("Discount Percentage (%)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+
+                    OutlinedTextField(
+                        value = maxDiscountText,
+                        onValueChange = { maxDiscountText = it },
+                        label = { Text("Max Discount Amount (₹)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+
+                    OutlinedTextField(
+                        value = minOrderText,
+                        onValueChange = { minOrderText = it },
+                        label = { Text("Minimum Order Amount (₹)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Active Campaign?", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Switch(checked = isActive, onCheckedChange = { isActive = it })
+                    }
+
+                    Button(
+                        onClick = {
+                            val code = couponCode.trim()
+                            val disc = discountPercentText.toDoubleOrNull()
+                            val maxD = maxDiscountText.toDoubleOrNull()
+                            val minO = minOrderText.toDoubleOrNull()
+
+                            if (code.isEmpty() || disc == null || maxD == null || minO == null) {
+                                Toast.makeText(context, "Please fill in all coupon parameters correctly.", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+
+                            viewModel.saveCoupon(
+                                code = code,
+                                discountPercentage = disc,
+                                maxDiscount = maxD,
+                                minOrderAmount = minO,
+                                isActive = isActive
+                            ) { success ->
+                                if (success) {
+                                    Toast.makeText(context, "Coupon Created Successfully!", Toast.LENGTH_SHORT).show()
+                                    couponCode = ""
+                                    discountPercentText = ""
+                                    maxDiscountText = ""
+                                    minOrderText = ""
+                                    isActive = true
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFC8019)),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Save Coupon", color = Color.White)
+                    }
+                }
+            }
+
+            Text("Active Shop Coupons (${couponsList.size})", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+
+            if (couponsList.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No coupons active for this shop yet.", color = Color.Gray, fontSize = 13.sp)
+                }
+            } else {
+                couponsList.forEach { coupon ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        border = BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.5f))
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    text = coupon.code,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp,
+                                    color = Color(0xFFFC8019)
+                                )
+                                Text(
+                                    text = "${coupon.discountPercentage}% off • Max discount ₹${coupon.maxDiscount.toInt()}",
+                                    fontSize = 12.sp,
+                                    color = Color.DarkGray
+                                )
+                                Text(
+                                    text = "Min Order: ₹${coupon.minOrderAmount.toInt()}",
+                                    fontSize = 11.sp,
+                                    color = Color.Gray
+                                )
+                            }
+                            IconButton(onClick = { viewModel.deleteCoupon(coupon.id) }) {
+                                Icon(Icons.Default.Delete, contentDescription = "Delete Coupon", tint = Color.Red)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+

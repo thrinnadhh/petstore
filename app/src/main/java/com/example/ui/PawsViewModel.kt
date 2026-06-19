@@ -58,6 +58,31 @@ sealed class Screen {
     object TravelApparel : Screen()
     object FurnitureSleep : Screen()
     object WasteManagement : Screen()
+
+    // Doctor & Coupon Screens
+    object MerchantDoctors : Screen()
+    object MerchantCoupons : Screen()
+    data class DoctorSlotPicker(
+        val shopId: String,
+        val doctorId: String,
+        val serviceId: String,
+        val price: Double
+    ) : Screen()
+
+    // Grooming Screens
+    data class GroomingSlotPicker(
+        val shopId: String,
+        val serviceId: String,
+        val variantName: String,
+        val price: Double,
+        val durationMinutes: Int,
+        val petSizeCategory: String
+    ) : Screen()
+    data class GroomingBookingConfirmation(val bookingId: String) : Screen()
+    object MyGroomingBookings : Screen()
+    object MerchantGroomingServices : Screen()
+    object MerchantGroomingSlots : Screen()
+    object MerchantGroomingQueue : Screen()
 }
 
 class PawsViewModel(application: Application) : AndroidViewModel(application) {
@@ -83,6 +108,21 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
     // Localization State
     private val _appLanguage = MutableStateFlow("en")
     val appLanguage: StateFlow<String> = _appLanguage.asStateFlow()
+
+    // Super Admin Financial Settings
+    private val _platformCommission = MutableStateFlow(10.0)
+    val platformCommission: StateFlow<Double> = _platformCommission.asStateFlow()
+
+    private val _deliveryFeeTier = MutableStateFlow(30.0)
+    val deliveryFeeTier: StateFlow<Double> = _deliveryFeeTier.asStateFlow()
+
+    fun setPlatformCommission(commission: Double) {
+        _platformCommission.value = commission
+    }
+
+    fun setDeliveryFeeTier(tier: Double) {
+        _deliveryFeeTier.value = tier
+    }
 
     fun setAppLanguage(lang: String) {
         _appLanguage.value = lang
@@ -420,6 +460,15 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun updateShopEnabledStatus(shopId: String, enabled: Boolean) {
+        viewModelScope.launch {
+            val shop = repository.getShopById(shopId) ?: return@launch
+            val updated = shop.copy(shopEnabled = enabled)
+            repository.insertShop(updated)
+            _merchantShop.value = updated
+        }
+    }
+
     fun formatPhoneNumber(phone: String): String {
         val clean = phone.replace(Regex("[^0-9]"), "")
         return if (clean.length == 10) {
@@ -436,6 +485,7 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
     // Auth Actions
     fun loginWithPhone(
         phone: String,
+        pin: String,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
@@ -465,7 +515,9 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
                             else if (isCaptain)
                             "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop"
                             else "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop",
-                        role = if (isAdmin) "superadmin" else if (isMerchant) "merchant" else if (isCaptain) "captain" else "consumer"
+                        role = if (isAdmin) "superadmin" else if (isMerchant) "merchant" else if (isCaptain) "captain" else "consumer",
+                        password = if (isAdmin) "0000" else if (isMerchant) "5678" else if (isCaptain) "9999" else "1234",
+                        address = "Villa 42, Road No 5, Banjara Hills, Hyderabad"
                     )
                     repository.insertProfile(defaultProfile)
                     
@@ -497,6 +549,11 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
             }
             if (profile == null) {
                 onError("Account not found! Please register first as a Customer or Shop.")
+                return@launch
+            }
+
+            if (profile.password != null && profile.password != pin) {
+                onError("Incorrect 4-digit PIN password!")
                 return@launch
             }
             
@@ -538,6 +595,8 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
         avatarUrl: String = "",
         email: String = "",
         password: String = "",
+        cityId: String = "hyd",
+        address: String = "",
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
@@ -563,12 +622,13 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
                 id = userId,
                 fullName = fullName.trim(),
                 phone = formattedPhone,
-                cityId = "hyd", // default initial city
+                cityId = cityId,
                 avatarUrl = finalAvatar,
                 role = role,
                 petName = if (role == "consumer") petName.trim() else "",
                 email = email.trim().lowercase().ifBlank { null },
-                password = password.ifBlank { null }
+                password = password.ifBlank { null },
+                address = address.trim()
             )
             
             MonitoringManager.measureQuery("insertProfile") {
@@ -950,7 +1010,7 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
 
-            val deliveryFee = if (deliveryType == "delivery") 30.0 else 0.0
+            val deliveryFee = if (deliveryType == "delivery") deliveryFeeTier.value else 0.0
             val totalAmount = subtotal + deliveryFee
 
             val newOrder = OrderEntity(
@@ -1127,6 +1187,7 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
                 repository.insertShop(newShop)
             }
             _merchantShop.value = newShop
+            SupabaseManager.insertShopToCloud(newShop)
             
             // Seed 3 basic items for the merchant's store so they have full visual coverage
             val items = listOf(
@@ -1136,6 +1197,29 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
             )
             MonitoringManager.measureQuery("seedMerchantProducts") {
                 items.forEach { repository.insertProduct(it) }
+            }
+            items.forEach { SupabaseManager.insertProductToCloud(it) }
+
+            // Seed default services for the merchant's shop so consultation slots and grooming packages are active by default
+            val defaultServices = mutableListOf<ServiceEntity>()
+            if (newShop.vetClinicEnabled) {
+                defaultServices.add(ServiceEntity(id = "service_${shopId}_vet_1", shopId = shopId, name = "Emergency Surgery Consultation", price = 1200.0, category = "Vet Doctor Clinic"))
+                defaultServices.add(ServiceEntity(id = "service_${shopId}_vet_2", shopId = shopId, name = "General OPD Consultation", price = 600.0, category = "Vet Doctor Clinic"))
+                defaultServices.add(ServiceEntity(id = "service_${shopId}_vet_3", shopId = shopId, name = "In-house Lab Diagnostics Checkup", price = 1500.0, category = "Vet Doctor Clinic"))
+            }
+            if (newShop.groomingEnabled) {
+                defaultServices.add(ServiceEntity(id = "service_${shopId}_groom_1", shopId = shopId, name = "Teddy Bear Coat Styling", price = 999.0, category = "Grooming"))
+                defaultServices.add(ServiceEntity(id = "service_${shopId}_groom_2", shopId = shopId, name = "Kennel Summer Short Cut", price = 799.0, category = "Grooming"))
+                defaultServices.add(ServiceEntity(id = "service_${shopId}_groom_3", shopId = shopId, name = "Majestic Lion Pom Styling", price = 1499.0, category = "Grooming"))
+                defaultServices.add(ServiceEntity(id = "service_${shopId}_groom_4", shopId = shopId, name = "Oatmeal Soothing Bath", price = 499.0, category = "Bathing"))
+                defaultServices.add(ServiceEntity(id = "service_${shopId}_groom_5", shopId = shopId, name = "Anti-Tick & Flea Medicated Wash", price = 699.0, category = "Bathing"))
+                defaultServices.add(ServiceEntity(id = "service_${shopId}_groom_6", shopId = shopId, name = "Premium Foam Aroma Spa Bath", price = 899.0, category = "Bathing"))
+            }
+            if (defaultServices.isNotEmpty()) {
+                MonitoringManager.measureQuery("seedMerchantServices") {
+                    defaultServices.forEach { repository.insertService(it) }
+                }
+                defaultServices.forEach { SupabaseManager.insertServiceToCloud(it) }
             }
 
             // Trigger external Zapier/Make webhooks to onboard the merchant to Google Sheets and post Slack alert
@@ -1292,6 +1376,8 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
         aadharCardUrl: String,
         licenseUrl: String,
         selfieUrl: String,
+        cityId: String = "hyd",
+        address: String = "",
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
@@ -1310,9 +1396,10 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
                 id = userId,
                 fullName = fullName.trim(),
                 phone = formattedPhone,
-                cityId = "hyd",
+                cityId = cityId,
                 avatarUrl = selfieUrl.trim().ifEmpty { "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200" }, // Use Captain selfie as profile pic!
-                role = "captain"
+                role = "captain",
+                address = address.trim()
             )
             
             repository.insertProfile(profile)
@@ -1889,8 +1976,8 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
                 }
                 
                 // Add standard individual delivery charges & platform split charges
-                val deliveryFee = 30.0
-                val platformFee = 10.0
+                val deliveryFee = deliveryFeeTier.value
+                val platformFee = subtotal * (platformCommission.value / 100.0)
                 val totalAmount = subtotal + deliveryFee + platformFee
                 
                 val order = OrderEntity(
@@ -1920,6 +2007,494 @@ class PawsViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             repository.markMemberItemsAsPaid(sessionId, memberId)
             onResult(true)
+        }
+    }
+
+    // --- Public repository accessors for Composables ---
+
+    fun getPetsForOwnerFlow(ownerId: String): kotlinx.coroutines.flow.Flow<List<PetEntity>> =
+        repository.getPetsForOwnerFlow(ownerId)
+
+    fun getProfileById(profileId: String, onResult: (ProfileEntity?) -> Unit) {
+        viewModelScope.launch {
+            val profile = repository.getProfile(profileId)
+            onResult(profile)
+        }
+    }
+
+    // --- Grooming ViewModel Methods ---
+
+    // Flows
+    fun getActiveGroomingServicesForShopFlow(shopId: String): Flow<List<GroomingServiceEntity>> =
+        repository.getActiveGroomingServicesForShopFlow(shopId)
+
+    fun getAllGroomingServicesForShopFlow(shopId: String): Flow<List<GroomingServiceEntity>> =
+        repository.getAllGroomingServicesForShopFlow(shopId)
+
+    fun getGroomingSlotsForShopAndDateFlow(shopId: String, date: String): Flow<List<GroomingSlotEntity>> =
+        repository.getGroomingSlotsForShopAndDateFlow(shopId, date)
+
+    fun getGroomingSlotsForDateRangeFlow(shopId: String, startDate: String, endDate: String): kotlinx.coroutines.flow.Flow<List<GroomingSlotEntity>> =
+        repository.getGroomingSlotsForDateRangeFlow(shopId, startDate, endDate)
+
+    // Booking flows for consumer & merchant
+    val myGroomingBookings: Flow<List<GroomingBookingEntity>> = _currentUser.flatMapLatest { user ->
+        if (user != null) repository.getGroomingBookingsForConsumerFlow(user.id)
+        else kotlinx.coroutines.flow.flowOf(emptyList())
+    }
+
+    val merchantGroomingBookings: Flow<List<GroomingBookingEntity>> = _merchantShop.flatMapLatest { shop ->
+        if (shop != null) repository.getGroomingBookingsForShopFlow(shop.id)
+        else kotlinx.coroutines.flow.flowOf(emptyList())
+    }
+
+    // Actions
+    fun getOrGenerateSlotsForDate(shopId: String, date: String, onResult: (List<GroomingSlotEntity>) -> Unit) {
+        viewModelScope.launch {
+            val slots = repository.getOrGenerateSlotsForDate(shopId, date)
+            onResult(slots)
+        }
+    }
+
+    fun bulkEditSlotCapacity(
+        shopId: String,
+        startDate: String,
+        endDate: String,
+        daysOfWeek: List<Int>,
+        newCapacity: Int,
+        onResult: (Boolean) -> Unit = {}
+    ) {
+        viewModelScope.launch {
+            repository.bulkEditSlotCapacity(shopId, startDate, endDate, daysOfWeek, newCapacity)
+            onResult(true)
+        }
+    }
+
+    fun toggleSlotBlocked(slot: GroomingSlotEntity) {
+        viewModelScope.launch {
+            val updated = slot.copy(isBlocked = !slot.isBlocked)
+            repository.insertGroomingSlot(updated)
+        }
+    }
+
+    fun bookGroomingSlot(
+        shopId: String,
+        serviceId: String,
+        slotId: String,
+        petId: String,
+        petSizeCategory: String,
+        specialInstructions: String?,
+        totalPrice: Double,
+        onSuccess: (String) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val user = _currentUser.value ?: return onError("User not logged in.")
+        viewModelScope.launch {
+            try {
+                val bookingId = "gr_bk_" + java.util.UUID.randomUUID().toString().substring(0, 8)
+                val booking = GroomingBookingEntity(
+                    id = bookingId,
+                    consumerId = user.id,
+                    shopId = shopId,
+                    serviceId = serviceId,
+                    slotId = slotId,
+                    petId = petId,
+                    petSizeCategory = petSizeCategory,
+                    status = "pending",
+                    specialInstructions = specialInstructions?.trim()?.takeIf { it.isNotEmpty() },
+                    totalPrice = totalPrice,
+                    bookedAt = System.currentTimeMillis()
+                )
+                repository.bookGroomingSlot(booking)
+                onSuccess(bookingId)
+            } catch (e: Exception) {
+                onError(e.message ?: "Booking failed due to slot capacity or network issue.")
+            }
+        }
+    }
+
+    fun cancelGroomingBooking(bookingId: String, onResult: (Boolean) -> Unit = {}) {
+        viewModelScope.launch {
+            repository.cancelGroomingBooking(bookingId)
+            onResult(true)
+        }
+    }
+
+    fun updateGroomingBookingStatus(bookingId: String, status: String, onResult: (Boolean) -> Unit = {}) {
+        viewModelScope.launch {
+            repository.updateGroomingBookingStatus(bookingId, status)
+            onResult(true)
+        }
+    }
+
+    fun getGroomingBookingById(bookingId: String, onResult: (GroomingBookingEntity?) -> Unit) {
+        viewModelScope.launch {
+            val booking = repository.getGroomingBookingById(bookingId)
+            onResult(booking)
+        }
+    }
+
+    fun getGroomingServiceById(serviceId: String, onResult: (GroomingServiceEntity?) -> Unit) {
+        viewModelScope.launch {
+            val service = repository.getGroomingServiceById(serviceId)
+            onResult(service)
+        }
+    }
+
+    fun saveGroomingService(
+        serviceType: String,
+        variantName: String,
+        description: String,
+        petSizeCategory: String,
+        price: Double,
+        durationMinutes: Int,
+        imageUrls: List<String>,
+        isActive: Boolean,
+        onResult: (Boolean) -> Unit = {}
+    ) {
+        val shop = _merchantShop.value ?: return
+        viewModelScope.launch {
+            val id = "gs_" + shop.id + "_" + serviceType.replace("_", "") + "_" + variantName.replace(" ", "").lowercase() + "_" + petSizeCategory
+            val service = GroomingServiceEntity(
+                id = id,
+                shopId = shop.id,
+                serviceType = serviceType,
+                variantName = variantName,
+                description = description,
+                petSizeCategory = petSizeCategory,
+                price = price,
+                durationMinutes = durationMinutes,
+                imageUrls = imageUrls,
+                isActive = isActive,
+                createdAt = System.currentTimeMillis()
+            )
+            repository.insertGroomingService(service)
+            onResult(true)
+        }
+    }
+
+    fun deleteGroomingService(serviceId: String) {
+        viewModelScope.launch {
+            repository.deleteGroomingService(serviceId)
+        }
+    }
+
+    fun updateGroomingService(service: GroomingServiceEntity) {
+        viewModelScope.launch {
+            repository.insertGroomingService(service)
+        }
+    }
+
+    // --- Doctor & Hospital Management ---
+    fun getDoctorsForShopFlow(shopId: String): Flow<List<DoctorEntity>> =
+        repository.getDoctorsForShopFlow(shopId)
+
+    fun getDoctorById(id: String, onResult: (DoctorEntity?) -> Unit) {
+        viewModelScope.launch {
+            onResult(repository.getDoctorById(id))
+        }
+    }
+
+    fun getDoctorSlotsFlow(shopId: String, doctorId: String, date: String): Flow<List<DoctorSlotEntity>> =
+        repository.getDoctorSlotsFlow(shopId, doctorId, date)
+
+    fun getOrGenerateDoctorSlotsForDate(shopId: String, doctorId: String, date: String, onResult: (List<DoctorSlotEntity>) -> Unit) {
+        viewModelScope.launch {
+            val slots = repository.getOrGenerateDoctorSlotsForDate(shopId, doctorId, date)
+            onResult(slots)
+        }
+    }
+
+    fun toggleDoctorSlotBlocked(slot: DoctorSlotEntity) {
+        viewModelScope.launch {
+            repository.toggleDoctorSlotBlocked(slot)
+        }
+    }
+
+    fun updateDoctorSlotCapacity(slotId: String, capacity: Int) {
+        viewModelScope.launch {
+            repository.updateDoctorSlotCapacity(slotId, capacity)
+        }
+    }
+
+    fun saveDoctor(
+        id: String?,
+        shopId: String,
+        name: String,
+        photoUrl: String,
+        qualification: String,
+        specialization: String,
+        workingDays: List<String>,
+        activeSlots: List<String>,
+        isAvailable: Boolean,
+        onResult: (Boolean) -> Unit = {}
+    ) {
+        viewModelScope.launch {
+            val docId = id ?: ("doc_" + UUID.randomUUID().toString().substring(0, 8))
+            val doctor = DoctorEntity(
+                id = docId,
+                shopId = shopId,
+                name = name.trim(),
+                photoUrl = photoUrl.trim().ifEmpty { "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400" },
+                qualification = qualification.trim(),
+                specialization = specialization.trim(),
+                workingDays = workingDays,
+                activeSlots = activeSlots,
+                isAvailable = isAvailable
+            )
+            repository.insertDoctor(doctor)
+            onResult(true)
+        }
+    }
+
+    fun deleteDoctor(doctorId: String) {
+        viewModelScope.launch {
+            repository.deleteDoctor(doctorId)
+        }
+    }
+
+    fun bookDoctorAppointment(
+        shopId: String,
+        serviceId: String,
+        serviceName: String,
+        price: Double,
+        date: String,
+        time: String,
+        petName: String,
+        doctorId: String?,
+        slotId: String?,
+        concern: String = "",
+        priority: String = "Normal",
+        onSuccess: () -> Unit = {},
+        onError: (String) -> Unit = {}
+    ) {
+        val user = _currentUser.value ?: return onError("User not logged in.")
+        viewModelScope.launch {
+            try {
+                val appt = AppointmentEntity(
+                    id = "appt_" + UUID.randomUUID().toString().substring(0, 8),
+                    consumerId = user.id,
+                    shopId = shopId,
+                    serviceId = serviceId,
+                    serviceName = serviceName,
+                    price = price,
+                    appointmentDate = date,
+                    appointmentTime = time,
+                    petName = petName.trim().ifEmpty { "Buddy" },
+                    status = "pending",
+                    doctorId = doctorId,
+                    createdAt = System.currentTimeMillis(),
+                    concern = concern,
+                    priority = priority
+                )
+                if (slotId != null) {
+                    repository.bookDoctorAppointment(appt, slotId)
+                } else {
+                    repository.insertAppointment(appt)
+                }
+                onSuccess()
+            } catch (e: Exception) {
+                onError(e.message ?: "Booking failed.")
+            }
+        }
+    }
+
+    // --- Rescheduling State Machine & Refunds ---
+    fun proposeReschedule(appointment: AppointmentEntity, newDate: String, newTime: String, onResult: (Boolean) -> Unit = {}) {
+        viewModelScope.launch {
+            val updated = appointment.copy(
+                rescheduleDate = newDate,
+                rescheduleTime = newTime,
+                status = "reschedule_pending"
+            )
+            repository.insertAppointment(updated)
+            onResult(true)
+        }
+    }
+
+    fun acceptReschedule(appointment: AppointmentEntity, onResult: (Boolean) -> Unit = {}) {
+        viewModelScope.launch {
+            val updated = appointment.copy(
+                appointmentDate = appointment.rescheduleDate ?: appointment.appointmentDate,
+                appointmentTime = appointment.rescheduleTime ?: appointment.appointmentTime,
+                rescheduleDate = null,
+                rescheduleTime = null,
+                status = "confirmed"
+            )
+            repository.insertAppointment(updated)
+            onResult(true)
+        }
+    }
+
+    fun declineReschedule(appointment: AppointmentEntity, onResult: (Boolean) -> Unit = {}) {
+        viewModelScope.launch {
+            val updated = appointment.copy(
+                rescheduleDate = null,
+                rescheduleTime = null,
+                status = "cancelled"
+            )
+            repository.insertAppointment(updated)
+            onResult(true)
+        }
+    }
+
+    fun cancelAppointmentWithRefund(appointment: AppointmentEntity, slotId: String?, onResult: (Boolean) -> Unit = {}) {
+        viewModelScope.launch {
+            repository.cancelDoctorAppointment(appointment.id, slotId)
+            onResult(true)
+        }
+    }
+
+    // Grooming Rescheduling Actions
+    fun proposeGroomingReschedule(booking: GroomingBookingEntity, newDate: String, newTime: String, onResult: (Boolean) -> Unit = {}) {
+        viewModelScope.launch {
+            val updated = booking.copy(
+                rescheduleDate = newDate,
+                rescheduleTime = newTime,
+                status = "reschedule_pending"
+            )
+            repository.insertGroomingBooking(updated)
+            onResult(true)
+        }
+    }
+
+    fun acceptGroomingReschedule(booking: GroomingBookingEntity, newSlotId: String, newDate: String, newTime: String, onResult: (Boolean) -> Unit = {}) {
+        viewModelScope.launch {
+            database.pawsDao().decrementSlotBookedCount(booking.slotId)
+            database.pawsDao().incrementSlotBookedCount(newSlotId)
+            val updated = booking.copy(
+                slotId = newSlotId,
+                rescheduleDate = null,
+                rescheduleTime = null,
+                status = "confirmed"
+            )
+            repository.insertGroomingBooking(updated)
+            onResult(true)
+        }
+    }
+
+    fun declineGroomingReschedule(booking: GroomingBookingEntity, onResult: (Boolean) -> Unit = {}) {
+        viewModelScope.launch {
+            val updated = booking.copy(
+                rescheduleDate = null,
+                rescheduleTime = null,
+                status = "cancelled"
+            )
+            repository.insertGroomingBooking(updated)
+            database.pawsDao().decrementSlotBookedCount(booking.slotId)
+            onResult(true)
+        }
+    }
+
+    // --- Coupon Management ---
+    fun getCouponsForShopFlow(shopId: String): Flow<List<CouponEntity>> =
+        repository.getCouponsForShopFlow(shopId)
+
+    fun saveCoupon(
+        code: String,
+        discountPercentage: Double,
+        maxDiscount: Double,
+        minOrderAmount: Double,
+        isActive: Boolean,
+        onResult: (Boolean) -> Unit = {}
+    ) {
+        val shop = _merchantShop.value ?: return
+        viewModelScope.launch {
+            val coupon = CouponEntity(
+                id = "coupon_" + UUID.randomUUID().toString().substring(0, 8),
+                shopId = shop.id,
+                code = code.trim().uppercase(),
+                discountPercentage = discountPercentage,
+                maxDiscount = maxDiscount,
+                minOrderAmount = minOrderAmount,
+                isActive = isActive
+            )
+            repository.insertCoupon(coupon)
+            onResult(true)
+        }
+    }
+
+    fun deleteCoupon(couponId: String) {
+        viewModelScope.launch {
+            repository.deleteCoupon(couponId)
+        }
+    }
+
+    // --- Product free sample attachment ---
+    fun attachSampleToProduct(productId: String, sampleProductId: String?, sampleDesc: String, onResult: (Boolean) -> Unit = {}) {
+        viewModelScope.launch {
+            val prod = repository.getProductById(productId)
+            if (prod != null) {
+                repository.insertProduct(
+                    prod.copy(
+                        sampleAttachedProductId = sampleProductId,
+                        sampleDescription = sampleDesc
+                    )
+                )
+                onResult(true)
+            } else {
+                onResult(false)
+            }
+        }
+    }
+
+    fun updateProductDetails(
+        productId: String,
+        stockCount: Int,
+        price: Double,
+        sampleProductId: String?,
+        sampleDesc: String,
+        onResult: (Boolean) -> Unit = {}
+    ) {
+        viewModelScope.launch {
+            val prod = repository.getProductById(productId)
+            if (prod != null) {
+                repository.insertProduct(
+                    prod.copy(
+                        stockCount = stockCount,
+                        price = price,
+                        inStock = stockCount > 0,
+                        sampleAttachedProductId = sampleProductId,
+                        sampleDescription = sampleDesc
+                    )
+                )
+                // Trigger refresh
+                _merchantShop.value = _merchantShop.value
+                onResult(true)
+            } else {
+                onResult(false)
+            }
+        }
+    }
+
+    fun togglePetProblemActive(id: String, isActive: Boolean) {
+        viewModelScope.launch {
+            val problem = repository.getProblemById(id)
+            if (problem != null) {
+                repository.insertProblem(problem.copy(isActive = isActive))
+            }
+        }
+    }
+
+    // --- Super Admin Actions ---
+    fun approveVetLicense(shopId: String) {
+        viewModelScope.launch {
+            val shop = repository.getShopById(shopId)
+            if (shop != null) {
+                repository.insertShop(shop.copy(isVetVerified = true))
+                if (_merchantShop.value?.id == shopId) {
+                    _merchantShop.value = repository.getShopById(shopId)
+                }
+            }
+        }
+    }
+
+    fun updateMerchantShopServices(shopId: String, grooming: Boolean, vet: Boolean, shopEnabled: Boolean) {
+        viewModelScope.launch {
+            val shop = repository.getShopById(shopId) ?: return@launch
+            val updated = shop.copy(groomingEnabled = grooming, vetClinicEnabled = vet, shopEnabled = shopEnabled)
+            repository.insertShop(updated)
+            _merchantShop.value = updated
         }
     }
 }

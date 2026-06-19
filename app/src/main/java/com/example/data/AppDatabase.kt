@@ -29,9 +29,15 @@ import androidx.room.TypeConverters
         ProblemEntity::class,
         GroupRfqSessionEntity::class,
         GroupRfqMemberItemEntity::class,
-        MerchantQuotationEntity::class
+        MerchantQuotationEntity::class,
+        GroomingServiceEntity::class,
+        GroomingSlotEntity::class,
+        GroomingBookingEntity::class,
+        DoctorEntity::class,
+        DoctorSlotEntity::class,
+        CouponEntity::class
     ],
-    version = 18,
+    version = 22,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

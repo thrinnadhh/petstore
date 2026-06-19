@@ -47,7 +47,8 @@ class PawsBackendTest {
             phone = "799876543210",
             cityId = "hyd",
             avatarUrl = "https://example.com/avatar.jpg",
-            role = "consumer"
+            role = "consumer",
+            address = "Test address, Hyderabad"
         )
         repository.insertProfile(profile)
 
@@ -70,7 +71,7 @@ class PawsBackendTest {
         )
         val shop2 = ShopEntity(
             id = "shop_hyd_puppy", ownerId = "owner_2", cityId = "hyd",
-            name = "Puppy Love Groomers", description = "Expert", address = "Road 36", locality = "Jubilee Hills",
+            name = "Paws & Co. Grooming Loft", description = "Expert", address = "Road 36", locality = "Jubilee Hills",
             phone = "8888888888", email = "puppy@paws.com", rating = 4.3
         )
         repository.insertShop(shop1)
@@ -184,5 +185,66 @@ class PawsBackendTest {
 
         assertEquals(1400.0, aliceShare, 0.001)
         assertEquals(280.0, bobShare, 0.001)
+    }
+
+    @Test
+    fun testDefaultSeedingOfConsultationAndGroomingServices() = runBlocking {
+        // Run database seeding
+        repository.seedDatabaseIfEmpty()
+
+        // Fetch services for mock city hospital
+        val hospitalServices = repository.getServicesForShopFlow("mock_city_hospital").first()
+        assertTrue(hospitalServices.isNotEmpty())
+        assertTrue(hospitalServices.any { it.name.contains("OPD") })
+        assertTrue(hospitalServices.any { it.category.contains("Vet") })
+
+        // Fetch services for mock paws bubbles spa
+        val groomingServices = repository.getServicesForShopFlow("mock_paws_bubbles").first()
+        assertTrue(groomingServices.isNotEmpty())
+        assertTrue(groomingServices.any { it.name.contains("Styling") })
+        assertTrue(groomingServices.any { it.category.contains("Grooming") })
+    }
+
+    @Test
+    fun testDynamicMerchantShopServiceSeeding() = runBlocking {
+        val shopId = "shop_test_dynamic_123"
+        val newShop = ShopEntity(
+            id = shopId,
+            ownerId = "owner_test_123",
+            cityId = "hyd",
+            name = "Dynamic Test Hospital & Spa",
+            description = "Vet Clinic and Grooming",
+            address = "Test Road",
+            locality = "Test Locality",
+            phone = "9876543210",
+            email = "test@paws.com",
+            groomingEnabled = true,
+            vetClinicEnabled = true
+        )
+        repository.insertShop(newShop)
+
+        // Seed default services (vet and grooming)
+        val defaultServices = mutableListOf<ServiceEntity>()
+        if (newShop.vetClinicEnabled) {
+            defaultServices.add(ServiceEntity(id = "service_${shopId}_vet_1", shopId = shopId, name = "Emergency Surgery Consultation", price = 1200.0, category = "Vet Doctor Clinic"))
+            defaultServices.add(ServiceEntity(id = "service_${shopId}_vet_2", shopId = shopId, name = "General OPD Consultation", price = 600.0, category = "Vet Doctor Clinic"))
+        }
+        if (newShop.groomingEnabled) {
+            defaultServices.add(ServiceEntity(id = "service_${shopId}_groom_1", shopId = shopId, name = "Teddy Bear Coat Styling", price = 999.0, category = "Grooming"))
+            defaultServices.add(ServiceEntity(id = "service_${shopId}_groom_2", shopId = shopId, name = "Kennel Summer Short Cut", price = 799.0, category = "Grooming"))
+            defaultServices.add(ServiceEntity(id = "service_${shopId}_groom_3", shopId = shopId, name = "Majestic Lion Pom Styling", price = 1499.0, category = "Grooming"))
+            defaultServices.add(ServiceEntity(id = "service_${shopId}_groom_4", shopId = shopId, name = "Oatmeal Soothing Bath", price = 499.0, category = "Bathing"))
+            defaultServices.add(ServiceEntity(id = "service_${shopId}_groom_5", shopId = shopId, name = "Anti-Tick & Flea Medicated Wash", price = 699.0, category = "Bathing"))
+            defaultServices.add(ServiceEntity(id = "service_${shopId}_groom_6", shopId = shopId, name = "Premium Foam Aroma Spa Bath", price = 899.0, category = "Bathing"))
+        }
+        
+        defaultServices.forEach { repository.insertService(it) }
+
+        // Fetch services for dynamic shop
+        val services = repository.getServicesForShopFlow(shopId).first()
+        assertEquals(8, services.size)
+        assertTrue(services.any { it.name == "Emergency Surgery Consultation" })
+        assertTrue(services.any { it.name == "Teddy Bear Coat Styling" })
+        assertTrue(services.any { it.name == "Premium Foam Aroma Spa Bath" })
     }
 }

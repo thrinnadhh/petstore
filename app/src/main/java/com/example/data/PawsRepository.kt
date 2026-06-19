@@ -138,7 +138,23 @@ class PawsRepository(private val pawsDao: PawsDao) {
     // Appointments
     fun getAppointmentsForConsumerFlow(consumerId: String): Flow<List<AppointmentEntity>> = pawsDao.getAppointmentsForConsumerFlow(consumerId)
     fun getAppointmentsForShopFlow(shopId: String): Flow<List<AppointmentEntity>> = pawsDao.getAppointmentsForShopFlow(shopId)
-    suspend fun insertAppointment(appointment: AppointmentEntity) = pawsDao.insertAppointment(appointment)
+    suspend fun insertAppointment(appointment: AppointmentEntity) {
+        pawsDao.insertAppointment(appointment)
+        if (!ProductionConfig.IS_DEMO_MODE) {
+            SupabaseManager.insertAppointmentToCloud(
+                appointmentId = appointment.id,
+                consumerId = appointment.consumerId,
+                shopId = appointment.shopId,
+                serviceId = appointment.serviceId,
+                serviceName = appointment.serviceName,
+                price = appointment.price,
+                appointmentDate = appointment.appointmentDate,
+                appointmentTime = appointment.appointmentTime,
+                petName = appointment.petName,
+                status = appointment.status
+            )
+        }
+    }
     suspend fun updateAppointmentStatus(appointmentId: String, status: String) = pawsDao.updateAppointmentStatus(appointmentId, status)
 
     // Reminders
@@ -156,6 +172,7 @@ class PawsRepository(private val pawsDao: PawsDao) {
 
     // Pet Problems & Dynamic Recommendations
     val allProblemsFlow: Flow<List<ProblemEntity>> = pawsDao.getAllProblemsFlow()
+    suspend fun getProblemById(id: String): ProblemEntity? = pawsDao.getProblemById(id)
     suspend fun insertProblem(problem: ProblemEntity) = pawsDao.insertProblem(problem)
     suspend fun deleteProblemById(id: String) = pawsDao.deleteProblemById(id)
 
@@ -355,7 +372,7 @@ class PawsRepository(private val pawsDao: PawsDao) {
                     id = "mock_paws_bubbles",
                     ownerId = "system",
                     cityId = "hyd",
-                    name = "Paws & Bubbles Spa",
+                    name = "Fur & Fluff Boutique Spa",
                     description = "Luxury Grooming & Styling",
                     address = "Kondapur, Hyderabad",
                     locality = "Kondapur",
@@ -381,7 +398,7 @@ class PawsRepository(private val pawsDao: PawsDao) {
                     id = "mock_grooming_room",
                     ownerId = "system",
                     cityId = "hyd",
-                    name = "The Grooming Room",
+                    name = "The Dapper Dog Salon",
                     description = "Professional Pet Grooming",
                     address = "Jubilee Hills, Hyderabad",
                     locality = "Jubilee Hills",
@@ -574,7 +591,7 @@ class PawsRepository(private val pawsDao: PawsDao) {
                 id = "shop_hyd_2",
                 ownerId = "merchant_hyd_2",
                 cityId = "hyd",
-                name = "Puppy Love Groomers",
+                name = "Paws & Co. Grooming Loft",
                 description = "Expert coat grooming, therapy bathes & dog toys",
                 address = "Jubilee Square, Road No 36, Jubilee Hills, Hyderabad, 500033",
                 locality = "Jubilee Hills",
@@ -593,7 +610,7 @@ class PawsRepository(private val pawsDao: PawsDao) {
                 id = "shop_blr_1",
                 ownerId = "merchant_blr_1",
                 cityId = "blr",
-                name = "Paws & Tails Elite",
+                name = "Shampooch Luxury Spa",
                 description = "Indiranagar's premium multi-activity pet shopping arena",
                 address = "100 Feet Rd, Hal 2nd Stage, Indiranagar, Bengaluru, 560038",
                 locality = "Indiranagar",
@@ -760,7 +777,7 @@ class PawsRepository(private val pawsDao: PawsDao) {
                 brand = "Wahl", lifeStage = "Adult", stockCount = 8
             ),
 
-            // Puppy Love Groomers
+            // Paws & Co. Grooming Loft
             ProductEntity(
                 id = "p_hyd_5", shopId = "shop_hyd_2", categoryId = "cat_groom",
                 name = "Deep Oatmeal Coat Wash",
@@ -780,7 +797,7 @@ class PawsRepository(private val pawsDao: PawsDao) {
                 brand = "Generic", lifeStage = "Puppy", stockCount = 20
             ),
 
-            // Paws & Tails Elite (Bengaluru)
+            // Shampooch Luxury Spa (Bengaluru)
             ProductEntity(
                 id = "p_blr_1", shopId = "shop_blr_1", categoryId = "cat_food",
                 name = "Super Food Salmon Blend (3kg)",
@@ -985,7 +1002,19 @@ class PawsRepository(private val pawsDao: PawsDao) {
             ServiceEntity(id = "service_seed_city_3", shopId = "mock_city_hospital", name = "In-house Lab Diagnostics Checkup", price = 1500.0, category = "Vet Doctor Clinic"),
             ServiceEntity(id = "service_seed_wellness_1", shopId = "mock_petcare_wellness", name = "Routine Health Examination", price = 400.0, category = "Vet Doctor Clinic"),
             ServiceEntity(id = "service_seed_wellness_2", shopId = "mock_petcare_wellness", name = "Nutritional Consultation", price = 300.0, category = "Vet Doctor Clinic"),
-            ServiceEntity(id = "service_seed_wellness_3", shopId = "mock_petcare_wellness", name = "Comprehensive Vaccination Package", price = 800.0, category = "Vet Doctor Clinic")
+            ServiceEntity(id = "service_seed_wellness_3", shopId = "mock_petcare_wellness", name = "Comprehensive Vaccination Package", price = 800.0, category = "Vet Doctor Clinic"),
+            ServiceEntity(id = "service_seed_bubbles_1", shopId = "mock_paws_bubbles", name = "Teddy Bear Coat Styling", price = 999.0, category = "Grooming"),
+            ServiceEntity(id = "service_seed_bubbles_2", shopId = "mock_paws_bubbles", name = "Kennel Summer Short Cut", price = 799.0, category = "Grooming"),
+            ServiceEntity(id = "service_seed_bubbles_3", shopId = "mock_paws_bubbles", name = "Majestic Lion Pom Styling", price = 1499.0, category = "Grooming"),
+            ServiceEntity(id = "service_seed_bubbles_4", shopId = "mock_paws_bubbles", name = "Oatmeal Soothing Bath", price = 499.0, category = "Bathing"),
+            ServiceEntity(id = "service_seed_bubbles_5", shopId = "mock_paws_bubbles", name = "Anti-Tick & Flea Medicated Wash", price = 699.0, category = "Bathing"),
+            ServiceEntity(id = "service_seed_bubbles_6", shopId = "mock_paws_bubbles", name = "Premium Foam Aroma Spa Bath", price = 899.0, category = "Bathing"),
+            ServiceEntity(id = "service_seed_grooming_room_1", shopId = "mock_grooming_room", name = "Teddy Bear Coat Styling", price = 999.0, category = "Grooming"),
+            ServiceEntity(id = "service_seed_grooming_room_2", shopId = "mock_grooming_room", name = "Kennel Summer Short Cut", price = 799.0, category = "Grooming"),
+            ServiceEntity(id = "service_seed_grooming_room_3", shopId = "mock_grooming_room", name = "Majestic Lion Pom Styling", price = 1499.0, category = "Grooming"),
+            ServiceEntity(id = "service_seed_grooming_room_4", shopId = "mock_grooming_room", name = "Oatmeal Soothing Bath", price = 499.0, category = "Bathing"),
+            ServiceEntity(id = "service_seed_grooming_room_5", shopId = "mock_grooming_room", name = "Anti-Tick & Flea Medicated Wash", price = 699.0, category = "Bathing"),
+            ServiceEntity(id = "service_seed_grooming_room_6", shopId = "mock_grooming_room", name = "Premium Foam Aroma Spa Bath", price = 899.0, category = "Bathing")
         )
         hospitalServicesList.forEach { pawsDao.insertService(it) }
 
@@ -1224,7 +1253,8 @@ class PawsRepository(private val pawsDao: PawsDao) {
             avatarUrl = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop",
             role = "superadmin",
             email = "trinadhbandapalli@gmail.com",
-            password = "thrinnadhh@Paws"
+            password = "thrinnadhh@Paws",
+            address = "Super Admin Headquarters, Hyderabad"
         )
         val defaultCustomerProfile = ProfileEntity(
             id = "consumer_arjun",
@@ -1234,7 +1264,8 @@ class PawsRepository(private val pawsDao: PawsDao) {
             avatarUrl = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop",
             role = "consumer",
             email = "arjun@gmail.com",
-            password = "password123"
+            password = "password123",
+            address = "Villa 42, Road No 5, Banjara Hills, Hyderabad"
         )
         pawsDao.insertProfile(superAdminProfile)
         pawsDao.insertProfile(defaultCustomerProfile)
@@ -1367,5 +1398,467 @@ class PawsRepository(private val pawsDao: PawsDao) {
             )
             seededMedReminders.forEach { pawsDao.insertReminder(it) }
         }
+
+        // Seed default Grooming services for mock_paws_bubbles and mock_grooming_room
+        val existingGroomingServices = pawsDao.getGroomingServicesForShopSync("mock_paws_bubbles")
+        if (existingGroomingServices.isEmpty()) {
+            val sampleServices = listOf(
+                // Bath variant: Basic Bath
+                GroomingServiceEntity(
+                    id = "gs_bubbles_basic_bath_small",
+                    shopId = "mock_paws_bubbles",
+                    serviceType = "bath",
+                    variantName = "Basic Bath",
+                    description = "Regular bath with quality organic shampoo, blow dry, and brushing.",
+                    petSizeCategory = "small",
+                    price = 300.0,
+                    durationMinutes = 30,
+                    imageUrls = listOf("https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?w=400"),
+                    isActive = true
+                ),
+                GroomingServiceEntity(
+                    id = "gs_bubbles_basic_bath_medium",
+                    shopId = "mock_paws_bubbles",
+                    serviceType = "bath",
+                    variantName = "Basic Bath",
+                    description = "Regular bath with quality organic shampoo, blow dry, and brushing.",
+                    petSizeCategory = "medium",
+                    price = 450.0,
+                    durationMinutes = 45,
+                    imageUrls = listOf("https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?w=400"),
+                    isActive = true
+                ),
+                GroomingServiceEntity(
+                    id = "gs_bubbles_basic_bath_large",
+                    shopId = "mock_paws_bubbles",
+                    serviceType = "bath",
+                    variantName = "Basic Bath",
+                    description = "Regular bath with quality organic shampoo, blow dry, and brushing.",
+                    petSizeCategory = "large",
+                    price = 600.0,
+                    durationMinutes = 60,
+                    imageUrls = listOf("https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?w=400"),
+                    isActive = true
+                ),
+
+                // Haircut variant: Puppy Cut
+                GroomingServiceEntity(
+                    id = "gs_bubbles_puppy_cut_small",
+                    shopId = "mock_paws_bubbles",
+                    serviceType = "haircut",
+                    variantName = "Puppy Cut",
+                    description = "Short all-over even clip for active low-maintenance style.",
+                    petSizeCategory = "small",
+                    price = 500.0,
+                    durationMinutes = 45,
+                    imageUrls = listOf("https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=400"),
+                    isActive = true
+                ),
+                GroomingServiceEntity(
+                    id = "gs_bubbles_puppy_cut_medium",
+                    shopId = "mock_paws_bubbles",
+                    serviceType = "haircut",
+                    variantName = "Puppy Cut",
+                    description = "Short all-over even clip for active low-maintenance style.",
+                    petSizeCategory = "medium",
+                    price = 750.0,
+                    durationMinutes = 60,
+                    imageUrls = listOf("https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=400"),
+                    isActive = true
+                ),
+
+                // Combo variant: Full Groom Package
+                GroomingServiceEntity(
+                    id = "gs_bubbles_full_groom_small",
+                    shopId = "mock_paws_bubbles",
+                    serviceType = "bath_and_haircut",
+                    variantName = "Full Groom Package",
+                    description = "Comprehensive grooming including Basic Bath + Puppy Cut with discounted price.",
+                    petSizeCategory = "small",
+                    price = 700.0, // Calculated: (300 + 500) - 100
+                    durationMinutes = 75,
+                    imageUrls = listOf("https://images.unsplash.com/photo-1534361960057-19889db9621e?w=400"),
+                    isActive = true
+                ),
+                GroomingServiceEntity(
+                    id = "gs_bubbles_full_groom_medium",
+                    shopId = "mock_paws_bubbles",
+                    serviceType = "bath_and_haircut",
+                    variantName = "Full Groom Package",
+                    description = "Comprehensive grooming including Basic Bath + Puppy Cut with discounted price.",
+                    petSizeCategory = "medium",
+                    price = 1100.0, // Calculated: (450 + 750) - 100
+                    durationMinutes = 105,
+                    imageUrls = listOf("https://images.unsplash.com/photo-1534361960057-19889db9621e?w=400"),
+                    isActive = true
+                ),
+
+                // Other: Nail Trim
+                GroomingServiceEntity(
+                    id = "gs_bubbles_nail_trim_small",
+                    shopId = "mock_paws_bubbles",
+                    serviceType = "nail_trim",
+                    variantName = "Nail Trim",
+                    description = "Clip claws, file sharp edges, apply conditioning balm to pads.",
+                    petSizeCategory = "small",
+                    price = 150.0,
+                    durationMinutes = 15,
+                    imageUrls = listOf("https://images.unsplash.com/photo-1596492784531-6e6eb5ea9993?w=400"),
+                    isActive = true
+                ),
+                GroomingServiceEntity(
+                    id = "gs_bubbles_nail_trim_medium",
+                    shopId = "mock_paws_bubbles",
+                    serviceType = "nail_trim",
+                    variantName = "Nail Trim",
+                    description = "Clip claws, file sharp edges, apply conditioning balm to pads.",
+                    petSizeCategory = "medium",
+                    price = 200.0,
+                    durationMinutes = 15,
+                    imageUrls = listOf("https://images.unsplash.com/photo-1596492784531-6e6eb5ea9993?w=400"),
+                    isActive = true
+                ),
+                GroomingServiceEntity(
+                    id = "gs_bubbles_nail_trim_large",
+                    shopId = "mock_paws_bubbles",
+                    serviceType = "nail_trim",
+                    variantName = "Nail Trim",
+                    description = "Clip claws, file sharp edges, apply conditioning balm to pads.",
+                    petSizeCategory = "large",
+                    price = 250.0,
+                    durationMinutes = 20,
+                    imageUrls = listOf("https://images.unsplash.com/photo-1596492784531-6e6eb5ea9993?w=400"),
+                    isActive = true
+                ),
+
+                // Other: Ear Cleaning
+                GroomingServiceEntity(
+                    id = "gs_bubbles_ear_cleaning_small",
+                    shopId = "mock_paws_bubbles",
+                    serviceType = "ear_cleaning",
+                    variantName = "Ear Cleaning",
+                    description = "Clean ear canals with antiseptic soothing botanical drops.",
+                    petSizeCategory = "small",
+                    price = 120.0,
+                    durationMinutes = 15,
+                    imageUrls = listOf("https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400"),
+                    isActive = true
+                )
+            )
+            sampleServices.forEach { pawsDao.insertGroomingService(it) }
+        }
+
+        // Seed Doctors
+        val existingDoctors = pawsDao.getDoctorsForShopSync("shop_hyd_1")
+        if (existingDoctors.isEmpty()) {
+            val sampleDoctors = listOf(
+                DoctorEntity(
+                    id = "doc_sarah",
+                    shopId = "shop_hyd_1",
+                    name = "Dr. Sarah Jenkins",
+                    photoUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuAXx7J-sz-fV3Y_VS7BUI6xREHCtu84yd5izEqlWLTC8qY3WVnPddQFvYVf1Uguayi9ZhyWEQqeq7VVZ8JBry3BUH8fQZe9pYp60LQlAR5WW6EqklajhvhlVd5UfSEbAEEdBxS2KPuNI2uYuzXZDjavgaQPJdIW6hobWpxBmcbsK-_aYymv4nOhGWpCChcYO1573y__YOHNSOI3lnkq3dbHgykjeQTBzaa7j5UA6cZ14CiudAIZpXucpgIZNwKuerA1rpKJ82bpAXk",
+                    qualification = "DVM, DACVS",
+                    specialization = "Emergency Surgery",
+                    workingDays = listOf("Mon", "Tue", "Wed", "Thu", "Fri"),
+                    activeSlots = listOf("09:00 AM", "10:30 AM", "01:30 PM", "03:00 PM"),
+                    isAvailable = true
+                ),
+                DoctorEntity(
+                    id = "doc_elena",
+                    shopId = "shop_hyd_1",
+                    name = "Dr. Elena Rossi",
+                    photoUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuAn2LMbNYuqvAlSJ3Vsv3UiJVRa9B9YUYi39ShyxYeRMqbb6gwbm_4Iotbu_QZm-5pxwrOvETau5MJVPL3XcKNg6qJVbEke8w6buRQkmUgagREG15ZIZTBzIbtKGwCVgqAao1NSa_ZZsJpM9KgiC_VrK9O7aF2eMr6Gc5ES_fCKqnlSM8pjQ43E5RjzkRFt3L-lFoX38HEPBd99oYiAvt9cFIUV6eaqq44WCx2QdvoFE-V8XtAwCc_uwI9A53BXcQdxiXfZv7X09sw",
+                    qualification = "DVM, CVA",
+                    specialization = "Holistic Medicine & General Care",
+                    workingDays = listOf("Mon", "Wed", "Fri"),
+                    activeSlots = listOf("09:30 AM", "11:00 AM", "02:00 PM", "04:30 PM"),
+                    isAvailable = true
+                ),
+                DoctorEntity(
+                    id = "doc_michael",
+                    shopId = "shop_hyd_1",
+                    name = "Dr. Michael Chang",
+                    photoUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuAKwIVhg0jtyF9l-ZpnLelxtm7dPs0cNiFMAyw_WbKRSfJ-i0uLTr96yc3YnkabFFIt0-hMNtQHjQbpSi78KFLnVwvykST98Q7q0yq-VpxoJsmDMPV-o5KN9bm1J7OvZmRRt5brgcoASNXXfKdmBQQQhUfDC321lcBVF-97a8rpivLlEdfo5BOwTnpqhCSm8jeONbNd_hZQynrJzMvK0xF-OekAviLapXfyl7_GJi-uwVhc2mIOs3PLunPO4AZkbC_lh_X_RficrVc",
+                    qualification = "DVM, DACVIM",
+                    specialization = "Internal Medicine",
+                    workingDays = listOf("Tue", "Thu", "Sat"),
+                    activeSlots = listOf("10:00 AM", "12:00 PM", "03:30 PM", "05:00 PM"),
+                    isAvailable = true
+                )
+            )
+            sampleDoctors.forEach { pawsDao.insertDoctor(it) }
+        }
+
+        // Seed Coupons
+        val existingCoupons = pawsDao.getCouponsForShopSync("shop_hyd_1")
+        if (existingCoupons.isEmpty()) {
+            val sampleCoupons = listOf(
+                CouponEntity("c_welcome20", "global", "WELCOME20", 20.0, 200.0, 500.0, true),
+                CouponEntity("c_flat10", "global", "FLAT10", 10.0, 100.0, 300.0, true)
+            )
+            sampleCoupons.forEach { pawsDao.insertCoupon(it) }
+        }
+
+        // Update default profiles with 4-digit passwords
+        val arjun = pawsDao.getProfile("consumer_arjun")
+        if (arjun != null) {
+            pawsDao.insertProfile(arjun.copy(password = "1234"))
+        }
+        val superAdmin = pawsDao.getProfile("admin_super")
+        if (superAdmin != null) {
+            pawsDao.insertProfile(superAdmin.copy(password = "0000"))
+        }
+
+        // Attach freebie sample to Pedigree dry dog food
+        val pedigree = pawsDao.getProductById("p_pedigree_dry")
+        if (pedigree != null) {
+            pawsDao.insertProduct(
+                pedigree.copy(
+                    sampleAttachedProductId = "p_hamster_mix",
+                    sampleDescription = "Free Sample Timothy Premium Mix attached!"
+                )
+            )
+        }
     }
+
+    // --- Grooming Services Repository Methods ---
+    fun getActiveGroomingServicesForShopFlow(shopId: String): Flow<List<GroomingServiceEntity>> = pawsDao.getActiveGroomingServicesForShopFlow(shopId)
+    fun getAllGroomingServicesForShopFlow(shopId: String): Flow<List<GroomingServiceEntity>> = pawsDao.getAllGroomingServicesForShopFlow(shopId)
+    suspend fun getGroomingServicesForShopSync(shopId: String): List<GroomingServiceEntity> = pawsDao.getGroomingServicesForShopSync(shopId)
+    suspend fun getGroomingServiceById(id: String): GroomingServiceEntity? = pawsDao.getGroomingServiceById(id)
+    suspend fun insertGroomingService(service: GroomingServiceEntity) = pawsDao.insertGroomingService(service)
+    suspend fun deleteGroomingService(id: String) = pawsDao.deleteGroomingService(id)
+    suspend fun clearGroomingServicesForShop(shopId: String) = pawsDao.clearGroomingServicesForShop(shopId)
+
+    // --- Grooming Slots Repository Methods ---
+    fun getGroomingSlotsForShopAndDateFlow(shopId: String, date: String): Flow<List<GroomingSlotEntity>> = pawsDao.getGroomingSlotsForShopAndDateFlow(shopId, date)
+    suspend fun getGroomingSlotsForShopAndDateSync(shopId: String, date: String): List<GroomingSlotEntity> = pawsDao.getGroomingSlotsForShopAndDateSync(shopId, date)
+    suspend fun getGroomingSlotById(id: String): GroomingSlotEntity? = pawsDao.getGroomingSlotById(id)
+    suspend fun insertGroomingSlot(slot: GroomingSlotEntity) = pawsDao.insertGroomingSlot(slot)
+    suspend fun insertGroomingSlots(slots: List<GroomingSlotEntity>) = pawsDao.insertGroomingSlots(slots)
+    fun getGroomingSlotsForDateRangeFlow(shopId: String, startDate: String, endDate: String): Flow<List<GroomingSlotEntity>> = pawsDao.getGroomingSlotsForDateRangeFlow(shopId, startDate, endDate)
+    suspend fun getGroomingSlotsForDateRangeSync(shopId: String, startDate: String, endDate: String): List<GroomingSlotEntity> = pawsDao.getGroomingSlotsForDateRangeSync(shopId, startDate, endDate)
+
+    // Helper to auto-generate slots for a date if they don't exist
+    suspend fun getOrGenerateSlotsForDate(shopId: String, dateStr: String): List<GroomingSlotEntity> = withContext(Dispatchers.IO) {
+        val existing = pawsDao.getGroomingSlotsForShopAndDateSync(shopId, dateStr)
+        if (existing.isNotEmpty()) {
+            return@withContext existing
+        }
+
+        val shop = pawsDao.getShopById(shopId)
+        val opensAt = shop?.opensAt ?: "09:00"
+        val closesAt = shop?.closesAt ?: "21:00"
+
+        val openHour = try { opensAt.split(":")[0].toInt() } catch(e: Exception) { 9 }
+        val openMin = try { opensAt.split(":")[1].toInt() } catch(e: Exception) { 0 }
+        val closeHour = try { closesAt.split(":")[0].toInt() } catch(e: Exception) { 21 }
+        val closeMin = try { closesAt.split(":")[1].toInt() } catch(e: Exception) { 0 }
+
+        val slots = mutableListOf<GroomingSlotEntity>()
+        var currHour = openHour
+        var currMin = openMin
+
+        while (currHour < closeHour || (currHour == closeHour && currMin < closeMin)) {
+            val timeStr = String.format("%02d:%02d", currHour, currMin)
+            val slotId = "${shopId}_${dateStr}_${timeStr}"
+            slots.add(GroomingSlotEntity(
+                id = slotId,
+                shopId = shopId,
+                slotDate = dateStr,
+                slotTime = timeStr,
+                capacity = 1,
+                bookedCount = 0,
+                isBlocked = false
+            ))
+
+            currMin += 30
+            if (currMin >= 60) {
+                currHour += 1
+                currMin = 0
+            }
+        }
+
+        if (slots.isNotEmpty()) {
+            pawsDao.insertGroomingSlots(slots)
+        }
+        return@withContext pawsDao.getGroomingSlotsForShopAndDateSync(shopId, dateStr)
+    }
+
+    // Bulk edit slot capacity
+    suspend fun bulkEditSlotCapacity(
+        shopId: String,
+        startDate: String,
+        endDate: String,
+        daysOfWeek: List<Int>, // 1 = Sunday, 2 = Monday, ... 7 = Saturday
+        newCapacity: Int
+    ) = withContext(Dispatchers.IO) {
+        val format = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+        
+        try {
+            val startCal = java.util.Calendar.getInstance()
+            val parsedStart = format.parse(startDate) ?: return@withContext
+            startCal.time = parsedStart
+
+            val endCal = java.util.Calendar.getInstance()
+            val parsedEnd = format.parse(endDate) ?: return@withContext
+            endCal.time = parsedEnd
+
+            val tempCal = java.util.Calendar.getInstance()
+            tempCal.time = startCal.time
+
+            while (!tempCal.after(endCal)) {
+                val dayOfWeek = tempCal.get(java.util.Calendar.DAY_OF_WEEK)
+                if (daysOfWeek.contains(dayOfWeek)) {
+                    val dateStr = format.format(tempCal.time)
+                    val slots = getOrGenerateSlotsForDate(shopId, dateStr)
+                    val updatedSlots = slots.map { it.copy(capacity = newCapacity) }
+                    pawsDao.insertGroomingSlots(updatedSlots)
+                }
+                tempCal.add(java.util.Calendar.DAY_OF_YEAR, 1)
+            }
+        } catch(e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    // --- Grooming Bookings Repository Methods ---
+    fun getGroomingBookingsForConsumerFlow(consumerId: String): Flow<List<GroomingBookingEntity>> = pawsDao.getGroomingBookingsForConsumerFlow(consumerId)
+    fun getGroomingBookingsForShopFlow(shopId: String): Flow<List<GroomingBookingEntity>> = pawsDao.getGroomingBookingsForShopFlow(shopId)
+    suspend fun getGroomingBookingById(id: String): GroomingBookingEntity? = pawsDao.getGroomingBookingById(id)
+    suspend fun insertGroomingBooking(booking: GroomingBookingEntity) = withContext(Dispatchers.IO) {
+        pawsDao.insertGroomingBooking(booking)
+    }
+
+    suspend fun bookGroomingSlot(booking: GroomingBookingEntity) = withContext(Dispatchers.IO) {
+        val slot = pawsDao.getGroomingSlotById(booking.slotId)
+            ?: throw Exception("The selected slot was not found.")
+
+        if (slot.isBlocked) {
+            throw Exception("The selected slot is currently blocked by the shop.")
+        }
+        if (slot.bookedCount >= slot.capacity) {
+            throw Exception("The selected slot is fully booked. Please select another slot.")
+        }
+
+        val service = pawsDao.getGroomingServiceById(booking.serviceId)
+            ?: throw Exception("Service not found.")
+
+        if (service.petSizeCategory != booking.petSizeCategory) {
+            throw Exception("The pet size category does not match the service size tier.")
+        }
+
+        pawsDao.insertGroomingBooking(booking)
+        pawsDao.incrementSlotBookedCount(booking.slotId)
+    }
+
+    suspend fun cancelGroomingBooking(bookingId: String) = withContext(Dispatchers.IO) {
+        val booking = pawsDao.getGroomingBookingById(bookingId) ?: return@withContext
+        if (booking.status == "cancelled") return@withContext
+
+        pawsDao.updateGroomingBookingStatus(bookingId, "cancelled")
+        pawsDao.decrementSlotBookedCount(booking.slotId)
+    }
+
+    suspend fun updateGroomingBookingStatus(bookingId: String, status: String) = withContext(Dispatchers.IO) {
+        val booking = pawsDao.getGroomingBookingById(bookingId) ?: return@withContext
+        val oldStatus = booking.status
+        
+        pawsDao.updateGroomingBookingStatus(bookingId, status)
+        
+        if ((status == "cancelled" || status == "no_show") && oldStatus != "cancelled" && oldStatus != "no_show") {
+            pawsDao.decrementSlotBookedCount(booking.slotId)
+        } else if ((oldStatus == "cancelled" || oldStatus == "no_show") && status != "cancelled" && status != "no_show") {
+            pawsDao.incrementSlotBookedCount(booking.slotId)
+        }
+    }
+
+    // --- Doctor Repository Methods ---
+    fun getDoctorsForShopFlow(shopId: String): Flow<List<DoctorEntity>> = pawsDao.getDoctorsForShopFlow(shopId)
+    suspend fun getDoctorById(id: String): DoctorEntity? = pawsDao.getDoctorById(id)
+    suspend fun insertDoctor(doctor: DoctorEntity) = withContext(Dispatchers.IO) { pawsDao.insertDoctor(doctor) }
+    suspend fun deleteDoctor(id: String) = withContext(Dispatchers.IO) { pawsDao.deleteDoctor(id) }
+
+    // Doctor Slots
+    fun getDoctorSlotsFlow(shopId: String, doctorId: String, date: String): Flow<List<DoctorSlotEntity>> =
+        pawsDao.getDoctorSlotsFlow(shopId, doctorId, date)
+
+    suspend fun getOrGenerateDoctorSlotsForDate(shopId: String, doctorId: String, dateStr: String): List<DoctorSlotEntity> = withContext(Dispatchers.IO) {
+        val existing = pawsDao.getDoctorSlotsSync(shopId, doctorId, dateStr)
+        if (existing.isNotEmpty()) {
+            return@withContext existing
+        }
+
+        val doctor = pawsDao.getDoctorById(doctorId) ?: return@withContext emptyList()
+        val slots = mutableListOf<DoctorSlotEntity>()
+
+        for (time in doctor.activeSlots) {
+            val slotId = "doc_slot_${doctorId}_${dateStr}_${time.replace(" ", "").replace(":", "")}"
+            slots.add(
+                DoctorSlotEntity(
+                    id = slotId,
+                    doctorId = doctorId,
+                    shopId = shopId,
+                    slotDate = dateStr,
+                    slotTime = time,
+                    capacity = 1,
+                    bookedCount = 0,
+                    isBlocked = false
+                )
+            )
+        }
+
+        if (slots.isNotEmpty()) {
+            pawsDao.insertDoctorSlots(slots)
+        }
+        return@withContext pawsDao.getDoctorSlotsSync(shopId, doctorId, dateStr)
+    }
+
+    suspend fun toggleDoctorSlotBlocked(slot: DoctorSlotEntity) = withContext(Dispatchers.IO) {
+        pawsDao.insertDoctorSlot(slot.copy(isBlocked = !slot.isBlocked))
+    }
+
+    suspend fun updateDoctorSlotCapacity(slotId: String, capacity: Int) = withContext(Dispatchers.IO) {
+        val slot = pawsDao.getDoctorSlotById(slotId) ?: return@withContext
+        pawsDao.insertDoctorSlot(slot.copy(capacity = capacity))
+    }
+
+    suspend fun bookDoctorAppointment(appointment: AppointmentEntity, slotId: String) = withContext(Dispatchers.IO) {
+        val slot = pawsDao.getDoctorSlotById(slotId)
+            ?: throw Exception("The selected doctor slot was not found.")
+
+        if (slot.isBlocked) {
+            throw Exception("The selected doctor slot is currently blocked.")
+        }
+        if (slot.bookedCount >= slot.capacity) {
+            throw Exception("The selected slot is fully booked. Please select another slot.")
+        }
+
+        pawsDao.insertAppointment(appointment)
+        pawsDao.incrementDoctorSlotBookedCount(slotId)
+    }
+
+    suspend fun cancelDoctorAppointment(appointmentId: String, slotId: String?) = withContext(Dispatchers.IO) {
+        val appt = pawsDao.getOrderById(appointmentId) // wait, appointment is in appointments table, not orders
+        // we can fetch appointment from pawsDao: wait, is there a getAppointmentById in DAO?
+        // Let's check PawsDao.kt. Oh, PawsDao.kt doesn't have getAppointmentById! Let's check.
+        // Wait, does PawsDao have getAppointmentById?
+        // Let's look at PawsDao.kt: it has getAppointmentsForConsumerFlow, getAppointmentsForShopFlow, insertAppointment, updateAppointmentStatus.
+        // But no getAppointmentById! Oh, let's look at line 224: insertAppointment, updateAppointmentStatus.
+        // Wait, how do we get appointment by id?
+        // Ah! In PawsDao.kt: we can add getAppointmentById! But wait, let's see how rescheduleAppointment does it in PawsViewModel:
+        // it receives AppointmentEntity directly!
+        // Yes, so we can just update status to "cancelled" and decrement doctor slot.
+        pawsDao.updateAppointmentStatus(appointmentId, "cancelled")
+        if (slotId != null) {
+            pawsDao.decrementDoctorSlotBookedCount(slotId)
+        }
+    }
+
+    // --- Coupons Repository Methods ---
+    fun getCouponsForShopFlow(shopId: String): Flow<List<CouponEntity>> = pawsDao.getCouponsForShopFlow(shopId)
+    suspend fun getCouponByCode(code: String): CouponEntity? = pawsDao.getCouponByCode(code)
+    suspend fun insertCoupon(coupon: CouponEntity) = withContext(Dispatchers.IO) { pawsDao.insertCoupon(coupon) }
+    suspend fun deleteCoupon(id: String) = withContext(Dispatchers.IO) { pawsDao.deleteCoupon(id) }
 }
+

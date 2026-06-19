@@ -288,6 +288,9 @@ interface PawsDao {
     @Query("SELECT * FROM pet_problems ORDER BY createdAt DESC")
     fun getAllProblemsFlow(): Flow<List<ProblemEntity>>
 
+    @Query("SELECT * FROM pet_problems WHERE id = :id LIMIT 1")
+    suspend fun getProblemById(id: String): ProblemEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertProblem(problem: ProblemEntity)
 
@@ -338,5 +341,135 @@ interface PawsDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMerchantQuotation(quotation: MerchantQuotationEntity)
+
+    // Grooming Services
+    @Query("SELECT * FROM grooming_services WHERE shopId = :shopId AND isActive = 1 ORDER BY createdAt DESC")
+    fun getActiveGroomingServicesForShopFlow(shopId: String): Flow<List<GroomingServiceEntity>>
+
+    @Query("SELECT * FROM grooming_services WHERE shopId = :shopId ORDER BY createdAt DESC")
+    fun getAllGroomingServicesForShopFlow(shopId: String): Flow<List<GroomingServiceEntity>>
+
+    @Query("SELECT * FROM grooming_services WHERE shopId = :shopId")
+    suspend fun getGroomingServicesForShopSync(shopId: String): List<GroomingServiceEntity>
+
+    @Query("SELECT * FROM grooming_services WHERE id = :id LIMIT 1")
+    suspend fun getGroomingServiceById(id: String): GroomingServiceEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertGroomingService(service: GroomingServiceEntity)
+
+    @Query("DELETE FROM grooming_services WHERE id = :id")
+    suspend fun deleteGroomingService(id: String)
+
+    @Query("DELETE FROM grooming_services WHERE shopId = :shopId")
+    suspend fun clearGroomingServicesForShop(shopId: String)
+
+    // Grooming Slots
+    @Query("SELECT * FROM grooming_slots WHERE shopId = :shopId AND slotDate = :date ORDER BY slotTime ASC")
+    fun getGroomingSlotsForShopAndDateFlow(shopId: String, date: String): Flow<List<GroomingSlotEntity>>
+
+    @Query("SELECT * FROM grooming_slots WHERE shopId = :shopId AND slotDate = :date ORDER BY slotTime ASC")
+    suspend fun getGroomingSlotsForShopAndDateSync(shopId: String, date: String): List<GroomingSlotEntity>
+
+    @Query("SELECT * FROM grooming_slots WHERE id = :id LIMIT 1")
+    suspend fun getGroomingSlotById(id: String): GroomingSlotEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertGroomingSlot(slot: GroomingSlotEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertGroomingSlots(slots: List<GroomingSlotEntity>)
+
+    @Query("UPDATE grooming_slots SET bookedCount = bookedCount + 1 WHERE id = :slotId")
+    suspend fun incrementSlotBookedCount(slotId: String)
+
+    @Query("UPDATE grooming_slots SET bookedCount = bookedCount - 1 WHERE id = :slotId")
+    suspend fun decrementSlotBookedCount(slotId: String)
+
+    @Query("SELECT * FROM grooming_slots WHERE shopId = :shopId AND slotDate >= :startDate AND slotDate <= :endDate ORDER BY slotDate ASC, slotTime ASC")
+    suspend fun getGroomingSlotsForDateRangeSync(shopId: String, startDate: String, endDate: String): List<GroomingSlotEntity>
+
+    @Query("SELECT * FROM grooming_slots WHERE shopId = :shopId AND slotDate >= :startDate AND slotDate <= :endDate ORDER BY slotDate ASC, slotTime ASC")
+    fun getGroomingSlotsForDateRangeFlow(shopId: String, startDate: String, endDate: String): Flow<List<GroomingSlotEntity>>
+
+    // Grooming Bookings
+    @Query("SELECT * FROM grooming_bookings WHERE consumerId = :consumerId ORDER BY bookedAt DESC")
+    fun getGroomingBookingsForConsumerFlow(consumerId: String): Flow<List<GroomingBookingEntity>>
+
+    @Query("SELECT * FROM grooming_bookings WHERE shopId = :shopId ORDER BY bookedAt DESC")
+    fun getGroomingBookingsForShopFlow(shopId: String): Flow<List<GroomingBookingEntity>>
+
+    @Query("SELECT * FROM grooming_bookings WHERE id = :id LIMIT 1")
+    suspend fun getGroomingBookingById(id: String): GroomingBookingEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertGroomingBooking(booking: GroomingBookingEntity)
+
+    @Query("UPDATE grooming_bookings SET status = :status WHERE id = :id")
+    suspend fun updateGroomingBookingStatus(id: String, status: String)
+
+    // Doctors
+    @Query("SELECT * FROM doctors WHERE shopId = :shopId ORDER BY createdAt DESC")
+    fun getDoctorsForShopFlow(shopId: String): Flow<List<DoctorEntity>>
+
+    @Query("SELECT * FROM doctors WHERE shopId = :shopId")
+    suspend fun getDoctorsForShopSync(shopId: String): List<DoctorEntity>
+
+    @Query("SELECT * FROM doctors WHERE id = :id LIMIT 1")
+    suspend fun getDoctorById(id: String): DoctorEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertDoctor(doctor: DoctorEntity)
+
+    @Query("DELETE FROM doctors WHERE id = :id")
+    suspend fun deleteDoctor(id: String)
+
+    @Query("DELETE FROM doctors WHERE shopId = :shopId")
+    suspend fun clearDoctorsForShop(shopId: String)
+
+    // Doctor Slots
+    @Query("SELECT * FROM doctor_slots WHERE shopId = :shopId AND doctorId = :doctorId AND slotDate = :date ORDER BY slotTime ASC")
+    fun getDoctorSlotsFlow(shopId: String, doctorId: String, date: String): Flow<List<DoctorSlotEntity>>
+
+    @Query("SELECT * FROM doctor_slots WHERE shopId = :shopId AND doctorId = :doctorId AND slotDate = :date ORDER BY slotTime ASC")
+    suspend fun getDoctorSlotsSync(shopId: String, doctorId: String, date: String): List<DoctorSlotEntity>
+
+    @Query("SELECT * FROM doctor_slots WHERE id = :id LIMIT 1")
+    suspend fun getDoctorSlotById(id: String): DoctorSlotEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertDoctorSlot(slot: DoctorSlotEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertDoctorSlots(slots: List<DoctorSlotEntity>)
+
+    @Query("UPDATE doctor_slots SET bookedCount = bookedCount + 1 WHERE id = :slotId")
+    suspend fun incrementDoctorSlotBookedCount(slotId: String)
+
+    @Query("UPDATE doctor_slots SET bookedCount = bookedCount - 1 WHERE id = :slotId")
+    suspend fun decrementDoctorSlotBookedCount(slotId: String)
+
+    @Query("SELECT * FROM doctor_slots WHERE shopId = :shopId AND doctorId = :doctorId AND slotDate >= :startDate AND slotDate <= :endDate ORDER BY slotDate ASC, slotTime ASC")
+    fun getDoctorSlotsForDateRangeFlow(shopId: String, doctorId: String, startDate: String, endDate: String): Flow<List<DoctorSlotEntity>>
+
+    @Query("SELECT * FROM doctor_slots WHERE shopId = :shopId AND doctorId = :doctorId AND slotDate >= :startDate AND slotDate <= :endDate ORDER BY slotDate ASC, slotTime ASC")
+    suspend fun getDoctorSlotsForDateRangeSync(shopId: String, doctorId: String, startDate: String, endDate: String): List<DoctorSlotEntity>
+
+    // Coupons
+    @Query("SELECT * FROM coupons WHERE shopId = :shopId OR shopId = 'global' AND isActive = 1")
+    fun getCouponsForShopFlow(shopId: String): Flow<List<CouponEntity>>
+
+    @Query("SELECT * FROM coupons WHERE shopId = :shopId OR shopId = 'global' AND isActive = 1")
+    suspend fun getCouponsForShopSync(shopId: String): List<CouponEntity>
+
+    @Query("SELECT * FROM coupons WHERE code = :code LIMIT 1")
+    suspend fun getCouponByCode(code: String): CouponEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCoupon(coupon: CouponEntity)
+
+    @Query("DELETE FROM coupons WHERE id = :id")
+    suspend fun deleteCoupon(id: String)
 }
+
 

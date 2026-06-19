@@ -167,4 +167,129 @@ object SupabaseManager {
             false
         }
     }
+
+    // Sync appointment details to Supabase Postgres public.appointments table
+    suspend fun insertAppointmentToCloud(
+        appointmentId: String,
+        consumerId: String,
+        shopId: String,
+        serviceId: String,
+        serviceName: String,
+        price: Double,
+        appointmentDate: String,
+        appointmentTime: String,
+        petName: String,
+        status: String
+    ): Boolean = withContext(Dispatchers.IO) {
+        if (!isInitialized) return@withContext false
+        try {
+            client.postgrest["appointments"].insert(mapOf(
+                "id" to appointmentId,
+                "consumerId" to consumerId,
+                "shopId" to shopId,
+                "serviceId" to serviceId,
+                "serviceName" to serviceName,
+                "price" to price,
+                "appointmentDate" to appointmentDate,
+                "appointmentTime" to appointmentTime,
+                "petName" to petName,
+                "status" to status,
+                "createdAt" to System.currentTimeMillis()
+            ))
+            Log.i("SupabaseSync", "Appointment $appointmentId inserted securely to cloud.")
+            true
+        } catch (e: Exception) {
+            Log.e("SupabaseSync", "Failed to sync appointment: ${e.message}")
+            false
+        }
+    }
+
+    // Sync shop details to Supabase Postgres public.shops table
+    suspend fun insertShopToCloud(shop: ShopEntity): Boolean = withContext(Dispatchers.IO) {
+        if (!isInitialized) return@withContext false
+        try {
+            client.postgrest["shops"].insert(mapOf(
+                "id" to shop.id,
+                "ownerId" to shop.ownerId,
+                "cityId" to shop.cityId,
+                "name" to shop.name,
+                "description" to shop.description,
+                "address" to shop.address,
+                "locality" to shop.locality,
+                "lat" to shop.lat,
+                "lng" to shop.lng,
+                "phone" to shop.phone,
+                "email" to shop.email,
+                "photos" to shop.photos,
+                "isOpen" to shop.isOpen,
+                "opensAt" to shop.opensAt,
+                "closesAt" to shop.closesAt,
+                "rating" to shop.rating,
+                "totalReviews" to shop.totalReviews,
+                "deliveryAvailable" to shop.deliveryAvailable,
+                "isVerified" to shop.isVerified,
+                "isActive" to shop.isActive,
+                "isFeatured" to shop.isFeatured,
+                "status" to shop.status,
+                "groomingEnabled" to shop.groomingEnabled,
+                "vetClinicEnabled" to shop.vetClinicEnabled,
+                "createdAt" to shop.createdAt
+            ))
+            Log.i("SupabaseSync", "Shop ${shop.id} synced securely to cloud.")
+            true
+        } catch (e: Exception) {
+            Log.e("SupabaseSync", "Failed to sync shop: ${e.message}")
+            false
+        }
+    }
+
+    // Sync product details to Supabase Postgres public.products table
+    suspend fun insertProductToCloud(product: ProductEntity): Boolean = withContext(Dispatchers.IO) {
+        if (!isInitialized) return@withContext false
+        try {
+            client.postgrest["products"].insert(mapOf(
+                "id" to product.id,
+                "shopId" to product.shopId,
+                "categoryId" to product.categoryId,
+                "name" to product.name,
+                "description" to product.description,
+                "price" to product.price,
+                "mrp" to product.mrp,
+                "photos" to product.photos,
+                "inStock" to product.inStock,
+                "isActive" to product.isActive,
+                "tags" to product.tags,
+                "brand" to product.brand,
+                "lifeStage" to product.lifeStage,
+                "stockCount" to product.stockCount,
+                "createdAt" to product.createdAt
+            ))
+            Log.i("SupabaseSync", "Product ${product.id} synced securely to cloud.")
+            true
+        } catch (e: Exception) {
+            Log.e("SupabaseSync", "Failed to sync product: ${e.message}")
+            false
+        }
+    }
+
+    // Sync service details to Supabase Postgres public.services table
+    suspend fun insertServiceToCloud(service: ServiceEntity): Boolean = withContext(Dispatchers.IO) {
+        if (!isInitialized) return@withContext false
+        try {
+            client.postgrest["services"].insert(mapOf(
+                "id" to service.id,
+                "shopId" to service.shopId,
+                "name" to service.name,
+                "price" to service.price,
+                "category" to service.category,
+                "isCustom" to service.isCustom,
+                "createdAt" to service.createdAt
+            ))
+            Log.i("SupabaseSync", "Service ${service.id} synced securely to cloud.")
+            true
+        } catch (e: Exception) {
+            Log.e("SupabaseSync", "Failed to sync service: ${e.message}")
+            false
+        }
+    }
 }

@@ -14,7 +14,8 @@ data class ProfileEntity(
     val petName: String = "",
     val createdAt: Long = System.currentTimeMillis(),
     val email: String? = null,
-    val password: String? = null
+    val password: String? = null,
+    val address: String = ""
 )
 
 @Entity(tableName = "cities")
@@ -53,6 +54,9 @@ data class ShopEntity(
     val status: String = "active",
     val groomingEnabled: Boolean = true,
     val vetClinicEnabled: Boolean = true,
+    val shopEnabled: Boolean = true,
+    val vetLicenseNumber: String = "",
+    val isVetVerified: Boolean = false,
     val createdAt: Long = System.currentTimeMillis()
 )
 
@@ -79,6 +83,8 @@ data class ProductEntity(
     val brand: String = "Generic",
     val lifeStage: String = "Adult",
     val stockCount: Int = 10,
+    val sampleAttachedProductId: String? = null,
+    val sampleDescription: String = "",
     val createdAt: Long = System.currentTimeMillis()
 )
 
@@ -180,8 +186,13 @@ data class AppointmentEntity(
     val appointmentDate: String,
     val appointmentTime: String,
     val petName: String = "Buddy",
-    val status: String = "pending", // "pending", "confirmed", "completed", "cancelled"
-    val createdAt: Long = System.currentTimeMillis()
+    val status: String = "pending", // "pending", "confirmed", "completed", "cancelled", "reschedule_pending", "no_show"
+    val doctorId: String? = null,
+    val rescheduleDate: String? = null,
+    val rescheduleTime: String? = null,
+    val createdAt: Long = System.currentTimeMillis(),
+    val concern: String = "",
+    val priority: String = "Normal"
 )
 
 @Entity(tableName = "reminders")
@@ -256,7 +267,8 @@ data class ProblemEntity(
     val howToUse: String = "",
     val emoji: String,
     val productIds: List<String> = emptyList(),
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val isActive: Boolean = true
 )
 
 @Entity(tableName = "group_rfq_sessions")
@@ -296,6 +308,87 @@ data class MerchantQuotationEntity(
     val isAccepted: Boolean = false,
     val submittedAt: Long = System.currentTimeMillis()
 )
+
+@Entity(tableName = "grooming_services")
+data class GroomingServiceEntity(
+    @PrimaryKey val id: String,
+    val shopId: String,
+    val serviceType: String, // "bath" | "haircut" | "bath_and_haircut" | "nail_trim" | "ear_cleaning" | "full_grooming"
+    val variantName: String,
+    val description: String,
+    val petSizeCategory: String, // "small" | "medium" | "large"
+    val price: Double,
+    val durationMinutes: Int,
+    val imageUrls: List<String>,
+    val isActive: Boolean,
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "grooming_slots")
+data class GroomingSlotEntity(
+    @PrimaryKey val id: String,
+    val shopId: String,
+    val slotDate: String, // YYYY-MM-DD
+    val slotTime: String, // HH:mm
+    val capacity: Int = 1,
+    val bookedCount: Int = 0,
+    val isBlocked: Boolean = false
+)
+
+@Entity(tableName = "grooming_bookings")
+data class GroomingBookingEntity(
+    @PrimaryKey val id: String,
+    val consumerId: String,
+    val shopId: String,
+    val serviceId: String,
+    val slotId: String,
+    val petId: String,
+    val petSizeCategory: String,
+    val status: String, // "pending" | "confirmed" | "in_progress" | "completed" | "cancelled" | "no_show" | "reschedule_pending"
+    val specialInstructions: String? = null,
+    val totalPrice: Double,
+    val rescheduleDate: String? = null,
+    val rescheduleTime: String? = null,
+    val bookedAt: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "doctors")
+data class DoctorEntity(
+    @PrimaryKey val id: String,
+    val shopId: String,
+    val name: String,
+    val photoUrl: String,
+    val qualification: String,
+    val specialization: String,
+    val workingDays: List<String> = emptyList(),
+    val activeSlots: List<String> = emptyList(),
+    val isAvailable: Boolean = true,
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "doctor_slots")
+data class DoctorSlotEntity(
+    @PrimaryKey val id: String,
+    val doctorId: String,
+    val shopId: String,
+    val slotDate: String, // YYYY-MM-DD
+    val slotTime: String, // HH:mm
+    val capacity: Int = 1,
+    val bookedCount: Int = 0,
+    val isBlocked: Boolean = false
+)
+
+@Entity(tableName = "coupons")
+data class CouponEntity(
+    @PrimaryKey val id: String,
+    val shopId: String, // "global" or specific shopId
+    val code: String,
+    val discountPercentage: Double,
+    val maxDiscount: Double,
+    val minOrderAmount: Double,
+    val isActive: Boolean = true
+)
+
 
 
 
